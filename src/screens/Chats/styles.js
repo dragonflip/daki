@@ -30,10 +30,6 @@ export default StyleSheet.create({
     flexDirection: "row",
     height: 20,
   },
-  chat_preview: {
-    flexDirection: "column",
-    height: 36,
-  },
 
   chat_date_status: {
     flexDirection: "row",
@@ -48,5 +44,23 @@ export default StyleSheet.create({
   chat_date: {
     fontSize: 13,
     marginLeft: 4,
+    color: "grey",
+  },
+  chat_message: {
+    flexDirection: "column",
+    height: 36,
+    color: "grey",
+  },
+
+  chat_online: {
+    position: "absolute",
+    top: 49,
+    left: 49,
+    width: 14,
+    height: 14,
+    borderRadius: 14,
+    borderColor: "white",
+    borderWidth: 2,
+    backgroundColor: "green",
   },
 });
