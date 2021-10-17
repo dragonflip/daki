@@ -4,13 +4,14 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   title: {
     fontSize: 24,
     textTransform: "uppercase",
   },
-
   helper: {
     color: "grey",
   },
@@ -27,26 +28,5 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: "grey",
     borderRadius: 8,
-  },
-
-  button: {
-    alignSelf: "stretch",
-    backgroundColor: "#000",
-    borderRadius: 8,
-
-    marginHorizontal: 16,
-    marginVertical: 4,
-    height: 52,
-  },
-
-  buttonTouched: {
-    backgroundColor: "#333",
-  },
-
-  buttonText: {
-    color: "#fff",
-    textTransform: "uppercase",
-    textAlign: "center",
-    lineHeight: 52,
   },
 });
