@@ -69,6 +69,7 @@ export default function AuthPhoneScreen({ navigation }) {
         ref={recaptchaVerifier}
         firebaseConfig={firebase.app().options}
         attemptInvisibleVerification={true}
+        androidHardwareAccelerationDisabled={true}
       />
 
       <KeyboardAwareScrollView
