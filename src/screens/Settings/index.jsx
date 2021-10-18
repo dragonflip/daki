@@ -14,6 +14,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { Feather, Octicons, MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import {AlertBox} from 'react-native-alertbox';
+import {fire} from 'react-native-alertbox';
 
 // Styles
 import styles from "./styles";
@@ -24,6 +26,7 @@ export default function SettingsScreen({ navigation }) {
   const [profile, setProfile] = useState({});
   const [photoRounded, setPhotoRounded] = useState(false);
   const [photoMultiplicator, setPhotoMultiplicator] = useState(1);
+  const [userName, setUserName] = useState("Вадимко");
 
   // Get data from storage
   useEffect(() => {
@@ -41,6 +44,32 @@ export default function SettingsScreen({ navigation }) {
   // useFocusEffect(() => {
   //   console.log("Settings");
   // });
+
+  //Change name
+  function changeName(){
+    fire({
+      title: 'Зміна імені',
+      message: 'Введіть нове імя: ',
+      // buttons
+      actions: [
+        {
+          text: 'Сквасувати',
+          style: 'cancel',
+        },
+        {
+          text: 'Підтвердити',
+          onPress: (data) => setUserName(data.name) // It is an object that holds fields data
+        },
+      ],
+      // fields
+      fields: [
+        {
+          name: 'name',
+          placeholder: 'Введіть імя',
+        },
+      ],
+    });
+  }
 
   // Logout
   async function logout() {
@@ -139,7 +168,7 @@ export default function SettingsScreen({ navigation }) {
           >
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ fontSize: 24 }}>Вадимко</Text>
+                <Text style={{ fontSize: 24 }}>{userName}</Text>
                 <Octicons
                   name="verified"
                   size={20}
@@ -158,6 +187,7 @@ export default function SettingsScreen({ navigation }) {
                 borderRadius: 24,
                 padding: 8,
               }}
+              onPress = {changeName}
             >
               <Feather name="edit-3" size={24} color="black" />
             </TouchableOpacity>
@@ -232,6 +262,7 @@ export default function SettingsScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <AlertBox />
     </View>
   );
 }
