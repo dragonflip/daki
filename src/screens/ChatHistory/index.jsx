@@ -6,12 +6,14 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // Styles
 import styles from "./styles";
@@ -34,6 +36,73 @@ export default function ChatHistoryScreen({ navigation }) {
   // useFocusEffect(() => {
   //   console.log("Settings");
   // });
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: () =>
+      Platform.OS === "ios" ? (
+        <View style={{ alignItems: "center" }}>
+          <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+            Святік
+          </Text>
+          <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
+        </View>
+      ) : (
+        <TouchableOpacity onPress={() => navigation.navigate('Налаштування')}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginLeft: -8,
+            }}
+          >
+            <Image
+              style={{
+                backgroundColor: "#aaa",
+                width: 42,
+                height: 42,
+                borderRadius: 42,
+                marginRight: 12,
+              }}
+              source={{
+                uri: "https://habrastorage.org/r/w60/files/80c/815/1a4/80c8151a49e64eeda729744bca32116d.jpg",
+              }}
+            />
+            <View style={{ flexDirection: "column" }}>
+              <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                Святік
+              </Text>
+              <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      ),
+        headerRight: () =>
+                Platform.OS === "ios" ? (
+                  <Image
+                    style={{
+                      backgroundColor: "#aaa",
+                      width: 32,
+                      height: 32,
+                      borderRadius: 32,
+                      marginRight: -8,
+                    }}
+                    source={{
+                      uri: "https://habrastorage.org/r/w60/files/80c/815/1a4/80c8151a49e64eeda729744bca32116d.jpg",
+                    }}
+                  />
+                ) : (
+                  <TouchableOpacity>
+                    <MaterialCommunityIcons
+                      name="dots-vertical"
+                      size={24}
+                      color="black"
+                    />
+                  </TouchableOpacity>
+                ),
+    });
+  },);
+
 
   return (
     <View style={styles.container}>
