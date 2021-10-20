@@ -34,6 +34,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
         profilePhoto: "",
         online: true,
         bio: "",
+        verified: false,
       });
 
       setLoading(false);

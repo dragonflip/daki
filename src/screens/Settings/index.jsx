@@ -15,27 +15,48 @@ import { Feather, Octicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
 import { AlertBox, fire } from "react-native-alertbox";
+import moment from "moment";
+import "moment/locale/uk";
 
 // Styles
 import styles from "./styles";
 // Firebase
-import { db, auth } from "../../firebase";
+import { firebase, db, auth } from "../../firebase";
 
 export default function SettingsScreen({ navigation }) {
   const [profile, setProfile] = useState([]);
+  const [lastSeen, setLastSeen] = useState("");
+
   const [photoRounded, setPhotoRounded] = useState(false);
   const [photoMultiplicator, setPhotoMultiplicator] = useState(1);
 
   // Get data from storage
   useEffect(() => {
     // Get user profile
-    db.collection("users")
+    const unsubscribeSnaphot = db
+      .collection("users")
       .doc(auth.currentUser?.uid)
       .onSnapshot((snapshot) => {
         setProfile(snapshot.data());
       });
+
+    return unsubscribeSnaphot;
   }, []);
 
+  // Refresh profile last seen
+  useEffect(() => {
+    if (profile.online !== undefined && profile.online.seconds !== true) {
+      setLastSeen(moment.unix(profile.online.seconds).fromNow());
+
+      const interval = setInterval(() => {
+        setLastSeen(moment.unix(profile.online.seconds).fromNow());
+      }, 10000);
+
+      return () => clearInterval(interval);
+    }
+  }, [profile]);
+
+  // Check online date
   //Change name
   function changeName() {
     fire({
@@ -64,6 +85,11 @@ export default function SettingsScreen({ navigation }) {
 
   // Logout
   async function logout() {
+    // Change online status
+    db.collection("users")
+      .doc(auth.currentUser?.uid)
+      .update({ online: firebase.firestore.Timestamp.now() });
+
     await AsyncStorage.removeItem("phone");
     auth.signOut();
 
@@ -157,18 +183,25 @@ export default function SettingsScreen({ navigation }) {
               paddingTop: 16,
             }}
           >
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, paddingBottom: 16 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text style={{ fontSize: 24 }}>{profile.name}</Text>
-                <Octicons
-                  name="verified"
-                  size={20}
-                  color="blue"
-                  style={{ marginLeft: 8 }}
-                />
+
+                {profile.verified ? (
+                  <Octicons
+                    name="verified"
+                    size={20}
+                    color="blue"
+                    style={{ marginLeft: 8 }}
+                  />
+                ) : null}
               </View>
 
-              <Text style={{ color: "green", marginBottom: 16 }}>онлайн</Text>
+              {profile.online === true ? (
+                <Text style={{ color: "green" }}>онлайн</Text>
+              ) : (
+                <Text style={{ color: "grey" }}>В мережі {lastSeen}</Text>
+              )}
             </View>
 
             <TouchableOpacity
@@ -259,6 +292,7 @@ export default function SettingsScreen({ navigation }) {
           </Text>
         </View>
       </ScrollView>
+
       <AlertBox />
     </View>
   );

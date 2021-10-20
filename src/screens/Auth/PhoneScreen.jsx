@@ -7,7 +7,7 @@ import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 // Firebase
-import { firebase, auth } from "../../firebase";
+import { firebase, auth, db } from "../../firebase";
 // Styles
 import styles from "./styles";
 // Components
@@ -34,6 +34,13 @@ export default function AuthPhoneScreen({ navigation }) {
         } else {
           setTimeout(() => input.current.focus(), 1000);
         }
+      }
+
+      // Update online status
+      if (user) {
+        db.collection("users")
+          .doc(auth.currentUser?.uid)
+          .update({ online: true });
       }
     });
 
