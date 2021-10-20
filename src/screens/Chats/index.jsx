@@ -7,7 +7,6 @@ import {
   FlatList,
   AppState,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
@@ -89,21 +88,124 @@ export default function ChatsScreen({ navigation }) {
     //   ],
     // });
 
-    (async () => {
-      // const chats = await db
-      //   .collection("chats")
-      //   .where("membersId", "array-contains", auth.currentUser?.uid)
-      //   .get();
-      // console.log(chats.docs.map((chat) => chat.data()));
-      // await db
-      //   .collection("chats")
-      //   .doc("Klj95wUlYkwp6oHdTt6X")
-      //   .collection("messages")
-      //   .add({
-      //     message: "Тест",
-      //   });
-      // console.log(chats.empty);
-    })();
+    // Create chat
+    // db.collection("chats")
+    //   .add({
+    //     group: false,
+    //     groupName: "",
+    //     groupPhoto: "",
+    //     timestamp: "",
+    //   })
+    //   .then((doc) => {
+    //     // Write message to chat
+    //     db.collection("chats").doc(doc.id).collection("messages").add({
+    //       userId: 333,
+    //       message: "Дуже круте",
+    //       timestamp: firebase.firestore.Timestamp.now(),
+    //     });
+
+    //     // Add member to chat group
+    //     db.collection("chats").doc(doc.id).collection("members").add({
+    //       userId: 333,
+    //       name: "Вадік",
+    //       timestamp: firebase.firestore.Timestamp.now(),
+    //     });
+    //   });
+
+    // TODO unsubscribe
+    db.collection("chats").onSnapshot(async (snapshot) => {
+      const chatsMap = await Promise.all(
+        snapshot.docs.map(async (chat) => {
+          // Get member
+          const membersRes = await db
+            .collection("chats")
+            .doc(chat.id)
+            .collection("members")
+            .where("userId", "!=", auth.currentUser?.uid)
+            .limit(1)
+            .get();
+
+          // Get message
+          const messagesRes = await db
+            .collection("chats")
+            .doc(chat.id)
+            .collection("messages")
+            .orderBy("timestamp", "desc")
+            .limit(1)
+            .get();
+
+          // Chat data
+          const chatData = {
+            id: chat.id,
+            name: membersRes.docs[0].data().name,
+            photo: membersRes.docs[0].data().photo,
+            message: messagesRes.docs[0].data().message,
+            timestamp: messagesRes.docs[0].data().timestamp,
+          };
+
+          return chatData;
+        })
+      );
+
+      console.log(chatsMap);
+
+      setChats(chatsMap);
+    });
+
+    // Get name and photo
+    // db.collection("chats")
+    //   .doc("HY2T1KEhlOoOhZHhsIwl")
+    //   .collection("members")
+    //   .where("userId", "!=", auth.currentUser?.uid)
+    //   .limit(1)
+    //   .onSnapshot((snapshot) => {
+    //     // console.log(snapshot.docs[0].data());
+    //     setChats([
+    //       {
+    //         ...chats,
+    //         name: snapshot.docs[0].data().name,
+    //         profilePhoto: "",
+    //       },
+    //     ]);
+    //   });
+
+    // Get last message and date
+    // db.collection("chats")
+    //   .doc("HY2T1KEhlOoOhZHhsIwl")
+    //   .collection("messages")
+    //   .orderBy("timestamp", "desc")
+    //   .limit(1)
+    //   .onSnapshot((snapshot) => {
+    //     console.log(snapshot.docs[0].data());
+    //     chat.message = snapshot.docs[0].data().message;
+    //     chat.timestamp = snapshot.docs[0].data().timestamp;
+    //   });
+
+    // (async () => {
+    // const chats = await db.collection("chats").get();
+    // console.log(chats.docs.map((chat) => chat.data()));
+
+    // chats.docs.forEach(async (chat) => {
+    // db
+    //   .collection("chats")
+    //   .doc(chat.id)
+    //   .collection("messages")
+    //   .orderBy("timestamp", "desc")
+    //   .limit(1)
+    //   .onSnapshot((snapshot) => {
+    //     console.log(snapshot.docs[0].data());
+    //   });
+    // console.log(messages.docs.map((chat) => chat.data()));
+    // });
+    // await db
+    //   .collection("chats")
+    //   .doc("Klj95wUlYkwp6oHdTt6X")
+    //   .collection("messages")
+    //   .add({
+    //     message: "Тест",
+    //   });
+    // console.log(chats.empty);
+    // })();
 
     return () => {
       unsubscribeSnapshot();
@@ -112,14 +214,13 @@ export default function ChatsScreen({ navigation }) {
   }, []);
 
   const handleAppStateChange = async (state) => {
-    const user = await db
+    await db
       .collection("users")
-      .where("userId", "==", auth.currentUser.uid)
-      .get();
-
-    user.docs.forEach((user) => {
-      user.ref.update({ online: state != "background" });
-    });
+      .doc(auth.currentUser?.uid)
+      .update({
+        online:
+          state != "background" ? true : firebase.firestore.Timestamp.now(),
+      });
   };
 
   const dateFormat = (seconds) => {
@@ -139,20 +240,19 @@ export default function ChatsScreen({ navigation }) {
 
       <FlatList
         data={chats}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.chat}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate("ChatHistory")}
+            onPress={() =>
+              navigation.navigate("ChatHistory", { chatId: item.id })
+            }
           >
             <Image
               style={styles.chat_photo}
               source={{
-                uri:
-                  item.from_user?.profilePhoto != ""
-                    ? item.from_user?.profilePhoto
-                    : "https://habrastorage.org/r/w60/files/80c/815/1a4/80c8151a49e64eeda729744bca32116d.jpg",
+                uri: item.photo,
               }}
             />
 
@@ -162,12 +262,12 @@ export default function ChatsScreen({ navigation }) {
 
             <View style={styles.chat_info}>
               <View style={styles.chat_name_date_status}>
-                <Text style={styles.chat_name}>{item.from_user?.name}</Text>
+                <Text style={styles.chat_name}>{item.name}</Text>
 
                 <View style={styles.chat_date_status}>
                   <Ionicons name="checkmark-done" size={20} color="green" />
                   <Text style={styles.chat_date}>
-                    {dateFormat(item.date?.seconds)}
+                    {dateFormat(item.timestamp?.seconds)}
                   </Text>
                 </View>
               </View>
