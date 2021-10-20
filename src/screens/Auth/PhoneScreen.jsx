@@ -26,30 +26,24 @@ export default function AuthPhoneScreen({ navigation }) {
     setLoading(true);
 
     const unsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
-      if (navigation.isFocused()) {
-        if (user) {
-          const userDoc = await db
-            .collection("users")
-            .doc(auth.currentUser?.uid)
-            .get();
-
-          if (userDoc.exists) {
-            navigation.replace("Home");
-          } else {
-            setLoading(false);
-          }
-        } else {
-          setLoading(false);
-          setTimeout(() => input.current.focus(), 1000);
-        }
-      }
+      const userDoc = await db
+        .collection("users")
+        .doc(auth.currentUser?.uid)
+        .get();
 
       // Update online status
-      if (user) {
+      if (user && userDoc.exists) {
         await db
           .collection("users")
           .doc(auth.currentUser?.uid)
           .update({ online: true });
+
+        if (navigation.isFocused()) {
+          navigation.replace("Home");
+        }
+      } else {
+        setLoading(false);
+        setTimeout(() => input.current.focus(), 1000);
       }
     });
 
