@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
-  Button,
   SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from "@react-navigation/native";
 
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,24 +13,23 @@ import { Ionicons } from "@expo/vector-icons";
 // Styles
 import styles from "./styles";
 // Firebase
-import { auth } from "../../firebase";
+import { firebase, db, auth } from "../../firebase";
 
-export default function ChatHistoryScreen({ navigation }) {
-  // const [phone, setPhone] = useState("");
+export default function ChatHistoryScreen({ navigation, route }) {
+  const [message, setMessage] = useState("");
 
   // Get data from storage
-  // useEffect(() => {
-  //   async function getPhone() {
-  //     const phone = await AsyncStorage.getItem("phone");
-  //     setPhone(phone);
-  //   }
+  useEffect(() => {
+    console.log(route.params.chatId);
+  }, []);
 
-  //   getPhone();
-  // }, []);
-
-  // useFocusEffect(() => {
-  //   console.log("Settings");
-  // });
+  const sendMessage = async () => {
+    db.collection("chats").doc(route.params.chatId).collection("messages").add({
+      message: message,
+      timestamp: firebase.firestore.Timestamp.now(),
+      userId: auth.currentUser?.uid,
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -135,8 +131,9 @@ export default function ChatHistoryScreen({ navigation }) {
               flex: 1,
             }}
             placeholder="Повідомлення..."
+            onChangeText={setMessage}
           />
-          <TouchableOpacity style={{ marginRight: 16 }}>
+          <TouchableOpacity style={{ marginRight: 16 }} onPress={sendMessage}>
             <Ionicons name="send" size={24} color="black" />
           </TouchableOpacity>
         </View>
