@@ -23,12 +23,7 @@ function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Phone"
-        // screenOptions={{
-        //   headerShown: false,
-        // }}
-      >
+      <Stack.Navigator initialRouteName="Phone">
         <Stack.Screen
           name="Phone"
           component={AuthPhoneScreen}
@@ -66,44 +61,50 @@ function App() {
         <Stack.Screen
           name="ChatHistory"
           component={ChatHistoryScreen}
-          options={{
+          options={({ navigation }) => ({
             headerBackTitle: "Чати",
-            headerTitle: () =>
-              Platform.OS === "ios" ? (
-                <View style={{ alignItems: "center" }}>
-                  <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                    Святік
-                  </Text>
-                  <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
-                </View>
-              ) : (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginLeft: -8,
-                  }}
-                >
-                  <Image
-                    style={{
-                      backgroundColor: "#aaa",
-                      width: 42,
-                      height: 42,
-                      borderRadius: 42,
-                      marginRight: 12,
-                    }}
-                    source={{
-                      uri: "https://habrastorage.org/r/w60/files/80c/815/1a4/80c8151a49e64eeda729744bca32116d.jpg",
-                    }}
-                  />
-                  <View style={{ flexDirection: "column" }}>
+            headerTitle: () => (
+              <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+                {Platform.OS === "ios" ? (
+                  <View style={{ alignItems: "center" }}>
                     <Text style={{ fontSize: 16, fontWeight: "bold" }}>
                       Святік
                     </Text>
                     <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
                   </View>
-                </View>
-              ),
+                ) : (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginLeft: -8,
+                    }}
+                  >
+                    <Image
+                      style={{
+                        backgroundColor: "#aaa",
+                        width: 42,
+                        height: 42,
+                        borderRadius: 42,
+                        marginRight: 12,
+                      }}
+                      source={{
+                        uri: "https://habrastorage.org/r/w60/files/80c/815/1a4/80c8151a49e64eeda729744bca32116d.jpg",
+                      }}
+                    />
+                    <View style={{ flexDirection: "column" }}>
+                      <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                        Святік
+                      </Text>
+                      <Text style={{ fontSize: 12, color: "green" }}>
+                        онлайн
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ),
+
             headerRight: () =>
               Platform.OS === "ios" ? (
                 <Image
@@ -127,7 +128,7 @@ function App() {
                   />
                 </TouchableOpacity>
               ),
-          }}
+          })}
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -154,7 +155,7 @@ function NavigationTabs() {
       }}
     >
       <Tab.Screen
-        name="Чати"
+        name="Chats"
         component={ChatsScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
@@ -164,10 +165,11 @@ function NavigationTabs() {
               color={color}
             />
           ),
+          title: "Чати",
         }}
       />
       <Tab.Screen
-        name="Налаштування"
+        name="Settings"
         component={SettingsScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
@@ -179,6 +181,7 @@ function NavigationTabs() {
           ),
           headerTransparent: true,
           headerTitle: "",
+          title: "Налаштування",
         }}
       />
     </Tab.Navigator>
