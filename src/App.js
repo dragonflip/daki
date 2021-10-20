@@ -66,6 +66,68 @@ function App() {
         <Stack.Screen
           name="ChatHistory"
           component={ChatHistoryScreen}
+          options={{
+            headerBackTitle: "Чати",
+            headerTitle: () =>
+              Platform.OS === "ios" ? (
+                <View style={{ alignItems: "center" }}>
+                  <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                    Святік
+                  </Text>
+                  <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
+                </View>
+              ) : (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginLeft: -8,
+                  }}
+                >
+                  <Image
+                    style={{
+                      backgroundColor: "#aaa",
+                      width: 42,
+                      height: 42,
+                      borderRadius: 42,
+                      marginRight: 12,
+                    }}
+                    source={{
+                      uri: "https://habrastorage.org/r/w60/files/80c/815/1a4/80c8151a49e64eeda729744bca32116d.jpg",
+                    }}
+                  />
+                  <View style={{ flexDirection: "column" }}>
+                    <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                      Святік
+                    </Text>
+                    <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
+                  </View>
+                </View>
+              ),
+            headerRight: () =>
+              Platform.OS === "ios" ? (
+                <Image
+                  style={{
+                    backgroundColor: "#aaa",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 32,
+                    marginRight: -8,
+                  }}
+                  source={{
+                    uri: "https://habrastorage.org/r/w60/files/80c/815/1a4/80c8151a49e64eeda729744bca32116d.jpg",
+                  }}
+                />
+              ) : (
+                <TouchableOpacity>
+                  <MaterialCommunityIcons
+                    name="dots-vertical"
+                    size={24}
+                    color="black"
+                  />
+                </TouchableOpacity>
+              ),
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>
