@@ -35,6 +35,8 @@ export default function AuthPhoneScreen({ navigation }) {
 
           if (userDoc.exists) {
             navigation.replace("Home");
+          } else {
+            setLoading(false);
           }
         } else {
           setLoading(false);
