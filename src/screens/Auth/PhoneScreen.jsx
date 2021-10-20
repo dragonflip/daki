@@ -24,15 +24,17 @@ export default function AuthPhoneScreen({ navigation }) {
   useEffect(() => {
     setLoading(true);
 
-    auth.onAuthStateChanged((user) => {
+    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+      setLoading(false);
+
       if (user) {
-        navigation.navigate("Home");
+        navigation.replace("Home");
       } else {
         setTimeout(() => input.current.focus(), 1000);
       }
-
-      setLoading(false);
     });
+
+    return unsubscribe;
   }, []);
 
   // Send SMS verification code
