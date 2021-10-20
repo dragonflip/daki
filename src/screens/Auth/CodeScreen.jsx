@@ -47,10 +47,9 @@ export default function AuthCodeScreen({ navigation, route }) {
       );
       await firebase.auth().signInWithCredential(credential);
 
-      setLoading(false);
-
       // Check if user exists
       if (!userExists) {
+        setLoading(false);
         navigation.navigate("Welcome", { ...route.params });
       } else {
         navigation.popToTop();

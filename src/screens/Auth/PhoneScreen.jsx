@@ -26,12 +26,11 @@ export default function AuthPhoneScreen({ navigation }) {
     setLoading(true);
 
     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-      setLoading(false);
-
       if (navigation.isFocused()) {
         if (user) {
           navigation.replace("Home");
         } else {
+          setLoading(false);
           setTimeout(() => input.current.focus(), 1000);
         }
       }

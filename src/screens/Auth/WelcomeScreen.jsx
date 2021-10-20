@@ -37,8 +37,6 @@ export default function AuthWelcomeScreen({ navigation, route }) {
         verified: false,
       });
 
-      setLoading(false);
-
       navigation.popToTop();
       navigation.replace("Home");
 
