@@ -25,10 +25,17 @@ export default function AuthPhoneScreen({ navigation }) {
     console.log("Focus");
     setLoading(true);
 
-    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+    const unsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
       if (navigation.isFocused()) {
         if (user) {
-          navigation.replace("Home");
+          const userDoc = await db
+            .collection("users")
+            .doc(auth.currentUser?.uid)
+            .get();
+
+          if (userDoc.exists) {
+            navigation.replace("Home");
+          }
         } else {
           setLoading(false);
           setTimeout(() => input.current.focus(), 1000);
@@ -37,7 +44,8 @@ export default function AuthPhoneScreen({ navigation }) {
 
       // Update online status
       if (user) {
-        db.collection("users")
+        await db
+          .collection("users")
           .doc(auth.currentUser?.uid)
           .update({ online: true });
       }
