@@ -9,7 +9,6 @@ import {
   Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from "@react-navigation/native";
 
 import { StatusBar } from "expo-status-bar";
 import { Feather, Octicons } from "@expo/vector-icons";
@@ -23,27 +22,19 @@ import styles from "./styles";
 import { db, auth } from "../../firebase";
 
 export default function SettingsScreen({ navigation }) {
-  const [profile, setProfile] = useState({});
+  const [profile, setProfile] = useState([]);
   const [photoRounded, setPhotoRounded] = useState(false);
   const [photoMultiplicator, setPhotoMultiplicator] = useState(1);
-  const [userName, setUserName] = useState("Вадимко");
 
   // Get data from storage
   useEffect(() => {
-    (async () => {
-      // Get user profile
-      const user = await db
-        .collection("users")
-        .where("userId", "==", auth.currentUser?.uid)
-        .get();
-
-      setProfile(user.docs.map((user) => user.data())[0]);
-    })();
+    // Get user profile
+    db.collection("users")
+      .doc(auth.currentUser?.uid)
+      .onSnapshot((snapshot) => {
+        setProfile(snapshot.data());
+      });
   }, []);
-
-  // useFocusEffect(() => {
-  //   console.log("Settings");
-  // });
 
   //Change name
   function changeName() {
@@ -58,7 +49,7 @@ export default function SettingsScreen({ navigation }) {
         },
         {
           text: "Підтвердити",
-          onPress: (data) => setUserName(data.name), // It is an object that holds fields data
+          onPress: (data) => setProfile({ ...profile, name: data.name }), // It is an object that holds fields data
         },
       ],
       // fields
@@ -168,7 +159,7 @@ export default function SettingsScreen({ navigation }) {
           >
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ fontSize: 24 }}>{userName}</Text>
+                <Text style={{ fontSize: 24 }}>{profile.name}</Text>
                 <Octicons
                   name="verified"
                   size={20}
@@ -235,7 +226,9 @@ export default function SettingsScreen({ navigation }) {
               borderTopWidth: 1,
             }}
           >
-            <Text style={{ fontSize: 16 }}>Люблю сміятися і спати</Text>
+            <Text style={{ fontSize: 16 }}>
+              {profile.bio != "" ? profile.bio : "Розкажіть про себе"}
+            </Text>
             <Text style={{ fontSize: 12, color: "grey" }}>Про себе</Text>
           </View>
 
