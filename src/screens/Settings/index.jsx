@@ -12,10 +12,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 
 import { StatusBar } from "expo-status-bar";
-import { Feather, Octicons, MaterialIcons } from "@expo/vector-icons";
+import { Feather, Octicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import {AlertBox} from 'react-native-alertbox';
-import {fire} from 'react-native-alertbox';
+import Constants from "expo-constants";
+import { AlertBox, fire } from "react-native-alertbox";
 
 // Styles
 import styles from "./styles";
@@ -46,26 +46,26 @@ export default function SettingsScreen({ navigation }) {
   // });
 
   //Change name
-  function changeName(){
+  function changeName() {
     fire({
-      title: 'Зміна імені',
-      message: 'Введіть нове імя: ',
+      title: "Зміна імені",
+      message: "Введіть нове імя: ",
       // buttons
       actions: [
         {
-          text: 'Сквасувати',
-          style: 'cancel',
+          text: "Сквасувати",
+          style: "cancel",
         },
         {
-          text: 'Підтвердити',
-          onPress: (data) => setUserName(data.name) // It is an object that holds fields data
+          text: "Підтвердити",
+          onPress: (data) => setUserName(data.name), // It is an object that holds fields data
         },
       ],
       // fields
       fields: [
         {
-          name: 'name',
-          placeholder: 'Введіть імя',
+          name: "name",
+          placeholder: "Введіть імя",
         },
       ],
     });
@@ -187,7 +187,7 @@ export default function SettingsScreen({ navigation }) {
                 borderRadius: 24,
                 padding: 8,
               }}
-              onPress = {changeName}
+              onPress={changeName}
             >
               <Feather name="edit-3" size={24} color="black" />
             </TouchableOpacity>
@@ -260,6 +260,10 @@ export default function SettingsScreen({ navigation }) {
               Вийти
             </Text>
           </TouchableOpacity>
+
+          <Text style={{ textAlign: "center", color: "grey", marginTop: 32 }}>
+            Версія: {Constants.manifest.version}
+          </Text>
         </View>
       </ScrollView>
       <AlertBox />
