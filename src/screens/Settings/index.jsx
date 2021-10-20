@@ -15,8 +15,7 @@ import { Feather, Octicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
 import { AlertBox, fire } from "react-native-alertbox";
-import moment from "moment";
-import "moment/locale/uk";
+import Moment from "react-moment";
 
 // Styles
 import styles from "./styles";
@@ -25,7 +24,6 @@ import { firebase, db, auth } from "../../firebase";
 
 export default function SettingsScreen({ navigation }) {
   const [profile, setProfile] = useState([]);
-  const [lastSeen, setLastSeen] = useState("");
 
   const [photoRounded, setPhotoRounded] = useState(false);
   const [photoMultiplicator, setPhotoMultiplicator] = useState(1);
@@ -43,21 +41,7 @@ export default function SettingsScreen({ navigation }) {
     return unsubscribeSnaphot;
   }, []);
 
-  // Refresh profile last seen
-  useEffect(() => {
-    if (profile.online !== undefined && profile.online.seconds !== true) {
-      setLastSeen(moment.unix(profile.online.seconds).fromNow());
-
-      const interval = setInterval(() => {
-        setLastSeen(moment.unix(profile.online.seconds).fromNow());
-      }, 10000);
-
-      return () => clearInterval(interval);
-    }
-  }, [profile]);
-
-  // Check online date
-  //Change name
+  // Change name (fake)
   function changeName() {
     fire({
       title: "Зміна імені",
@@ -200,7 +184,14 @@ export default function SettingsScreen({ navigation }) {
               {profile.online === true ? (
                 <Text style={{ color: "green" }}>онлайн</Text>
               ) : (
-                <Text style={{ color: "grey" }}>В мережі {lastSeen}</Text>
+                <View>
+                  <Text style={{ color: "grey" }}>
+                    В мережі{" "}
+                    <Moment element={Text} locale="uk" fromNow unix>
+                      {profile.online?.seconds}
+                    </Moment>
+                  </Text>
+                </View>
               )}
             </View>
 
