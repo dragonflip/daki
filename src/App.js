@@ -1,7 +1,6 @@
 import React from "react";
-import { Text, View, Image, Platform, TouchableOpacity } from "react-native";
 import * as expo from "expo";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -61,32 +60,9 @@ function App() {
         <Stack.Screen
           name="ChatHistory"
           component={ChatHistoryScreen}
-          options={({ navigation }) => ({
+          options={{
             headerBackTitle: "Чати",
-            headerRight: () =>
-              Platform.OS === "ios" ? (
-                <Image
-                  style={{
-                    backgroundColor: "#aaa",
-                    width: 32,
-                    height: 32,
-                    borderRadius: 32,
-                    marginRight: -8,
-                  }}
-                  source={{
-                    uri: "https://habrastorage.org/r/w60/files/80c/815/1a4/80c8151a49e64eeda729744bca32116d.jpg",
-                  }}
-                />
-              ) : (
-                <TouchableOpacity>
-                  <MaterialCommunityIcons
-                    name="dots-vertical"
-                    size={24}
-                    color="black"
-                  />
-                </TouchableOpacity>
-              ),
-          })}
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

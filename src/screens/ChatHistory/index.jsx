@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -10,7 +10,8 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import "moment/locale/uk";
 import Moment from "react-moment";
 
 // Styles
@@ -23,22 +24,17 @@ export default function ChatHistoryScreen({ navigation, route }) {
   const [inputMessage, setInputMessage] = useState("");
   const input = useRef();
 
-  // Change header
-  useLayoutEffect(() => {});
-
   // Init
   useEffect(() => {
     // Get member
     // TODO chat group info
     const memberSnapshotUnsubscribe = db
-      .collection("chats")
-      .doc(route.params.chatId)
-      .collection("members")
-      .where("userId", "!=", auth.currentUser?.uid)
-      .limit(1)
+      .collection("users")
+      .doc(route.params.userId)
       .onSnapshot((snapshot) => {
-        const chatInfo = snapshot.docs.map((doc) => doc.data())[0];
+        const chatInfo = snapshot.data();
 
+        // Change header
         navigation.setOptions({
           headerTitle: () => (
             <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
@@ -47,7 +43,18 @@ export default function ChatHistoryScreen({ navigation, route }) {
                   <Text style={{ fontSize: 16, fontWeight: "bold" }}>
                     {chatInfo.name}
                   </Text>
-                  <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
+                  {chatInfo.online === true ? (
+                    <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
+                  ) : (
+                    <View>
+                      <Text style={{ fontSize: 12, color: "grey" }}>
+                        В мережі{" "}
+                        <Moment element={Text} locale="uk" fromNow unix>
+                          {chatInfo.online?.seconds}
+                        </Moment>
+                      </Text>
+                    </View>
+                  )}
                 </View>
               ) : (
                 <View
@@ -66,19 +73,57 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       marginRight: 12,
                     }}
                     source={{
-                      uri: chatInfo.photo,
+                      uri: chatInfo.profilePhoto,
                     }}
                   />
                   <View style={{ flexDirection: "column" }}>
                     <Text style={{ fontSize: 16, fontWeight: "bold" }}>
                       {chatInfo.name}
                     </Text>
-                    <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
+                    {chatInfo.online === true ? (
+                      <Text style={{ fontSize: 12, color: "green" }}>
+                        онлайн
+                      </Text>
+                    ) : (
+                      <View>
+                        <Text style={{ fontSize: 12, color: "grey" }}>
+                          В мережі{" "}
+                          <Moment element={Text} locale="uk" fromNow unix>
+                            {chatInfo.online?.seconds}
+                          </Moment>
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </View>
               )}
             </TouchableOpacity>
           ),
+          headerRight: () =>
+            Platform.OS === "ios" ? (
+              <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+                <Image
+                  style={{
+                    backgroundColor: "#aaa",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 32,
+                    marginRight: -8,
+                  }}
+                  source={{
+                    uri: chatInfo.profilePhoto,
+                  }}
+                />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity>
+                <MaterialCommunityIcons
+                  name="dots-vertical"
+                  size={24}
+                  color="black"
+                />
+              </TouchableOpacity>
+            ),
         });
       });
 
@@ -88,6 +133,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
       .doc(route.params.chatId)
       .collection("messages")
       .where("userId", "!=", auth.currentUser?.uid)
+      .where("seen", "==", false)
       .get()
       .then((messages) => {
         messages.docs.forEach((message) => {
