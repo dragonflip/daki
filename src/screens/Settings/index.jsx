@@ -15,6 +15,7 @@ import { Feather, Octicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
 import { AlertBox, fire } from "react-native-alertbox";
+import "moment/locale/uk";
 import Moment from "react-moment";
 
 // Styles

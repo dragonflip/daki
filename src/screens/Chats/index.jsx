@@ -21,15 +21,6 @@ export default function ChatsScreen({ navigation }) {
   const [chats, setChats] = useState([]);
 
   useEffect(() => {
-    // const unsubscribeSnapshot = db
-    // .collection("chats")
-    // .onSnapshot((querySnapshot) => {
-    // setChats();
-    // querySnapshot.docs.map((item) => {
-    //   return { id: item.id, ...item.data() };
-    // })
-    // });
-
     AppState.addEventListener("change", handleAppStateChange);
 
     // db.collection("chats").add({
@@ -111,7 +102,9 @@ export default function ChatsScreen({ navigation }) {
     //     });
     //   });
 
-    let membersSnapshotUnsubscribe, messagesSnapshotUnsubscribe;
+    let membersSnapshotUnsubscribe,
+      usersSnapshotUnsubscribe,
+      messagesSnapshotUnsubscribe;
     const chatsSnapshotUnsubscribe = db
       .collection("chats")
       .onSnapshot((chatsSnapshot) => {
@@ -128,16 +121,25 @@ export default function ChatsScreen({ navigation }) {
             .where("userId", "!=", auth.currentUser?.uid)
             .limit(1)
             .onSnapshot((members) => {
-              // Chat data
-              chatData = {
-                ...chatData,
-                id: chat.id,
-                name: members.docs[0].data().name,
-                photo: members.docs[0].data().photo,
-              };
+              usersSnapshotUnsubscribe = db
+                .collection("users")
+                .doc(members.docs[0].data().userId)
+                .onSnapshot((users) => {
+                  // Chat data
+                  if (users.exists) {
+                    chatData = {
+                      ...chatData,
+                      id: chat.id,
+                      name: users.data().name,
+                      photo: users.data().profilePhoto,
+                      online: users.data().online === true,
+                      userId: users.id,
+                    };
 
-              allChats[chat.id] = chatData;
-              setChats(Object.values(allChats));
+                    allChats[chat.id] = chatData;
+                    setChats(Object.values(allChats));
+                  }
+                });
             });
 
           // Get message
@@ -225,9 +227,9 @@ export default function ChatsScreen({ navigation }) {
     // })();
 
     return () => {
-      // unsubscribeSnapshot();
       chatsSnapshotUnsubscribe();
       membersSnapshotUnsubscribe();
+      usersSnapshotUnsubscribe();
       messagesSnapshotUnsubscribe();
 
       AppState.removeEventListener("change", handleAppStateChange);
@@ -267,7 +269,10 @@ export default function ChatsScreen({ navigation }) {
             style={styles.chat}
             activeOpacity={0.8}
             onPress={() =>
-              navigation.navigate("ChatHistory", { chatId: item.id })
+              navigation.navigate("ChatHistory", {
+                chatId: item.id,
+                userId: item.userId,
+              })
             }
           >
             <Image
@@ -277,9 +282,7 @@ export default function ChatsScreen({ navigation }) {
               }}
             />
 
-            {item.from_user?.online ? (
-              <View style={styles.chat_online}></View>
-            ) : null}
+            {item.online ? <View style={styles.chat_online}></View> : null}
 
             <View style={styles.chat_info}>
               <View style={styles.chat_name_date_status}>
