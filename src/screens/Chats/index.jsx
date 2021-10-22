@@ -18,18 +18,17 @@ import styles from "./styles";
 import { db, firebase, auth } from "../../firebase";
 
 export default function ChatsScreen({ navigation }) {
-  const [chats, setChats] = useState();
+  const [chats, setChats] = useState([]);
 
   useEffect(() => {
-    const unsubscribeSnapshot = db
-      .collection("chats")
-      .onSnapshot((querySnapshot) => {
-        setChats(
-          querySnapshot.docs.map((item) => {
-            return { id: item.id, ...item.data() };
-          })
-        );
-      });
+    // const unsubscribeSnapshot = db
+    // .collection("chats")
+    // .onSnapshot((querySnapshot) => {
+    // setChats();
+    // querySnapshot.docs.map((item) => {
+    //   return { id: item.id, ...item.data() };
+    // })
+    // });
 
     AppState.addEventListener("change", handleAppStateChange);
 
@@ -112,45 +111,63 @@ export default function ChatsScreen({ navigation }) {
     //     });
     //   });
 
-    // TODO unsubscribe
-    db.collection("chats").onSnapshot(async (snapshot) => {
-      const chatsMap = await Promise.all(
-        snapshot.docs.map(async (chat) => {
+    let membersSnapshotUnsubscribe, messagesSnapshotUnsubscribe;
+    const chatsSnapshotUnsubscribe = db
+      .collection("chats")
+      .onSnapshot((chatsSnapshot) => {
+        let allChats = {};
+
+        chatsSnapshot.docs.forEach((chat) => {
+          let chatData = {};
+
           // Get member
-          const membersRes = await db
+          membersSnapshotUnsubscribe = db
             .collection("chats")
             .doc(chat.id)
             .collection("members")
             .where("userId", "!=", auth.currentUser?.uid)
             .limit(1)
-            .get();
+            .onSnapshot((members) => {
+              // Chat data
+              chatData = {
+                ...chatData,
+                id: chat.id,
+                name: members.docs[0].data().name,
+                photo: members.docs[0].data().photo,
+              };
+
+              allChats[chat.id] = chatData;
+              setChats(Object.values(allChats));
+            });
 
           // Get message
-          const messagesRes = await db
+          messagesSnapshotUnsubscribe = db
             .collection("chats")
             .doc(chat.id)
             .collection("messages")
             .orderBy("timestamp", "desc")
             .limit(1)
-            .get();
+            .onSnapshot((messages) => {
+              // Chat data
+              chatData = {
+                ...chatData,
+                id: chat.id,
+                message: messages.docs[0].data().message,
+                timestamp: messages.docs[0].data().timestamp,
+                seen: messages.docs[0].data().seen,
+                me: messages.docs[0].data().userId == auth.currentUser?.uid,
+              };
 
-          // Chat data
-          const chatData = {
-            id: chat.id,
-            name: membersRes.docs[0].data().name,
-            photo: membersRes.docs[0].data().photo,
-            message: messagesRes.docs[0].data().message,
-            timestamp: messagesRes.docs[0].data().timestamp,
-          };
+              allChats[chat.id] = chatData;
+              setChats(Object.values(allChats));
 
-          return chatData;
-        })
-      );
+              console.log(Object.values(allChats));
+            });
+        });
 
-      console.log(chatsMap);
-
-      setChats(chatsMap);
-    });
+        // setChats(allChats);
+        // console.log(allChats);
+      });
 
     // Get name and photo
     // db.collection("chats")
@@ -208,7 +225,11 @@ export default function ChatsScreen({ navigation }) {
     // })();
 
     return () => {
-      unsubscribeSnapshot();
+      // unsubscribeSnapshot();
+      chatsSnapshotUnsubscribe();
+      membersSnapshotUnsubscribe();
+      messagesSnapshotUnsubscribe();
+
       AppState.removeEventListener("change", handleAppStateChange);
     };
   }, []);
@@ -265,7 +286,12 @@ export default function ChatsScreen({ navigation }) {
                 <Text style={styles.chat_name}>{item.name}</Text>
 
                 <View style={styles.chat_date_status}>
-                  <Ionicons name="checkmark-done" size={20} color="green" />
+                  {item.me && item.seen ? (
+                    <Ionicons name="checkmark-done" size={20} color="green" />
+                  ) : item.me ? (
+                    <Ionicons name="checkmark" size={20} color="green" />
+                  ) : null}
+
                   <Text style={styles.chat_date}>
                     {dateFormat(item.timestamp?.seconds)}
                   </Text>
@@ -273,6 +299,9 @@ export default function ChatsScreen({ navigation }) {
               </View>
 
               <Text style={styles.chat_message} numberOfLines={2}>
+                {item.me ? (
+                  <Text style={{ fontWeight: "bold" }}>Я: </Text>
+                ) : null}
                 {item.message}
               </Text>
             </View>
