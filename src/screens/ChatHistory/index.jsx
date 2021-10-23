@@ -171,15 +171,20 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
   // Send message
   const sendMessage = () => {
-    db.collection("chats").doc(route.params.chatId).collection("messages").add({
-      message: inputMessage,
-      timestamp: firebase.firestore.Timestamp.now(),
-      userId: auth.currentUser?.uid,
-      seen: false,
-    });
+    if (inputMessage.trim() !== "") {
+      db.collection("chats")
+        .doc(route.params.chatId)
+        .collection("messages")
+        .add({
+          message: inputMessage,
+          timestamp: firebase.firestore.Timestamp.now(),
+          userId: auth.currentUser?.uid,
+          seen: false,
+        });
 
-    setInputMessage("");
-    input.current.clear();
+      setInputMessage("");
+      input.current.clear();
+    }
   };
 
   // Delete message
