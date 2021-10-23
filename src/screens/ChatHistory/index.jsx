@@ -13,6 +13,7 @@ import {
 
 import { StatusBar } from "expo-status-bar";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import "moment/locale/uk";
 import Moment from "react-moment";
 
@@ -138,6 +139,12 @@ export default function ChatHistoryScreen({ navigation, route }) {
       .collection("messages")
       .orderBy("timestamp", "desc")
       .onSnapshot((snapshot) => {
+        console.log(
+          snapshot.docs.length,
+          messages.length,
+          snapshot.metadata.fromCache
+        );
+
         setMessages(
           snapshot.docs.map((doc) => {
             return {
@@ -183,6 +190,8 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
   // Delete message
   const deleteMessage = (messageId) => {
+    Haptics.selectionAsync();
+
     Alert.alert(
       "Видалити повідомлення?",
       "Повідомлення буде видалено для всіх",
