@@ -139,12 +139,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
       .collection("messages")
       .orderBy("timestamp", "desc")
       .onSnapshot((snapshot) => {
-        console.log(
-          snapshot.docs.length,
-          messages.length,
-          snapshot.metadata.fromCache
-        );
-
         setMessages(
           snapshot.docs.map((doc) => {
             return {
@@ -289,6 +283,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
               placeholder="Повідомлення..."
               onChangeText={setInputMessage}
               ref={input}
+              selectionColor="black"
             />
             <TouchableOpacity style={{ marginRight: 16 }} onPress={sendMessage}>
               <Ionicons name="send" size={24} color="black" />

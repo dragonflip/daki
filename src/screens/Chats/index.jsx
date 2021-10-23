@@ -10,6 +10,7 @@ import {
 
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import moment from "moment";
 
 // Styles
@@ -23,88 +24,12 @@ export default function ChatsScreen({ navigation }) {
   useEffect(() => {
     AppState.addEventListener("change", handleAppStateChange);
 
-    // db.collection("chats").add({
-    //   from_user: {
-    //     name: "Святік",
-    //     user_id: 22,
-    //     online: true,
-    //     profilePhoto: "",
-    //   },
-    //   to_user: {
-    //     name: "Вадік",
-    //     user_id: 33,
-    //     online: false,
-    //     profilePhoto: "",
-    //   },
-    //   message: "Це получаєця тест",
-    //   date: firebase.firestore.Timestamp.now(),
-    //   has_read: true,
-    // });
-
-    // db.collection("chats").add({
-    //   group: false,
-    //   groupName: "",
-    //   groupPhoto: "",
-    //   membersId: [auth.currentUser?.uid, 22],
-    //   members: [
-    //     {
-    //       userId: auth.currentUser?.uid,
-    //       name: "Вадік",
-    //       online: false,
-    //       profilePhoto: "",
-    //     },
-    //     {
-    //       userId: 22,
-    //       name: "Святік",
-    //       online: true,
-    //       profilePhoto: "",
-    //     },
-    //   ],
-    //   messages: [
-    //     {
-    //       messageId: db.collection("chats").doc().id,
-    //       userId: auth.currentUser?.uid,
-    //       message: "Ого, а це чат",
-    //       hasRead: true,
-    //       date: firebase.firestore.Timestamp.now(),
-    //     },
-    //     {
-    //       messageId: db.collection("chats").doc().id,
-    //       userId: 22,
-    //       message: "Та да, получаєця шо чат",
-    //       hasRead: false,
-    //       date: firebase.firestore.Timestamp.now(),
-    //     },
-    //   ],
-    // });
-
-    // Create chat
-    // db.collection("chats")
-    //   .add({
-    //     group: false,
-    //     groupName: "",
-    //     groupPhoto: "",
-    //     timestamp: "",
-    //   })
-    //   .then((doc) => {
-    //     // Write message to chat
-    //     db.collection("chats").doc(doc.id).collection("messages").add({
-    //       userId: 333,
-    //       message: "Дуже круте",
-    //       timestamp: firebase.firestore.Timestamp.now(),
-    //     });
-
-    //     // Add member to chat group
-    //     db.collection("chats").doc(doc.id).collection("members").add({
-    //       userId: 333,
-    //       name: "Вадік",
-    //       timestamp: firebase.firestore.Timestamp.now(),
-    //     });
-    //   });
-
     let usersSnapshotUnsubscribe,
       messagesSnapshotUnsubscribe,
       unreadCountSnapshotUnsubscribe;
+
+    let notifications = false;
+    let lastMessageTimestamp = 0;
 
     // Select chats where I'm member
     const chatsSnapshotUnsubscribe = db
@@ -147,7 +72,7 @@ export default function ChatsScreen({ navigation }) {
             .doc(chat.id)
             .collection("messages")
             .orderBy("timestamp", "desc")
-            .limit(1)
+            .limit(20) // Caching messages
             .onSnapshot((messages) => {
               // Chat data
               chatData = {
@@ -161,6 +86,21 @@ export default function ChatsScreen({ navigation }) {
 
               allChats[chat.id] = chatData;
               setChats(Object.values(allChats));
+
+              // Vibrate if new message
+              if (
+                messages.docs[0].data().userId !== auth.currentUser?.uid &&
+                messages.docs[0].data().seen === false &&
+                messages.docs[0].data().timestamp.seconds >
+                  lastMessageTimestamp &&
+                notifications
+              ) {
+                Haptics.notificationAsync();
+              } else {
+                notifications = true;
+              }
+
+              lastMessageTimestamp = messages.docs[0].data().timestamp.seconds;
             });
 
           // Get unread messages count
