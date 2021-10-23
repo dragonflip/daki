@@ -163,7 +163,7 @@ export default function ChatsScreen({ navigation }) {
               allChats[chat.id] = chatData;
               setChats(Object.values(allChats));
 
-              console.log(Object.values(allChats));
+              // console.log(Object.values(allChats));
             });
         });
 

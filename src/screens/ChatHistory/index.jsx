@@ -19,7 +19,7 @@ import Moment from "react-moment";
 import styles from "./styles";
 // Firebase
 import { firebase, db, auth } from "../../firebase";
-// KeyboardAvoider
+// Components
 import KeyboardAvoider from "../../components/KeyboardAvoider";
 
 export default function ChatHistoryScreen({ navigation, route }) {
@@ -130,20 +130,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
         });
       });
 
-    // Update message seen
-    // TODO inside snapshot
-    db.collection("chats")
-      .doc(route.params.chatId)
-      .collection("messages")
-      .where("userId", "!=", auth.currentUser?.uid)
-      .where("seen", "==", false)
-      .get()
-      .then((messages) => {
-        messages.docs.forEach((message) => {
-          message.ref.update({ seen: true });
-        });
-      });
-
     // Get messages
     const messagesSnapshotUnsubscribe = db
       .collection("chats")
@@ -160,6 +146,19 @@ export default function ChatHistoryScreen({ navigation, route }) {
             };
           })
         );
+
+        // Update message seen
+        db.collection("chats")
+          .doc(route.params.chatId)
+          .collection("messages")
+          .where("userId", "!=", auth.currentUser?.uid)
+          .where("seen", "==", false)
+          .get()
+          .then((messages) => {
+            messages.docs.forEach((message) => {
+              message.ref.update({ seen: true });
+            });
+          });
       });
 
     return () => {
@@ -174,6 +173,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
       message: inputMessage,
       timestamp: firebase.firestore.Timestamp.now(),
       userId: auth.currentUser?.uid,
+      seen: false,
     });
 
     setInputMessage("");
