@@ -14,6 +14,7 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import moment from "moment";
 import "moment/locale/uk";
 import Moment from "react-moment";
 
@@ -139,15 +140,36 @@ export default function ChatHistoryScreen({ navigation, route }) {
       .collection("messages")
       .orderBy("timestamp", "desc")
       .onSnapshot((snapshot) => {
-        setMessages(
-          snapshot.docs.map((doc) => {
-            return {
-              id: doc.id,
-              me: doc.data().userId == auth.currentUser?.uid,
-              ...doc.data(),
-            };
-          })
-        );
+        // All messages
+        let allMessages = snapshot.docs.map((doc) => {
+          return {
+            id: doc.id,
+            me: doc.data().userId == auth.currentUser?.uid,
+            ...doc.data(),
+          };
+        });
+
+        // Date chips
+        let prevMessageDate = "";
+
+        snapshot.docs.reverse().forEach((doc, index) => {
+          let messageDateChip = false;
+
+          if (
+            prevMessageDate !=
+            moment.unix(doc.data().timestamp.seconds).format("DD.MM.YYYY")
+          ) {
+            prevMessageDate = moment
+              .unix(doc.data().timestamp.seconds)
+              .format("DD.MM.YYYY");
+            messageDateChip = true;
+          }
+
+          allMessages[allMessages.length - index - 1].dateChip =
+            messageDateChip;
+        });
+
+        setMessages(allMessages);
 
         // Update message seen
         db.collection("chats")
@@ -234,41 +256,58 @@ export default function ChatHistoryScreen({ navigation, route }) {
             keyboardShouldPersistTaps="handled"
             inverted={true}
             renderItem={({ item }) => (
-              <TouchableOpacity
-                style={item.me ? styles.messageFromMe : styles.messageToMe}
-                activeOpacity={0.5}
-                onLongPress={() => deleteMessage(item.id)}
-                disabled={!item.me}
-              >
-                <Text
-                  style={
-                    item.me ? styles.messageTextFromMe : styles.messageTextToMe
-                  }
-                >
-                  {item.message}
-                </Text>
-                <Text style={styles.messageTime}>
-                  <Moment element={Text} unix format="HH:mm">
-                    {item.timestamp}
-                  </Moment>
-                </Text>
-
-                {item.me && item.seen ? (
-                  <Ionicons
-                    name="checkmark-done"
-                    size={16}
-                    color="#aaa"
-                    style={{ alignSelf: "flex-end", height: 15 }}
-                  />
-                ) : item.me ? (
-                  <Ionicons
-                    name="checkmark"
-                    size={16}
-                    color="#aaa"
-                    style={{ alignSelf: "flex-end", height: 15 }}
-                  />
+              <View>
+                {item.dateChip ? (
+                  <View style={styles.messageDateChip}>
+                    <Moment
+                      element={Text}
+                      unix
+                      format="DD.MM.YYYY"
+                      style={styles.messageDateChipText}
+                    >
+                      {item.timestamp.seconds}
+                    </Moment>
+                  </View>
                 ) : null}
-              </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={item.me ? styles.messageFromMe : styles.messageToMe}
+                  activeOpacity={0.5}
+                  onLongPress={() => deleteMessage(item.id)}
+                  disabled={!item.me}
+                >
+                  <Text
+                    style={
+                      item.me
+                        ? styles.messageTextFromMe
+                        : styles.messageTextToMe
+                    }
+                  >
+                    {item.message}
+                  </Text>
+                  <Text style={styles.messageTime}>
+                    <Moment element={Text} unix format="HH:mm">
+                      {item.timestamp}
+                    </Moment>
+                  </Text>
+
+                  {item.me && item.seen ? (
+                    <Ionicons
+                      name="checkmark-done"
+                      size={16}
+                      color="#aaa"
+                      style={{ alignSelf: "flex-end", height: 15 }}
+                    />
+                  ) : item.me ? (
+                    <Ionicons
+                      name="checkmark"
+                      size={16}
+                      color="#aaa"
+                      style={{ alignSelf: "flex-end", height: 15 }}
+                    />
+                  ) : null}
+                </TouchableOpacity>
+              </View>
             )}
           />
 

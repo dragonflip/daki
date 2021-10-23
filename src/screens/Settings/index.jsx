@@ -279,7 +279,9 @@ export default function SettingsScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
 
-          <Text style={{ textAlign: "center", color: "grey", marginTop: 32 }}>
+          <Text
+            style={{ textAlign: "center", color: "grey", marginVertical: 32 }}
+          >
             Версія: {Constants.manifest.version}
           </Text>
         </View>

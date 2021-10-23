@@ -179,13 +179,10 @@ export default function ChatsScreen({ navigation }) {
   };
 
   const dateFormat = (seconds) => {
-    if (
-      moment.unix(moment().unix()).format("DD.MM.YYYY") !=
-      moment.unix(seconds).format("DD.MM.YYYY")
-    ) {
-      return moment.unix(seconds).format("DD.MM.YYYY");
-    } else {
+    if (moment.unix(moment().unix()).isSame(moment.unix(seconds), "date")) {
       return moment.unix(seconds).format("HH:mm");
+    } else {
+      return moment.unix(seconds).format("DD.MM.YYYY");
     }
   };
 

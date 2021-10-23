@@ -6,6 +6,18 @@ export default StyleSheet.create({
     backgroundColor: "#fff",
   },
 
+  messageDateChip: {
+    alignSelf: "center",
+    marginVertical: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: "tomato",
+  },
+  messageDateChipText: {
+    color: "white",
+  },
+
   messageFromMe: {
     backgroundColor: "black",
     alignSelf: "flex-end",
