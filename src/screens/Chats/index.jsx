@@ -102,44 +102,43 @@ export default function ChatsScreen({ navigation }) {
     //     });
     //   });
 
-    let membersSnapshotUnsubscribe,
-      usersSnapshotUnsubscribe,
-      messagesSnapshotUnsubscribe;
+    let usersSnapshotUnsubscribe,
+      messagesSnapshotUnsubscribe,
+      unreadCountSnapshotUnsubscribe;
+
+    // Select chats where I'm member
     const chatsSnapshotUnsubscribe = db
       .collection("chats")
+      .where("members", "array-contains", auth.currentUser?.uid)
       .onSnapshot((chatsSnapshot) => {
         let allChats = {};
 
         chatsSnapshot.docs.forEach((chat) => {
           let chatData = {};
 
-          // Get member
-          membersSnapshotUnsubscribe = db
-            .collection("chats")
-            .doc(chat.id)
-            .collection("members")
-            .where("userId", "!=", auth.currentUser?.uid)
-            .limit(1)
-            .onSnapshot((members) => {
-              usersSnapshotUnsubscribe = db
-                .collection("users")
-                .doc(members.docs[0].data().userId)
-                .onSnapshot((users) => {
-                  // Chat data
-                  if (users.exists) {
-                    chatData = {
-                      ...chatData,
-                      id: chat.id,
-                      name: users.data().name,
-                      photo: users.data().profilePhoto,
-                      online: users.data().online === true,
-                      userId: users.id,
-                    };
+          const userId = chat
+            .data()
+            .members.filter((member) => member != auth.currentUser?.uid)[0];
 
-                    allChats[chat.id] = chatData;
-                    setChats(Object.values(allChats));
-                  }
-                });
+          // Get chat user info
+          usersSnapshotUnsubscribe = db
+            .collection("users")
+            .doc(userId)
+            .onSnapshot((users) => {
+              // Chat data
+              if (users.exists) {
+                chatData = {
+                  ...chatData,
+                  id: chat.id,
+                  name: users.data().name,
+                  photo: users.data().profilePhoto,
+                  online: users.data().online === true,
+                  userId: users.id,
+                };
+
+                allChats[chat.id] = chatData;
+                setChats(Object.values(allChats));
+              }
             });
 
           // Get message
@@ -217,11 +216,13 @@ export default function ChatsScreen({ navigation }) {
     //   });
 
     return () => {
-      chatsSnapshotUnsubscribe();
-      membersSnapshotUnsubscribe();
-      usersSnapshotUnsubscribe();
-      messagesSnapshotUnsubscribe();
-      unreadCountSnapshotUnsubscribe();
+      // TODO fix this try-catch
+      try {
+        chatsSnapshotUnsubscribe();
+        usersSnapshotUnsubscribe();
+        messagesSnapshotUnsubscribe();
+        unreadCountSnapshotUnsubscribe();
+      } catch {}
 
       AppState.removeEventListener("change", handleAppStateChange);
     };
@@ -252,65 +253,80 @@ export default function ChatsScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar style="auto" />
 
-      <FlatList
-        data={chats}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.chat}
-            activeOpacity={0.8}
-            onPress={() =>
-              navigation.navigate("ChatHistory", {
-                chatId: item.id,
-                userId: item.userId,
-              })
-            }
-          >
-            <Image
-              style={styles.chat_photo}
-              source={{
-                uri: item.photo,
-              }}
-            />
+      {chats.length > 0 ? (
+        <FlatList
+          data={chats}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.chat}
+              activeOpacity={0.5}
+              onPress={() =>
+                navigation.navigate("ChatHistory", {
+                  chatId: item.id,
+                  userId: item.userId,
+                })
+              }
+            >
+              <Image
+                style={styles.chat_photo}
+                source={{
+                  uri: item.photo,
+                }}
+              />
 
-            {item.online ? <View style={styles.chat_online}></View> : null}
+              {item.online ? <View style={styles.chat_online}></View> : null}
 
-            <View style={styles.chat_info}>
-              <View style={styles.chat_name_date_status}>
-                <Text style={styles.chat_name}>{item.name}</Text>
+              <View style={styles.chat_info}>
+                <View style={styles.chat_name_date_status}>
+                  <Text style={styles.chat_name}>{item.name}</Text>
 
-                <View style={styles.chat_date_status}>
-                  {item.me && item.seen ? (
-                    <Ionicons name="checkmark-done" size={20} color="green" />
-                  ) : item.me ? (
-                    <Ionicons name="checkmark" size={20} color="green" />
-                  ) : null}
+                  <View style={styles.chat_date_status}>
+                    {item.me && item.seen ? (
+                      <Ionicons name="checkmark-done" size={20} color="green" />
+                    ) : item.me ? (
+                      <Ionicons name="checkmark" size={20} color="green" />
+                    ) : null}
 
-                  <Text style={styles.chat_date}>
-                    {dateFormat(item.timestamp?.seconds)}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.chat_message_unreadCount}>
-                <Text style={styles.chat_message} numberOfLines={2}>
-                  {item.me ? (
-                    <Text style={{ fontWeight: "bold" }}>Я: </Text>
-                  ) : null}
-                  {item.message}
-                </Text>
-                {item.unreadCount > 0 ? (
-                  <View style={styles.chat_unreadCount}>
-                    <Text style={styles.chat_unreadCountText}>
-                      {item.unreadCount}
+                    <Text style={styles.chat_date}>
+                      {dateFormat(item.timestamp?.seconds)}
                     </Text>
                   </View>
-                ) : null}
+                </View>
+
+                <View style={styles.chat_message_unreadCount}>
+                  <Text style={styles.chat_message} numberOfLines={2}>
+                    {item.me ? (
+                      <Text style={{ fontWeight: "bold" }}>Я: </Text>
+                    ) : null}
+                    {item.message}
+                  </Text>
+                  {item.unreadCount > 0 ? (
+                    <View style={styles.chat_unreadCount}>
+                      <Text style={styles.chat_unreadCountText}>
+                        {item.unreadCount}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
+          )}
+        />
+      ) : (
+        <View
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            flex: 1,
+          }}
+        >
+          <Text style={{ color: "grey", fontSize: 20 }}>Чати відсутні</Text>
+          <TouchableOpacity>
+            <Text style={{ color: "blue" }}>Створити новий</Text>
           </TouchableOpacity>
-        )}
-      />
+        </View>
+      )}
     </View>
   );
 }
