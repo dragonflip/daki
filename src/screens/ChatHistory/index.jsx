@@ -212,7 +212,11 @@ export default function ChatHistoryScreen({ navigation, route }) {
       <StatusBar style="auto" />
 
       <SafeAreaView style={{ flex: 1, paddingBottom: 8 }}>
-        <KeyboardAvoider style={styles.container} topSpacing={-24}>
+        <KeyboardAvoider
+          style={styles.container}
+          hasScrollable={true}
+          topSpacing={-24}
+        >
           <FlatList
             data={messages}
             keyExtractor={(item) => item.id}

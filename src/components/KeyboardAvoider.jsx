@@ -2,8 +2,14 @@
 // iOS Keyboard Avoider
 // ======================
 import React, { useEffect, useRef } from "react";
-import { Keyboard, View, Animated, Easing, Platform } from "react-native";
-import { TapGestureHandler } from "react-native-gesture-handler";
+import {
+  Keyboard,
+  View,
+  Animated,
+  Easing,
+  Platform,
+  TouchableWithoutFeedback,
+} from "react-native";
 
 export default function KeyboardAvoider(props) {
   const anim = useRef(new Animated.Value(0)).current;
@@ -45,14 +51,21 @@ export default function KeyboardAvoider(props) {
     };
   });
 
-  return (
-    <TapGestureHandler onActivated={() => Keyboard.dismiss()}>
+  return props.hasScrollable === true ? (
+    <View style={[props.style, { alignSelf: "stretch" }]}>
+      {props.children}
+      {Platform.OS === "ios" ? (
+        <Animated.View style={{ height: anim }}></Animated.View>
+      ) : null}
+    </View>
+  ) : (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={[props.style, { alignSelf: "stretch" }]}>
         {props.children}
         {Platform.OS === "ios" ? (
           <Animated.View style={{ height: anim }}></Animated.View>
         ) : null}
       </View>
-    </TapGestureHandler>
+    </TouchableWithoutFeedback>
   );
 }
