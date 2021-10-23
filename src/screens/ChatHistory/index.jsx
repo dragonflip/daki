@@ -8,6 +8,7 @@ import {
   View,
   Image,
   Platform,
+  Alert,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -180,22 +181,53 @@ export default function ChatHistoryScreen({ navigation, route }) {
     input.current.clear();
   };
 
+  // Delete message
+  const deleteMessage = (messageId) => {
+    Alert.alert(
+      "Видалити повідомлення?",
+      "Повідомлення буде видалено для всіх",
+      [
+        {
+          text: "Скасувати",
+          style: "cancel",
+        },
+        {
+          text: "Видалити",
+          style: "destructive",
+          onPress: async () => {
+            await db
+              .collection("chats")
+              .doc(route.params.chatId)
+              .collection("messages")
+              .doc(messageId)
+              .delete();
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
 
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoider style={styles.container} topSpacing={-32}>
+      <SafeAreaView style={{ flex: 1, paddingBottom: 8 }}>
+        <KeyboardAvoider style={styles.container} topSpacing={-24}>
           <FlatList
             data={messages}
             keyExtractor={(item) => item.id}
             contentContainerStyle={{
-              flex: 1,
-              flexDirection: "column-reverse",
               paddingBottom: 8,
             }}
+            keyboardShouldPersistTaps="handled"
+            inverted={true}
             renderItem={({ item }) => (
-              <View style={item.me ? styles.messageFromMe : styles.messageToMe}>
+              <TouchableOpacity
+                style={item.me ? styles.messageFromMe : styles.messageToMe}
+                activeOpacity={0.5}
+                onLongPress={() => deleteMessage(item.id)}
+                disabled={!item.me}
+              >
                 <Text
                   style={
                     item.me ? styles.messageTextFromMe : styles.messageTextToMe
@@ -224,11 +256,13 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     style={{ alignSelf: "flex-end", height: 15 }}
                   />
                 ) : null}
-              </View>
+              </TouchableOpacity>
             )}
-          ></FlatList>
+          />
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View
+            style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
+          >
             <TextInput
               style={{
                 borderColor: "#eee",
