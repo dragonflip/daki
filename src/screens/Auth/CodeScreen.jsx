@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Text, View, Image, TextInput } from "react-native";
+import { Text, View, Image, TextInput, Platform } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 // Firebase
 import { firebase, db } from "../../firebase";
@@ -10,6 +9,7 @@ import { firebase, db } from "../../firebase";
 import styles from "./styles";
 // Components
 import ButtonWithLoading from "../../components/ButtonWithLoading";
+import KeyboardAvoider from "../../components/KeyboardAvoider";
 
 export default function AuthCodeScreen({ navigation, route }) {
   const [code, setCode] = useState("");
@@ -33,7 +33,7 @@ export default function AuthCodeScreen({ navigation, route }) {
       setLoading(false);
     })();
 
-    setTimeout(() => input.current.focus(), 1);
+    if (Platform.OS !== "ios") setTimeout(() => input.current.focus(), 1);
   }, []);
 
   // Confirm SMS verification code
@@ -73,12 +73,7 @@ export default function AuthCodeScreen({ navigation, route }) {
     >
       <StatusBar style="auto" />
 
-      <KeyboardAwareScrollView
-        contentContainerStyle={styles.container}
-        style={{ width: "100%" }}
-        keyboardShouldPersistTaps="handled"
-        scrollEnabled={false}
-      >
+      <KeyboardAvoider style={styles.container}>
         <Image
           source={require("../../../assets/logo.png")}
           style={{ width: 150, height: 150 }}
@@ -95,6 +90,7 @@ export default function AuthCodeScreen({ navigation, route }) {
           keyboardType="number-pad"
           ref={input}
           maxLength={6}
+          autoFocus={Platform.OS === "ios"}
         />
 
         <ButtonWithLoading
@@ -102,7 +98,7 @@ export default function AuthCodeScreen({ navigation, route }) {
           onPress={confirmVerificationCode}
           loading={loading}
         />
-      </KeyboardAwareScrollView>
+      </KeyboardAvoider>
     </View>
   );
 }

@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Text, View, Image, TextInput } from "react-native";
+import { Text, View, Image, TextInput, Platform } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 // Firebase
 import { firebase, auth, db } from "../../firebase";
@@ -10,6 +9,7 @@ import { firebase, auth, db } from "../../firebase";
 import styles from "./styles";
 // Components
 import ButtonWithLoading from "../../components/ButtonWithLoading";
+import KeyboardAvoider from "../../components/KeyboardAvoider";
 
 export default function AuthWelcomeScreen({ navigation, route }) {
   const [name, setName] = useState("");
@@ -19,7 +19,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
 
   // Init
   useEffect(() => {
-    setTimeout(() => input.current.focus(), 1);
+    if (Platform.OS !== "ios") setTimeout(() => input.current.focus(), 1);
   }, []);
 
   // User registration
@@ -57,12 +57,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
     >
       <StatusBar style="auto" />
 
-      <KeyboardAwareScrollView
-        contentContainerStyle={styles.container}
-        style={{ width: "100%" }}
-        keyboardShouldPersistTaps="handled"
-        scrollEnabled={false}
-      >
+      <KeyboardAvoider style={styles.container}>
         <Image
           source={require("../../../assets/logo.png")}
           style={{ width: 150, height: 150 }}
@@ -76,6 +71,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
           onChangeText={setName}
           ref={input}
           maxLength={20}
+          autoFocus={Platform.OS === "ios"}
         />
 
         <ButtonWithLoading
@@ -83,7 +79,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
           onPress={userSignup}
           loading={loading}
         />
-      </KeyboardAwareScrollView>
+      </KeyboardAvoider>
     </View>
   );
 }

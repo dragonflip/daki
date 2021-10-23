@@ -4,7 +4,6 @@ import { Text, View, Image, TextInput } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 // Firebase
 import { firebase, auth, db } from "../../firebase";
@@ -12,6 +11,7 @@ import { firebase, auth, db } from "../../firebase";
 import styles from "./styles";
 // Components
 import ButtonWithLoading from "../../components/ButtonWithLoading";
+import KeyboardAvoider from "../../components/KeyboardAvoider";
 
 export default function AuthPhoneScreen({ navigation }) {
   const [phone, setPhone] = useState(null);
@@ -90,12 +90,7 @@ export default function AuthPhoneScreen({ navigation }) {
         androidHardwareAccelerationDisabled={true}
       />
 
-      <KeyboardAwareScrollView
-        contentContainerStyle={styles.container}
-        style={{ width: "100%" }}
-        keyboardShouldPersistTaps="handled"
-        scrollEnabled={false}
-      >
+      <KeyboardAvoider style={styles.container}>
         <Image
           source={require("../../../assets/logo.png")}
           style={{ width: 150, height: 150 }}
@@ -120,7 +115,7 @@ export default function AuthPhoneScreen({ navigation }) {
           onPress={sendVerificationCode}
           loading={loading}
         />
-      </KeyboardAwareScrollView>
+      </KeyboardAvoider>
     </View>
   );
 }

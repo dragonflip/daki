@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
   Image,
+  Platform,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -18,6 +19,8 @@ import Moment from "react-moment";
 import styles from "./styles";
 // Firebase
 import { firebase, db, auth } from "../../firebase";
+// KeyboardAvoider
+import KeyboardAvoider from "../../components/KeyboardAvoider";
 
 export default function ChatHistoryScreen({ navigation, route }) {
   const [messages, setMessages] = useState([]);
@@ -182,72 +185,69 @@ export default function ChatHistoryScreen({ navigation, route }) {
       <StatusBar style="auto" />
 
       <SafeAreaView style={{ flex: 1 }}>
-        <FlatList
-          data={messages}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{
-            flex: 1,
-            flexDirection: "column-reverse",
-            paddingBottom: 8,
-          }}
-          renderItem={({ item }) => (
-            <View style={item.me ? styles.messageFromMe : styles.messageToMe}>
-              <Text
-                style={
-                  item.me ? styles.messageTextFromMe : styles.messageTextToMe
-                }
-              >
-                {item.message}
-              </Text>
-              <Text style={styles.messageTime}>
-                <Moment element={Text} unix format="HH:mm">
-                  {item.timestamp}
-                </Moment>
-              </Text>
-
-              {item.me && item.seen ? (
-                <Ionicons
-                  name="checkmark-done"
-                  size={16}
-                  color="#aaa"
-                  style={{ alignSelf: "flex-end", height: 15 }}
-                />
-              ) : item.me ? (
-                <Ionicons
-                  name="checkmark"
-                  size={16}
-                  color="#aaa"
-                  style={{ alignSelf: "flex-end", height: 15 }}
-                />
-              ) : null}
-            </View>
-          )}
-        ></FlatList>
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <TextInput
-            style={{
-              borderColor: "#eee",
-              borderWidth: 2,
-              borderRadius: 44,
-              height: 44,
-              paddingHorizontal: 16,
-              marginHorizontal: 16,
+        <KeyboardAvoider style={styles.container} topSpacing={-32}>
+          <FlatList
+            data={messages}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{
               flex: 1,
+              flexDirection: "column-reverse",
+              paddingBottom: 8,
             }}
-            placeholder="Повідомлення..."
-            onChangeText={setInputMessage}
-            ref={input}
-          />
-          <TouchableOpacity style={{ marginRight: 16 }} onPress={sendMessage}>
-            <Ionicons name="send" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
+            renderItem={({ item }) => (
+              <View style={item.me ? styles.messageFromMe : styles.messageToMe}>
+                <Text
+                  style={
+                    item.me ? styles.messageTextFromMe : styles.messageTextToMe
+                  }
+                >
+                  {item.message}
+                </Text>
+                <Text style={styles.messageTime}>
+                  <Moment element={Text} unix format="HH:mm">
+                    {item.timestamp}
+                  </Moment>
+                </Text>
+
+                {item.me && item.seen ? (
+                  <Ionicons
+                    name="checkmark-done"
+                    size={16}
+                    color="#aaa"
+                    style={{ alignSelf: "flex-end", height: 15 }}
+                  />
+                ) : item.me ? (
+                  <Ionicons
+                    name="checkmark"
+                    size={16}
+                    color="#aaa"
+                    style={{ alignSelf: "flex-end", height: 15 }}
+                  />
+                ) : null}
+              </View>
+            )}
+          ></FlatList>
+
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TextInput
+              style={{
+                borderColor: "#eee",
+                borderWidth: 2,
+                borderRadius: 44,
+                height: 44,
+                paddingHorizontal: 16,
+                marginHorizontal: 16,
+                flex: 1,
+              }}
+              placeholder="Повідомлення..."
+              onChangeText={setInputMessage}
+              ref={input}
+            />
+            <TouchableOpacity style={{ marginRight: 16 }} onPress={sendMessage}>
+              <Ionicons name="send" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoider>
       </SafeAreaView>
     </View>
   );
