@@ -18,8 +18,8 @@ export default StyleSheet.create({
     marginVertical: 2,
 
     borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
 
     alignItems: "flex-end",
     flexDirection: "row",
@@ -38,8 +38,8 @@ export default StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 2,
 
+    borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
 
     alignItems: "flex-end",
