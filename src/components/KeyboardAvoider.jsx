@@ -27,7 +27,7 @@ export default function KeyboardAvoider(props) {
         if (debug) console.log("Keyboard will show");
 
         Animated.timing(anim, {
-          toValue: e.endCoordinates.height + props.topSpacing,
+          toValue: e.endCoordinates.height + (props.topSpacing ?? 0),
           ...animationParams,
         }).start();
       }
