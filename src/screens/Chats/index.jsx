@@ -162,13 +162,29 @@ export default function ChatsScreen({ navigation }) {
 
               allChats[chat.id] = chatData;
               setChats(Object.values(allChats));
+            });
+
+          // Get unread messages count
+          unreadCountSnapshotUnsubscribe = db
+            .collection("chats")
+            .doc(chat.id)
+            .collection("messages")
+            .where("userId", "!=", auth.currentUser?.uid)
+            .where("seen", "==", false)
+            .onSnapshot((unreadMessages) => {
+              // Chat data
+              chatData = {
+                ...chatData,
+                id: chat.id,
+                unreadCount: unreadMessages.docs.length,
+              };
+
+              allChats[chat.id] = chatData;
+              setChats(Object.values(allChats));
 
               // console.log(Object.values(allChats));
             });
         });
-
-        // setChats(allChats);
-        // console.log(allChats);
       });
 
     // Get name and photo
@@ -200,37 +216,12 @@ export default function ChatsScreen({ navigation }) {
     //     chat.timestamp = snapshot.docs[0].data().timestamp;
     //   });
 
-    // (async () => {
-    // const chats = await db.collection("chats").get();
-    // console.log(chats.docs.map((chat) => chat.data()));
-
-    // chats.docs.forEach(async (chat) => {
-    // db
-    //   .collection("chats")
-    //   .doc(chat.id)
-    //   .collection("messages")
-    //   .orderBy("timestamp", "desc")
-    //   .limit(1)
-    //   .onSnapshot((snapshot) => {
-    //     console.log(snapshot.docs[0].data());
-    //   });
-    // console.log(messages.docs.map((chat) => chat.data()));
-    // });
-    // await db
-    //   .collection("chats")
-    //   .doc("Klj95wUlYkwp6oHdTt6X")
-    //   .collection("messages")
-    //   .add({
-    //     message: "Тест",
-    //   });
-    // console.log(chats.empty);
-    // })();
-
     return () => {
       chatsSnapshotUnsubscribe();
       membersSnapshotUnsubscribe();
       usersSnapshotUnsubscribe();
       messagesSnapshotUnsubscribe();
+      unreadCountSnapshotUnsubscribe();
 
       AppState.removeEventListener("change", handleAppStateChange);
     };
@@ -301,12 +292,21 @@ export default function ChatsScreen({ navigation }) {
                 </View>
               </View>
 
-              <Text style={styles.chat_message} numberOfLines={2}>
-                {item.me ? (
-                  <Text style={{ fontWeight: "bold" }}>Я: </Text>
+              <View style={styles.chat_message_unreadCount}>
+                <Text style={styles.chat_message} numberOfLines={2}>
+                  {item.me ? (
+                    <Text style={{ fontWeight: "bold" }}>Я: </Text>
+                  ) : null}
+                  {item.message}
+                </Text>
+                {item.unreadCount > 0 ? (
+                  <View style={styles.chat_unreadCount}>
+                    <Text style={styles.chat_unreadCountText}>
+                      {item.unreadCount}
+                    </Text>
+                  </View>
                 ) : null}
-                {item.message}
-              </Text>
+              </View>
             </View>
           </TouchableOpacity>
         )}

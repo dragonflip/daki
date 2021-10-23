@@ -46,10 +46,28 @@ export default StyleSheet.create({
     marginLeft: 4,
     color: "grey",
   },
+
+  chat_message_unreadCount: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   chat_message: {
     flexDirection: "column",
     height: 36,
     color: "grey",
+  },
+  chat_unreadCount: {
+    width: 20,
+    height: 20,
+    borderRadius: 20,
+    backgroundColor: "green",
+    justifyContent: "center",
+  },
+  chat_unreadCountText: {
+    color: "white",
+    textAlign: "center",
+    fontSize: 12,
+    includeFontPadding: false,
   },
 
   chat_online: {
