@@ -9,6 +9,7 @@ import {
   Image,
   Platform,
   Alert,
+  TouchableWithoutFeedback,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -29,6 +30,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const input = useRef();
+  const [showDropdown, setShowDropdown] = useState(false);
 
   // Init
   useEffect(() => {
@@ -156,7 +158,11 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 )}
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowDropdown((showDropdown) => !showDropdown);
+                }}
+              >
                 <MaterialCommunityIcons
                   name="dots-vertical"
                   size={24}
@@ -274,6 +280,43 @@ export default function ChatHistoryScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
+
+      {showDropdown ? (
+        <TouchableWithoutFeedback
+          onPress={() => setShowDropdown((showDropdown) => !showDropdown)}
+        >
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 1000,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                zIndex: 2000,
+                backgroundColor: "#fff",
+                borderRadius: 16,
+                padding: 16,
+              }}
+            >
+              <TouchableOpacity
+                style={{ flexDirection: "row", alignItems: "center" }}
+              >
+                <MaterialCommunityIcons name="delete" size={24} color="red" />
+                <Text style={{ color: "red" }}>Видалити чат</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      ) : null}
 
       <SafeAreaView style={{ flex: 1, paddingBottom: 8 }}>
         <KeyboardAvoider
