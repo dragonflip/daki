@@ -33,10 +33,7 @@ export default function AuthPhoneScreen({ navigation }) {
 
       // Update online status
       if (user && userDoc.exists) {
-        await db
-          .collection("users")
-          .doc(auth.currentUser?.uid)
-          .update({ online: true });
+        await userDoc.ref.update({ online: true });
 
         if (navigation.isFocused()) {
           navigation.replace("Home");

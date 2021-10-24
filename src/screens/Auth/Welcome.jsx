@@ -29,6 +29,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
 
       // Add new user
       db.collection("users").doc(auth.currentUser?.uid).set({
+        userId: auth.currentUser?.uid,
         phone: auth.currentUser?.phoneNumber,
         name: name,
         profilePhoto: "",

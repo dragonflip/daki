@@ -8,17 +8,20 @@ export default StyleSheet.create({
 
   chat: {
     alignSelf: "stretch",
-    backgroundColor: "#eee",
+    // backgroundColor: "#eee",
     height: 72,
     flexDirection: "row",
     padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
   },
 
   chat_photo: {
-    backgroundColor: "#aaa",
     width: 56,
     height: 56,
     borderRadius: 56,
+    alignItems: "center",
+    justifyContent: "center",
   },
   chat_info: {
     flexDirection: "column",

@@ -126,35 +126,6 @@ export default function ChatsScreen({ navigation }) {
         });
       });
 
-    // Get name and photo
-    // db.collection("chats")
-    //   .doc("HY2T1KEhlOoOhZHhsIwl")
-    //   .collection("members")
-    //   .where("userId", "!=", auth.currentUser?.uid)
-    //   .limit(1)
-    //   .onSnapshot((snapshot) => {
-    //     // console.log(snapshot.docs[0].data());
-    //     setChats([
-    //       {
-    //         ...chats,
-    //         name: snapshot.docs[0].data().name,
-    //         profilePhoto: "",
-    //       },
-    //     ]);
-    //   });
-
-    // Get last message and date
-    // db.collection("chats")
-    //   .doc("HY2T1KEhlOoOhZHhsIwl")
-    //   .collection("messages")
-    //   .orderBy("timestamp", "desc")
-    //   .limit(1)
-    //   .onSnapshot((snapshot) => {
-    //     console.log(snapshot.docs[0].data());
-    //     chat.message = snapshot.docs[0].data().message;
-    //     chat.timestamp = snapshot.docs[0].data().timestamp;
-    //   });
-
     return () => {
       // TODO fix this try-catch
       try {
@@ -205,12 +176,20 @@ export default function ChatsScreen({ navigation }) {
                 })
               }
             >
-              <Image
-                style={styles.chat_photo}
-                source={{
-                  uri: item.photo,
-                }}
-              />
+              {item.photo != "" ? (
+                <Image
+                  style={styles.chat_photo}
+                  source={{
+                    uri: item.photo,
+                  }}
+                />
+              ) : (
+                <View style={[styles.chat_photo, { backgroundColor: "#aaa" }]}>
+                  <Text style={{ fontSize: 24, color: "white" }}>
+                    {item.name[0]}
+                  </Text>
+                </View>
+              )}
 
               {item.online ? <View style={styles.chat_online}></View> : null}
 
@@ -259,7 +238,7 @@ export default function ChatsScreen({ navigation }) {
           }}
         >
           <Text style={{ color: "grey", fontSize: 20 }}>Чати відсутні</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("CreateChat")}>
             <Text style={{ color: "blue" }}>Створити новий</Text>
           </TouchableOpacity>
         </View>

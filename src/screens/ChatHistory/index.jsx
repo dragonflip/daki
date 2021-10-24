@@ -70,18 +70,35 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     marginLeft: -8,
                   }}
                 >
-                  <Image
-                    style={{
-                      backgroundColor: "#aaa",
-                      width: 42,
-                      height: 42,
-                      borderRadius: 42,
-                      marginRight: 12,
-                    }}
-                    source={{
-                      uri: chatInfo.profilePhoto,
-                    }}
-                  />
+                  {chatInfo.profilePhoto != "" ? (
+                    <Image
+                      style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 42,
+                        marginRight: 12,
+                      }}
+                      source={{
+                        uri: chatInfo.profilePhoto,
+                      }}
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        backgroundColor: "#aaa",
+                        width: 42,
+                        height: 42,
+                        borderRadius: 42,
+                        marginRight: 12,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text style={{ fontSize: 20, color: "white" }}>
+                        {chatInfo.name[0]}
+                      </Text>
+                    </View>
+                  )}
                   <View style={{ flexDirection: "column" }}>
                     <Text style={{ fontSize: 16, fontWeight: "bold" }}>
                       {chatInfo.name}

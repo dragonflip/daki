@@ -12,7 +12,7 @@ import {
   AuthCodeScreen,
   AuthWelcomeScreen,
 } from "./screens/Auth";
-import ChatsScreen from "./screens/Chats";
+import { ChatsScreen, CreateChatScreen } from "./screens/Chats";
 import ChatHistoryScreen from "./screens/ChatHistory";
 import SettingsScreen from "./screens/Settings";
 import Profile from "./screens/Profile";
@@ -58,6 +58,7 @@ function App() {
           component={NavigationTabs}
           options={{ headerShown: false }}
         />
+
         <Stack.Screen
           name="ChatHistory"
           component={ChatHistoryScreen}
@@ -66,12 +67,14 @@ function App() {
           }}
         />
         <Stack.Screen
-        name="Profile"
-        component={ Profile }
-         options={{
-
-         }}
-      />
+          name="CreateChat"
+          component={CreateChatScreen}
+          options={{
+            headerBackTitle: "Чати",
+            headerTitle: "Створення чату",
+          }}
+        />
+        <Stack.Screen name="Profile" component={Profile} options={{}} />
       </Stack.Navigator>
     </NavigationContainer>
   );
