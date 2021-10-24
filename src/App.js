@@ -15,6 +15,7 @@ import {
 import ChatsScreen from "./screens/Chats";
 import ChatHistoryScreen from "./screens/ChatHistory";
 import SettingsScreen from "./screens/Settings";
+import Profile from "./screens/Profile";
 
 // Main App
 function App() {
@@ -64,6 +65,13 @@ function App() {
             headerBackTitle: "Чати",
           }}
         />
+        <Stack.Screen
+        name="Profile"
+        component={ Profile }
+         options={{
+
+         }}
+      />
       </Stack.Navigator>
     </NavigationContainer>
   );

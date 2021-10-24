@@ -43,7 +43,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
         // Change header
         navigation.setOptions({
           headerTitle: () => (
-            <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+            <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
               {Platform.OS === "ios" ? (
                 <View style={{ alignItems: "center" }}>
                   <Text style={{ fontSize: 16, fontWeight: "bold" }}>
