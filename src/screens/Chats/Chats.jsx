@@ -119,7 +119,12 @@ export default function ChatsScreen({ navigation }) {
               };
 
               allChats[chat.id] = chatData;
-              setChats(Object.values(allChats));
+              setChats(
+                // Sort chats by last message timestamp
+                Object.values(allChats).sort(
+                  (a, b) => b.timestamp.seconds > a.timestamp.seconds
+                )
+              );
 
               // console.log(Object.values(allChats));
             });
