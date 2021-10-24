@@ -125,18 +125,35 @@ export default function ChatHistoryScreen({ navigation, route }) {
           headerRight: () =>
             Platform.OS === "ios" ? (
               <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
-                <Image
-                  style={{
-                    backgroundColor: "#aaa",
-                    width: 32,
-                    height: 32,
-                    borderRadius: 32,
-                    marginRight: -8,
-                  }}
-                  source={{
-                    uri: chatInfo.profilePhoto,
-                  }}
-                />
+                {chatInfo.profilePhoto != "" ? (
+                  <Image
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 32,
+                      marginRight: -8,
+                    }}
+                    source={{
+                      uri: chatInfo.profilePhoto,
+                    }}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      backgroundColor: "#aaa",
+                      width: 32,
+                      height: 32,
+                      borderRadius: 32,
+                      marginRight: -8,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 20, color: "white" }}>
+                      {chatInfo.name[0]}
+                    </Text>
+                  </View>
+                )}
               </TouchableOpacity>
             ) : (
               <TouchableOpacity>
