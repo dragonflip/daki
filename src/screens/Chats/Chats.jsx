@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
 
@@ -232,14 +232,17 @@ export default function ChatsScreen({ navigation }) {
       ) : (
         <View
           style={{
+            flex: 1,
             alignItems: "center",
             justifyContent: "center",
-            flex: 1,
           }}
         >
-          <Text style={{ color: "grey", fontSize: 20 }}>Чати відсутні</Text>
+          <MaterialCommunityIcons name="chat-outline" size={128} color="grey" />
+          <Text style={{ color: "black", fontSize: 20, fontWeight: "bold" }}>
+            Немає чатів
+          </Text>
           <TouchableOpacity onPress={() => navigation.navigate("CreateChat")}>
-            <Text style={{ color: "blue" }}>Створити новий</Text>
+            <Text style={{ color: "blue" }}>Створити</Text>
           </TouchableOpacity>
         </View>
       )}

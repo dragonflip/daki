@@ -264,69 +264,93 @@ export default function ChatHistoryScreen({ navigation, route }) {
           hasScrollable={true}
           topSpacing={-24}
         >
-          <FlatList
-            data={messages}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{
-              paddingBottom: 8,
-            }}
-            keyboardShouldPersistTaps="handled"
-            inverted={true}
-            renderItem={({ item }) => (
-              <View>
-                {item.dateChip ? (
-                  <View style={styles.messageDateChip}>
-                    <Moment
-                      element={Text}
-                      unix
-                      format="DD.MM.YYYY"
-                      style={styles.messageDateChipText}
-                    >
-                      {item.timestamp.seconds}
-                    </Moment>
-                  </View>
-                ) : null}
-
-                <TouchableOpacity
-                  style={item.me ? styles.messageFromMe : styles.messageToMe}
-                  activeOpacity={0.5}
-                  onLongPress={() => deleteMessage(item.id)}
-                  disabled={!item.me}
-                >
-                  <Text
-                    style={
-                      item.me
-                        ? styles.messageTextFromMe
-                        : styles.messageTextToMe
-                    }
-                  >
-                    {item.message}
-                  </Text>
-                  <Text style={styles.messageTime}>
-                    <Moment element={Text} unix format="HH:mm">
-                      {item.timestamp}
-                    </Moment>
-                  </Text>
-
-                  {item.me && item.seen ? (
-                    <Ionicons
-                      name="checkmark-done"
-                      size={16}
-                      color="#aaa"
-                      style={{ alignSelf: "flex-end", height: 15 }}
-                    />
-                  ) : item.me ? (
-                    <Ionicons
-                      name="checkmark"
-                      size={16}
-                      color="#aaa"
-                      style={{ alignSelf: "flex-end", height: 15 }}
-                    />
+          {messages.length > 0 ? (
+            <FlatList
+              data={messages}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{
+                paddingBottom: 8,
+              }}
+              keyboardShouldPersistTaps="handled"
+              inverted={true}
+              renderItem={({ item }) => (
+                <View>
+                  {item.dateChip ? (
+                    <View style={styles.messageDateChip}>
+                      <Moment
+                        element={Text}
+                        unix
+                        format="DD.MM.YYYY"
+                        style={styles.messageDateChipText}
+                      >
+                        {item.timestamp.seconds}
+                      </Moment>
+                    </View>
                   ) : null}
-                </TouchableOpacity>
-              </View>
-            )}
-          />
+
+                  <TouchableOpacity
+                    style={item.me ? styles.messageFromMe : styles.messageToMe}
+                    activeOpacity={0.5}
+                    onLongPress={() => deleteMessage(item.id)}
+                    disabled={!item.me}
+                  >
+                    <Text
+                      style={
+                        item.me
+                          ? styles.messageTextFromMe
+                          : styles.messageTextToMe
+                      }
+                    >
+                      {item.message}
+                    </Text>
+                    <Text style={styles.messageTime}>
+                      <Moment element={Text} unix format="HH:mm">
+                        {item.timestamp}
+                      </Moment>
+                    </Text>
+
+                    {item.me && item.seen ? (
+                      <Ionicons
+                        name="checkmark-done"
+                        size={16}
+                        color="#aaa"
+                        style={{ alignSelf: "flex-end", height: 15 }}
+                      />
+                    ) : item.me ? (
+                      <Ionicons
+                        name="checkmark"
+                        size={16}
+                        color="#aaa"
+                        style={{ alignSelf: "flex-end", height: 15 }}
+                      />
+                    ) : null}
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+          ) : (
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MaterialCommunityIcons
+                name="message-outline"
+                size={128}
+                color="grey"
+              />
+              <Text
+                style={{ color: "black", fontSize: 20, fontWeight: "bold" }}
+              >
+                Немає повідомлень
+              </Text>
+              <TouchableOpacity onPress={() => input.current.focus()}>
+                <Text style={{ color: "blue" }}>Написати</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <View
             style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
