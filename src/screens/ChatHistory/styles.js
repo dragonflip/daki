@@ -15,11 +15,11 @@ export default StyleSheet.create({
     backgroundColor: "tomato",
   },
   messageDateChipText: {
-    color: "white",
+    color: "#fff",
   },
 
   messageFromMe: {
-    backgroundColor: "black",
+    backgroundColor: "#000",
     alignSelf: "flex-end",
 
     paddingLeft: 16,
@@ -36,7 +36,7 @@ export default StyleSheet.create({
     flexDirection: "row",
   },
   messageTextFromMe: {
-    color: "white",
+    color: "#fff",
   },
 
   messageToMe: {
@@ -57,7 +57,7 @@ export default StyleSheet.create({
     flexDirection: "row",
   },
   messageTextToMe: {
-    color: "black",
+    color: "#000",
   },
 
   messageTime: {

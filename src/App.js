@@ -94,7 +94,7 @@ function NavigationTabs() {
           fontSize: 12,
         },
 
-        tabBarActiveTintColor: "black",
+        tabBarActiveTintColor: "#000",
         tabBarInactiveTintColor: "grey",
         tabBarHideOnKeyboard: true,
       }}

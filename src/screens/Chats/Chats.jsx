@@ -62,7 +62,12 @@ export default function ChatsScreen({ navigation }) {
                 };
 
                 allChats[chat.id] = chatData;
-                setChats(Object.values(allChats));
+                setChats(
+                  // Sort chats by last message timestamp
+                  Object.values(allChats).sort(
+                    (a, b) => b.timestamp?.seconds > a.timestamp?.seconds
+                  )
+                );
               }
             });
 
@@ -85,7 +90,12 @@ export default function ChatsScreen({ navigation }) {
               };
 
               allChats[chat.id] = chatData;
-              setChats(Object.values(allChats));
+              setChats(
+                // Sort chats by last message timestamp
+                Object.values(allChats).sort(
+                  (a, b) => b.timestamp?.seconds > a.timestamp?.seconds
+                )
+              );
 
               // Vibrate if new message
               if (
@@ -122,7 +132,7 @@ export default function ChatsScreen({ navigation }) {
               setChats(
                 // Sort chats by last message timestamp
                 Object.values(allChats).sort(
-                  (a, b) => b.timestamp.seconds > a.timestamp.seconds
+                  (a, b) => b.timestamp?.seconds > a.timestamp?.seconds
                 )
               );
 
@@ -190,7 +200,7 @@ export default function ChatsScreen({ navigation }) {
                 />
               ) : (
                 <View style={[styles.chat_photo, { backgroundColor: "#aaa" }]}>
-                  <Text style={{ fontSize: 24, color: "white" }}>
+                  <Text style={{ fontSize: 24, color: "#fff" }}>
                     {item.name[0]}
                   </Text>
                 </View>
@@ -243,7 +253,7 @@ export default function ChatsScreen({ navigation }) {
           }}
         >
           <MaterialCommunityIcons name="chat-outline" size={128} color="grey" />
-          <Text style={{ color: "black", fontSize: 20, fontWeight: "bold" }}>
+          <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>
             Немає чатів
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate("CreateChat")}>

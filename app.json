@@ -3,8 +3,9 @@
     "entryPoint": "./src/App.js",
     "name": "Daki",
     "slug": "daki",
-    "version": "0.9.2",
+    "version": "0.9.3",
     "orientation": "portrait",
+    "primaryColor": "#000000",
     "icon": "./assets/logo.png",
     "splash": {
       "image": "./assets/splash.png",
@@ -22,7 +23,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#ffffff"
       },
       "package": "com.dragonflip.daki"
     },

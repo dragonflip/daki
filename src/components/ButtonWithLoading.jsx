@@ -19,7 +19,7 @@ export default function ButtonWithLoading(props) {
         <Text style={styles.buttonText}>{props.title}</Text>
       ) : (
         <ActivityIndicator
-          color="white"
+          color="#fff"
           size={Platform.OS === "android" ? "large" : "small"}
           style={
             Platform.OS === "android" ? { marginTop: 8 } : { marginTop: 16 }

@@ -69,7 +69,7 @@ export default function CreateChatScreen({ navigation }) {
               />
             ) : (
               <View style={[styles.chat_photo, { backgroundColor: "#aaa" }]}>
-                <Text style={{ fontSize: 24, color: "white" }}>
+                <Text style={{ fontSize: 24, color: "#fff" }}>
                   {item.name[0]}
                 </Text>
               </View>

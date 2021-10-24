@@ -148,7 +148,7 @@ export default function SettingsScreen({ navigation }) {
             width: 64,
             height: 64,
             borderRadius: 64,
-            backgroundColor: "black",
+            backgroundColor: "#000",
             alignItems: "center",
             justifyContent: "center",
             position: "absolute",
@@ -157,7 +157,7 @@ export default function SettingsScreen({ navigation }) {
             zIndex: 1,
           }}
         >
-          <MaterialIcons name="add-a-photo" size={24} color="white" />
+          <MaterialIcons name="add-a-photo" size={24} color="#fff" />
         </TouchableOpacity> */}
 
         <View style={{ paddingHorizontal: 16 }}>
@@ -205,7 +205,7 @@ export default function SettingsScreen({ navigation }) {
               }}
               onPress={changeName}
             >
-              <Feather name="edit-3" size={24} color="black" />
+              <Feather name="edit-3" size={24} color="#000" />
             </TouchableOpacity>
           </View>
 

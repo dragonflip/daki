@@ -67,7 +67,7 @@ export default StyleSheet.create({
     justifyContent: "center",
   },
   chat_unreadCountText: {
-    color: "white",
+    color: "#fff",
     textAlign: "center",
     fontSize: 12,
     includeFontPadding: false,
@@ -80,7 +80,7 @@ export default StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 14,
-    borderColor: "white",
+    borderColor: "#fff",
     borderWidth: 2,
     backgroundColor: "green",
   },

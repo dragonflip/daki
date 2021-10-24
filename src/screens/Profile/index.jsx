@@ -53,19 +53,19 @@ export default function SettingsScreen({ navigation }) {
             <MaterialCommunityIcons
               name="star-outline"
               size={26}
-              color="black"
+              color="#000"
             />
           </TouchableOpacity>
 
           <TouchableOpacity style={{ paddingRight: 15 }}>
-            <Entypo name="edit" size={26} color="black" />
+            <Entypo name="edit" size={26} color="#000" />
           </TouchableOpacity>
 
           <TouchableOpacity>
             <MaterialCommunityIcons
               name="dots-vertical"
               size={26}
-              color="black"
+              color="#000"
             />
           </TouchableOpacity>
         </View>
@@ -94,7 +94,7 @@ export default function SettingsScreen({ navigation }) {
           <View flexDirection="column" style={{ justifyContent: "flex-end" }}>
             <Text
               style={{
-                color: "white",
+                color: "#fff",
                 //textAlignVertical : "bottom",
                 fontSize: 28,
                 paddingLeft: 10,

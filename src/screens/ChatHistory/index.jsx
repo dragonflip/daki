@@ -94,7 +94,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                         justifyContent: "center",
                       }}
                     >
-                      <Text style={{ fontSize: 20, color: "white" }}>
+                      <Text style={{ fontSize: 20, color: "#fff" }}>
                         {chatInfo.name[0]}
                       </Text>
                     </View>
@@ -149,7 +149,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       justifyContent: "center",
                     }}
                   >
-                    <Text style={{ fontSize: 20, color: "white" }}>
+                    <Text style={{ fontSize: 20, color: "#fff" }}>
                       {chatInfo.name[0]}
                     </Text>
                   </View>
@@ -160,7 +160,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 <MaterialCommunityIcons
                   name="dots-vertical"
                   size={24}
-                  color="black"
+                  color="#000"
                 />
               </TouchableOpacity>
             ),
@@ -358,9 +358,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 size={128}
                 color="grey"
               />
-              <Text
-                style={{ color: "black", fontSize: 20, fontWeight: "bold" }}
-              >
+              <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>
                 Немає повідомлень
               </Text>
               <TouchableOpacity onPress={() => input.current.focus()}>
@@ -385,10 +383,10 @@ export default function ChatHistoryScreen({ navigation, route }) {
               placeholder="Повідомлення..."
               onChangeText={setInputMessage}
               ref={input}
-              selectionColor="black"
+              selectionColor="#000"
             />
             <TouchableOpacity style={{ marginRight: 16 }} onPress={sendMessage}>
-              <Ionicons name="send" size={24} color="black" />
+              <Ionicons name="send" size={24} color="#000" />
             </TouchableOpacity>
           </View>
         </KeyboardAvoider>
