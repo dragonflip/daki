@@ -25,7 +25,7 @@ import styles from "./styles";
 // Firebase
 import { firebase, db, auth } from "../../firebase";
 
-export default function SettingsScreen({ navigation }) {
+export default function SettingsScreen({ route, navigation }) {
   const [profile, setProfile] = useState([]);
 
   const [photoRounded, setPhotoRounded] = useState(false);
@@ -36,7 +36,7 @@ export default function SettingsScreen({ navigation }) {
     // Get user profile
     const unsubscribeSnaphot = db
       .collection("users")
-      .doc(auth.currentUser?.uid)
+      .doc(route.params.userId)
       .onSnapshot((snapshot) => {
         setProfile(snapshot.data());
       });
@@ -48,27 +48,13 @@ export default function SettingsScreen({ navigation }) {
       shadowColor: "transparent",
       headerShadowVisible: false,
       headerRight: () => (
-        <View flexDirection="row">
-          <TouchableOpacity style={{ paddingRight: 15 }}>
-            <MaterialCommunityIcons
-              name="star-outline"
-              size={26}
-              color="#000"
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={{ paddingRight: 15 }}>
-            <Entypo name="edit" size={26} color="#000" />
-          </TouchableOpacity>
-
-          <TouchableOpacity>
-            <MaterialCommunityIcons
-              name="dots-vertical"
-              size={26}
-              color="#000"
-            />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity>
+          <MaterialCommunityIcons
+            name="dots-vertical"
+            size={26}
+            color="#000"
+          />
+        </TouchableOpacity>
       ),
     });
 
@@ -82,7 +68,7 @@ export default function SettingsScreen({ navigation }) {
       <ScrollView>
         <ImageBackground
           source={{
-            uri: "https://images.unsplash.com/photo-1566275529824-cca6d008f3da?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTR8fGNvdmVyJTIwcGhvdG98ZW58MHx8MHx8&ixlib=rb-1.2.1&w=1000&q=80",
+            uri: profile.profilePhoto,
           }}
           style={{
             flexDirection: "row",
@@ -98,6 +84,10 @@ export default function SettingsScreen({ navigation }) {
                 //textAlignVertical : "bottom",
                 fontSize: 28,
                 paddingLeft: 10,
+                textShadowColor: 'rgba(0, 0, 0, 0.75)',
+                textShadowOffset: {width: -1, height: 1},
+                textShadowRadius: 5
+           
               }}
             >
               {profile.name}
@@ -111,7 +101,7 @@ export default function SettingsScreen({ navigation }) {
                   paddingLeft: 10,
                 }}
               >
-                онлайн
+                Онлайн
               </Text>
             ) : (
               <View>
@@ -162,7 +152,7 @@ export default function SettingsScreen({ navigation }) {
                 textTransform: "uppercase",
               }}
             >
-              {auth.currentUser?.phoneNumber}
+              {profile.phone}
             </Text>
             <Text style={{ fontSize: 12, color: "grey" }}>Номер телефону</Text>
           </View>
@@ -175,7 +165,7 @@ export default function SettingsScreen({ navigation }) {
             }}
           >
             <Text style={{ fontSize: 16 }}>
-              {profile.bio != "" ? profile.bio : "Я крутий дуже крутий мужик"}
+              {profile.bio != "" ? profile.bio : "..."}
             </Text>
             <Text style={{ fontSize: 12, color: "grey" }}>Інформація</Text>
           </View>
