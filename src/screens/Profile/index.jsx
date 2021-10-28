@@ -25,7 +25,7 @@ import styles from "./styles";
 // Firebase
 import { firebase, db, auth } from "../../firebase";
 
-export default function SettingsScreen({ route, navigation }) {
+export default function ProfileScreen({ route, navigation }) {
   const [profile, setProfile] = useState([]);
 
   const [photoRounded, setPhotoRounded] = useState(false);

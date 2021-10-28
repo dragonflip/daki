@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons,Entypo , MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
 
@@ -30,6 +30,27 @@ export default function ChatsScreen({ navigation }) {
 
     let notifications = false;
     let lastMessageTimestamp = 0;
+
+    navigation.setOptions({
+      tabBarIcon: ({ color, focused }) => (
+        <Ionicons
+          name={focused ? "chatbubbles" : "chatbubbles-outline"}
+          size={24}
+          color={color}
+        />
+      ),
+      title: "Чати",
+      headerRight: () => (
+        <TouchableOpacity onPress = {() => navigation.navigate("Search")} style={{ paddingRight : 12 }}>
+          <Entypo
+            name="magnifying-glass"
+            size={26}
+            color="#000"
+          />
+        </TouchableOpacity>
+      ),
+    });
+
 
     // Select chats where I'm member
     const chatsSnapshotUnsubscribe = db

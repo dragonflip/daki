@@ -15,7 +15,9 @@ import {
 import { ChatsScreen, CreateChatScreen } from "./screens/Chats";
 import ChatHistoryScreen from "./screens/ChatHistory";
 import SettingsScreen from "./screens/Settings";
-import Profile from "./screens/Profile";
+import ProfileScreen from "./screens/Profile";
+import SearchScreen from "./screens/Search";
+
 
 // Main App
 function App() {
@@ -74,7 +76,15 @@ function App() {
             headerTitle: "Створення чату",
           }}
         />
-        <Stack.Screen name="Profile" component={Profile} options={{}} />
+        <Stack.Screen
+         name="Profile" 
+        component={ProfileScreen} 
+        options={{}} />
+
+        <Stack.Screen name="Search" 
+        component={SearchScreen} 
+        options={{}} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -102,16 +112,6 @@ function NavigationTabs() {
       <Tab.Screen
         name="Chats"
         component={ChatsScreen}
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "chatbubbles" : "chatbubbles-outline"}
-              size={24}
-              color={color}
-            />
-          ),
-          title: "Чати",
-        }}
       />
       <Tab.Screen
         name="Settings"
