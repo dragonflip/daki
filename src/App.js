@@ -18,7 +18,6 @@ import SettingsScreen from "./screens/Settings";
 import ProfileScreen from "./screens/Profile";
 import SearchScreen from "./screens/Search";
 
-
 // Main App
 function App() {
   const Stack = createNativeStackNavigator();
@@ -76,15 +75,8 @@ function App() {
             headerTitle: "Створення чату",
           }}
         />
-        <Stack.Screen
-         name="Profile" 
-        component={ProfileScreen} 
-        options={{}} />
-
-        <Stack.Screen name="Search" 
-        component={SearchScreen} 
-        options={{}} />
-
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Search" component={SearchScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -109,10 +101,7 @@ function NavigationTabs() {
         tabBarHideOnKeyboard: true,
       }}
     >
-      <Tab.Screen
-        name="Chats"
-        component={ChatsScreen}
-      />
+      <Tab.Screen name="Chats" component={ChatsScreen} />
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}

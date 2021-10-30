@@ -12,10 +12,11 @@ export default StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 16,
-    backgroundColor: "tomato",
+    borderColor: "grey",
+    borderWidth: 1,
   },
   messageDateChipText: {
-    color: "#fff",
+    color: "grey",
   },
 
   messageFromMe: {
@@ -61,7 +62,7 @@ export default StyleSheet.create({
   },
 
   messageTime: {
-    color: "#aaa",
+    color: "#999",
     fontSize: 10,
     marginLeft: 12,
     marginRight: 1,

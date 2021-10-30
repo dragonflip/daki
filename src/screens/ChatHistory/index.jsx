@@ -45,7 +45,11 @@ export default function ChatHistoryScreen({ navigation, route }) {
         // Change header
         navigation.setOptions({
           headerTitle: () => (
-            <TouchableOpacity onPress={() => navigation.navigate("Profile",{userId :  route.params.userId})}>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Profile", { userId: route.params.userId })
+              }
+            >
               {Platform.OS === "ios" ? (
                 <View style={{ alignItems: "center" }}>
                   <Text style={{ fontSize: 16, fontWeight: "bold" }}>
@@ -373,14 +377,14 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       <Ionicons
                         name="checkmark-done"
                         size={16}
-                        color="#aaa"
+                        color="#999"
                         style={{ alignSelf: "flex-end", height: 15 }}
                       />
                     ) : item.me ? (
                       <Ionicons
                         name="checkmark"
                         size={16}
-                        color="#aaa"
+                        color="#999"
                         style={{ alignSelf: "flex-end", height: 15 }}
                       />
                     ) : null}
