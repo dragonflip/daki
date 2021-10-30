@@ -37,7 +37,13 @@ export default function ChatsScreen({ navigation }) {
 
   // Init
   useEffect(() => {
+    // Update online
     AppState.addEventListener("change", handleAppStateChange);
+    handleAppStateChange("active");
+
+    const onlineUpdater = setInterval(() => {
+      handleAppStateChange("active");
+    }, 10000);
 
     let usersSnapshotUnsubscribe,
       messagesSnapshotUnsubscribe,
@@ -45,6 +51,7 @@ export default function ChatsScreen({ navigation }) {
 
     let notifications = false;
     let lastMessageTimestamp = 0;
+    let onlineChecker;
 
     // Select chats where I'm member
     const chatsSnapshotUnsubscribe = db
@@ -72,7 +79,7 @@ export default function ChatsScreen({ navigation }) {
                   id: chat.id,
                   name: users.data().name,
                   photo: users.data().profilePhoto,
-                  online: users.data().online === true,
+                  online: users.data().online,
                   userId: users.id,
                 };
 
@@ -83,6 +90,23 @@ export default function ChatsScreen({ navigation }) {
                     (a, b) => b.timestamp?.seconds > a.timestamp?.seconds
                   )
                 );
+                clearInterval(onlineChecker);
+
+                // Check online status for changes
+                onlineChecker = setInterval(() => {
+                  if (
+                    users.data().online?.seconds <
+                    firebase.firestore.Timestamp.now().seconds
+                  ) {
+                    setChats(
+                      // Sort chats by last message timestamp
+                      Object.values(allChats).sort(
+                        (a, b) => b.timestamp?.seconds > a.timestamp?.seconds
+                      )
+                    );
+                    clearInterval(onlineChecker);
+                  }
+                }, 10000);
               }
             });
 
@@ -163,6 +187,8 @@ export default function ChatsScreen({ navigation }) {
         usersSnapshotUnsubscribe();
         messagesSnapshotUnsubscribe();
         unreadCountSnapshotUnsubscribe();
+        clearInterval(onlineChecker);
+        clearInterval(onlineUpdater);
       } catch {}
 
       AppState.removeEventListener("change", handleAppStateChange);
@@ -175,7 +201,11 @@ export default function ChatsScreen({ navigation }) {
       .doc(auth.currentUser?.uid)
       .update({
         online:
-          state != "background" ? true : firebase.firestore.Timestamp.now(),
+          state != "background"
+            ? firebase.firestore.Timestamp.fromMillis(
+                (firebase.firestore.Timestamp.now().seconds + 60) * 1000
+              )
+            : firebase.firestore.Timestamp.now(),
       });
   };
 
@@ -221,7 +251,10 @@ export default function ChatsScreen({ navigation }) {
                 </View>
               )}
 
-              {item.online ? <View style={styles.chat_online}></View> : null}
+              {item.online?.seconds >
+              firebase.firestore.Timestamp.now().seconds ? (
+                <View style={styles.chat_online}></View>
+              ) : null}
 
               <View style={styles.chat_info}>
                 <View style={styles.chat_name_date_status}>

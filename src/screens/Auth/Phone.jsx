@@ -22,7 +22,6 @@ export default function AuthPhoneScreen({ navigation }) {
 
   // Init
   useEffect(() => {
-    console.log("Focus");
     setLoading(true);
 
     const unsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
@@ -31,10 +30,8 @@ export default function AuthPhoneScreen({ navigation }) {
         .doc(auth.currentUser?.uid)
         .get();
 
-      // Update online status
+      // If user exists go to home screen
       if (user && userDoc.exists) {
-        await userDoc.ref.update({ online: true });
-
         if (navigation.isFocused()) {
           navigation.replace("Home");
         }
@@ -46,7 +43,6 @@ export default function AuthPhoneScreen({ navigation }) {
 
     return () => {
       unsubscribe();
-      console.log("Unsubscribed");
     };
   }, []);
 

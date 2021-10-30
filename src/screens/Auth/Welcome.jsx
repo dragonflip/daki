@@ -28,15 +28,19 @@ export default function AuthWelcomeScreen({ navigation, route }) {
       setLoading(true);
 
       // Add new user
-      db.collection("users").doc(auth.currentUser?.uid).set({
-        userId: auth.currentUser?.uid,
-        phone: auth.currentUser?.phoneNumber,
-        name: name,
-        profilePhoto: "",
-        online: true,
-        bio: "",
-        verified: false,
-      });
+      db.collection("users")
+        .doc(auth.currentUser?.uid)
+        .set({
+          userId: auth.currentUser?.uid,
+          phone: auth.currentUser?.phoneNumber,
+          name: name,
+          profilePhoto: "",
+          online: firebase.firestore.Timestamp.fromMillis(
+            (firebase.firestore.Timestamp.now().seconds + 60) * 1000
+          ),
+          bio: "",
+          verified: false,
+        });
 
       navigation.popToTop();
       navigation.replace("Home");

@@ -34,28 +34,102 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
   // Init
   useEffect(() => {
+    let onlineChecker;
+
     // Get member
     // TODO chat group info
     const memberSnapshotUnsubscribe = db
       .collection("users")
       .doc(route.params.userId)
       .onSnapshot((snapshot) => {
-        const chatInfo = snapshot.data();
+        changeHeader(snapshot.data());
+        clearInterval(onlineChecker);
 
-        // Change header
-        navigation.setOptions({
-          headerTitle: () => (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Profile", { userId: route.params.userId })
-              }
-            >
-              {Platform.OS === "ios" ? (
-                <View style={{ alignItems: "center" }}>
+        // Check online status for changes
+        onlineChecker = setInterval(() => {
+          if (
+            snapshot.data().online?.seconds <
+            firebase.firestore.Timestamp.now().seconds
+          ) {
+            changeHeader(snapshot.data());
+            clearInterval(onlineChecker);
+          }
+        }, 10000);
+      });
+
+    const changeHeader = (chatInfo) => {
+      // Change header
+      navigation.setOptions({
+        headerTitle: () => (
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("Profile", {
+                userId: route.params.userId,
+              })
+            }
+          >
+            {Platform.OS === "ios" ? (
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                  {chatInfo.name}
+                </Text>
+                {chatInfo.online?.seconds >
+                firebase.firestore.Timestamp.now().seconds ? (
+                  <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
+                ) : (
+                  <View>
+                    <Text style={{ fontSize: 12, color: "grey" }}>
+                      В мережі{" "}
+                      <Moment element={Text} locale="uk" fromNow unix>
+                        {chatInfo.online?.seconds}
+                      </Moment>
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginLeft: -8,
+                }}
+              >
+                {chatInfo.profilePhoto != "" ? (
+                  <Image
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: 42,
+                      marginRight: 12,
+                    }}
+                    source={{
+                      uri: chatInfo.profilePhoto,
+                    }}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      backgroundColor: "#aaa",
+                      width: 42,
+                      height: 42,
+                      borderRadius: 42,
+                      marginRight: 12,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 20, color: "#fff" }}>
+                      {chatInfo.name[0]}
+                    </Text>
+                  </View>
+                )}
+                <View style={{ flexDirection: "column" }}>
                   <Text style={{ fontSize: 16, fontWeight: "bold" }}>
                     {chatInfo.name}
                   </Text>
-                  {chatInfo.online === true ? (
+                  {chatInfo.online?.seconds >
+                  firebase.firestore.Timestamp.now().seconds ? (
                     <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
                   ) : (
                     <View>
@@ -68,114 +142,58 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     </View>
                   )}
                 </View>
+              </View>
+            )}
+          </TouchableOpacity>
+        ),
+        headerRight: () =>
+          Platform.OS === "ios" ? (
+            <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+              {chatInfo.profilePhoto != "" ? (
+                <Image
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 32,
+                    marginRight: -8,
+                  }}
+                  source={{
+                    uri: chatInfo.profilePhoto,
+                  }}
+                />
               ) : (
                 <View
                   style={{
-                    flexDirection: "row",
+                    backgroundColor: "#aaa",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 32,
+                    marginRight: -8,
                     alignItems: "center",
-                    marginLeft: -8,
+                    justifyContent: "center",
                   }}
                 >
-                  {chatInfo.profilePhoto != "" ? (
-                    <Image
-                      style={{
-                        width: 42,
-                        height: 42,
-                        borderRadius: 42,
-                        marginRight: 12,
-                      }}
-                      source={{
-                        uri: chatInfo.profilePhoto,
-                      }}
-                    />
-                  ) : (
-                    <View
-                      style={{
-                        backgroundColor: "#aaa",
-                        width: 42,
-                        height: 42,
-                        borderRadius: 42,
-                        marginRight: 12,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Text style={{ fontSize: 20, color: "#fff" }}>
-                        {chatInfo.name[0]}
-                      </Text>
-                    </View>
-                  )}
-                  <View style={{ flexDirection: "column" }}>
-                    <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                      {chatInfo.name}
-                    </Text>
-                    {chatInfo.online === true ? (
-                      <Text style={{ fontSize: 12, color: "green" }}>
-                        онлайн
-                      </Text>
-                    ) : (
-                      <View>
-                        <Text style={{ fontSize: 12, color: "grey" }}>
-                          В мережі{" "}
-                          <Moment element={Text} locale="uk" fromNow unix>
-                            {chatInfo.online?.seconds}
-                          </Moment>
-                        </Text>
-                      </View>
-                    )}
-                  </View>
+                  <Text style={{ fontSize: 20, color: "#fff" }}>
+                    {chatInfo.name[0]}
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() => {
+                setShowDropdown((showDropdown) => !showDropdown);
+              }}
+            >
+              <MaterialCommunityIcons
+                name="dots-vertical"
+                size={24}
+                color="#000"
+              />
+            </TouchableOpacity>
           ),
-          headerRight: () =>
-            Platform.OS === "ios" ? (
-              <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
-                {chatInfo.profilePhoto != "" ? (
-                  <Image
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 32,
-                      marginRight: -8,
-                    }}
-                    source={{
-                      uri: chatInfo.profilePhoto,
-                    }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      backgroundColor: "#aaa",
-                      width: 32,
-                      height: 32,
-                      borderRadius: 32,
-                      marginRight: -8,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text style={{ fontSize: 20, color: "#fff" }}>
-                      {chatInfo.name[0]}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => {
-                  setShowDropdown((showDropdown) => !showDropdown);
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="dots-vertical"
-                  size={24}
-                  color="#000"
-                />
-              </TouchableOpacity>
-            ),
-        });
       });
+    };
 
     // Get messages
     const messagesSnapshotUnsubscribe = db
@@ -232,6 +250,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
     return () => {
       memberSnapshotUnsubscribe();
       messagesSnapshotUnsubscribe();
+      clearInterval(onlineChecker);
     };
   }, []);
 

@@ -26,14 +26,31 @@ export default function SettingsScreen({ navigation }) {
   // Get data from storage
   useEffect(() => {
     // Get user profile
+    let onlineChecker;
+
     const unsubscribeSnaphot = db
       .collection("users")
       .doc(auth.currentUser?.uid)
       .onSnapshot((snapshot) => {
         setProfile(snapshot.data());
+        clearInterval(onlineChecker);
+
+        // Check online status for changes
+        onlineChecker = setInterval(() => {
+          if (
+            snapshot.data().online?.seconds <
+            firebase.firestore.Timestamp.now().seconds
+          ) {
+            setProfile(snapshot.data());
+            clearInterval(onlineChecker);
+          }
+        }, 10000);
       });
 
-    return unsubscribeSnaphot;
+    return () => {
+      unsubscribeSnaphot();
+      clearInterval(onlineChecker);
+    };
   }, []);
 
   // Logout
@@ -41,7 +58,11 @@ export default function SettingsScreen({ navigation }) {
     // Change online status
     db.collection("users")
       .doc(auth.currentUser?.uid)
-      .update({ online: firebase.firestore.Timestamp.now() });
+      .update({
+        online: firebase.firestore.Timestamp.fromMillis(
+          (firebase.firestore.Timestamp.now().seconds + 60) * 1000
+        ),
+      });
 
     await AsyncStorage.removeItem("phone");
     auth.signOut();
@@ -121,7 +142,8 @@ export default function SettingsScreen({ navigation }) {
                 ) : null}
               </View>
 
-              {profile.online === true ? (
+              {profile.online?.seconds >
+              firebase.firestore.Timestamp.now().seconds ? (
                 <Text style={{ color: "green" }}>онлайн</Text>
               ) : (
                 <View>
