@@ -6,12 +6,8 @@ import {
   TextInput,
   Image
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { Ionicons, MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { Feather, Octicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
 import "moment/locale/uk";
 import Moment from "react-moment";

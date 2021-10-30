@@ -179,6 +179,7 @@ export default function SettingsScreen({ navigation }) {
           </View>
 
           <TouchableOpacity
+          onPress={() => navigation.navigate("Edit", {userName: profile.name, userBio: profile.bio, uerPhoto: profile.profilePhoto})}
             style={{
               paddingVertical: 16,
               borderColor: "#eee",

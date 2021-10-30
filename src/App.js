@@ -17,6 +17,7 @@ import ChatHistoryScreen from "./screens/ChatHistory";
 import SettingsScreen from "./screens/Settings";
 import ProfileScreen from "./screens/Profile";
 import SearchScreen from "./screens/Search";
+import EditScreen from "./screens/Edit/Index";
 
 // Main App
 function App() {
@@ -77,6 +78,7 @@ function App() {
         />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Search" component={SearchScreen} />
+        <Stack.Screen name="Edit" component={EditScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
