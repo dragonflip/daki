@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import {
   Text,
   View,
   TouchableOpacity,
-  TextInput
+  TextInput,
+  Image
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -21,38 +22,72 @@ import styles from "./styles";
 import { firebase, db, auth } from "../../firebase";
 
 export default function SearchScreen({ navigation }) {
-  const [number, setNumber] = useState();
+  const [users, setUsers] = useState([]);
+  const [shouldShow, setShouldShow] = useState(false);
+  const [rightUserIndex, setRightUserIndex] = useState(0);
 
-
-  // Get data from storage
   useEffect(() => {
-    // Get user profile
-    // const unsubscribeSnaphot = db
-    //   .collection("users")
-    //   .doc(route.params.userId)
-    //   .onSnapshot((snapshot) => {
-    //     setProfile(snapshot.data());
-    //   });
+    // Select other users
+    const usersSnapshotUnsubscribe = db
+      .collection("users")
+      .onSnapshot((snapshot) => {
+        setUsers(
+          snapshot.docs.map((doc) => {
+            return { id: doc.id, ...doc.data() };
+          })
+        );
+      });
+      
+    return () => {
+      usersSnapshotUnsubscribe();
+    };
 
+  }, []);
+  
+  useLayoutEffect(() => {
     navigation.setOptions({
         headerTitle: () => (
             <TextInput 
-            autoFocus = {true}
             style={styles.input}
             placeholder="Пошук"
-            //onChangeText={searchUser}
+            onChangeText={number => findUser(number)}
             />
           ),
-      
     });
+  });
 
-    //return unsubscribeSnaphot;
-  }, []);
+  function findUser(number) {
+    for(let i = 0; i < users.length; i++)
+    {
+      if(number === users[i].phone) {setShouldShow(true); console.log("Є"); setRightUserIndex(i); break;} else {setShouldShow(false); console.log("НЕ Є")}
+    }
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-        
+      {shouldShow ? (
+      <TouchableOpacity style={styles.chat} activeOpacity={0.5}>
+        <View style={[styles.chat_photo, { backgroundColor: "#aaa" }]}>
+          <Text style={{ fontSize: 24, color: "#fff" }}>
+          {users[rightUserIndex].name[0]}
+          </Text>
+        </View>
+
+
+        <View style={styles.chat_info}>
+          <View style={styles.chat_name_date_status}>
+            <Text style={styles.profile_name}>
+            {users[rightUserIndex].name}
+            </Text>
+          </View>
+            <Text style={{color: "#0000FF"}} >
+              {users[rightUserIndex].phone}
+            </Text>
+        </View>
+      </TouchableOpacity>
+      ) : null}
     </View>
   );
+  
 }
