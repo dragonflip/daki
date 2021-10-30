@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   Text,
   View,
@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Ionicons,Entypo , MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
 
@@ -21,6 +21,21 @@ import { db, firebase, auth } from "../../firebase";
 export default function ChatsScreen({ navigation }) {
   const [chats, setChats] = useState([]);
 
+  // Navigation
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Search")}
+          style={{ marginRight: 12 }}
+        >
+          <Ionicons name="search" size={24} color="#000" />
+        </TouchableOpacity>
+      ),
+    });
+  });
+
+  // Init
   useEffect(() => {
     AppState.addEventListener("change", handleAppStateChange);
 
@@ -30,27 +45,6 @@ export default function ChatsScreen({ navigation }) {
 
     let notifications = false;
     let lastMessageTimestamp = 0;
-
-    navigation.setOptions({
-      tabBarIcon: ({ color, focused }) => (
-        <Ionicons
-          name={focused ? "chatbubbles" : "chatbubbles-outline"}
-          size={24}
-          color={color}
-        />
-      ),
-      title: "Чати",
-      headerRight: () => (
-        <TouchableOpacity onPress = {() => navigation.navigate("Search")} style={{ paddingRight : 12 }}>
-          <Entypo
-            name="magnifying-glass"
-            size={26}
-            color="#000"
-          />
-        </TouchableOpacity>
-      ),
-    });
-
 
     // Select chats where I'm member
     const chatsSnapshotUnsubscribe = db

@@ -6,15 +6,12 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { StatusBar } from "expo-status-bar";
-import { Feather, Octicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
+import { Feather, Octicons, Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
-import { AlertBox, fire } from "react-native-alertbox";
 import "moment/locale/uk";
 import Moment from "react-moment";
 
@@ -25,9 +22,6 @@ import { firebase, db, auth } from "../../firebase";
 
 export default function SettingsScreen({ navigation }) {
   const [profile, setProfile] = useState([]);
-
-  const [photoRounded, setPhotoRounded] = useState(false);
-  const [photoMultiplicator, setPhotoMultiplicator] = useState(1);
 
   // Get data from storage
   useEffect(() => {
@@ -42,32 +36,6 @@ export default function SettingsScreen({ navigation }) {
     return unsubscribeSnaphot;
   }, []);
 
-  // Change name (fake)
-  function changeName() {
-    fire({
-      title: "Зміна імені",
-      message: "Введіть нове імя: ",
-      // buttons
-      actions: [
-        {
-          text: "Сквасувати",
-          style: "cancel",
-        },
-        {
-          text: "Підтвердити",
-          onPress: (data) => setProfile({ ...profile, name: data.name }), // It is an object that holds fields data
-        },
-      ],
-      // fields
-      fields: [
-        {
-          name: "name",
-          placeholder: "Введіть імя",
-        },
-      ],
-    });
-  }
-
   // Logout
   async function logout() {
     // Change online status
@@ -81,67 +49,38 @@ export default function SettingsScreen({ navigation }) {
     navigation.replace("Phone");
   }
 
-  const scrollHandler = (props) => {
-    if (
-      !photoRounded &&
-      props.nativeEvent.contentOffset.y >= Dimensions.get("window").width / 3
-    ) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      setPhotoRounded(true);
-    } else if (
-      photoRounded &&
-      props.nativeEvent.contentOffset.y <= -(Dimensions.get("window").width / 4)
-    ) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      setPhotoRounded(false);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
 
-      <ScrollView
-        onScrollEndDrag={Platform.OS === "ios" ? scrollHandler : null}
-        onScroll={
-          Platform.OS === "ios"
-            ? (props) => {
-                // console.log(
-                //   1 -
-                //     props.nativeEvent.contentOffset.y /
-                //       Dimensions.get("window").width
-                // );
-
-                setPhotoMultiplicator(
-                  1 -
-                    props.nativeEvent.contentOffset.y /
-                      Dimensions.get("window").width
-                );
-              }
-            : null
-        }
-        scrollEventThrottle={16}
-        style={photoRounded ? { paddingTop: 64 } : null}
-      >
-        <Image
-          source={{
-            uri: "https://images.unsplash.com/photo-1566275529824-cca6d008f3da?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTR8fGNvdmVyJTIwcGhvdG98ZW58MHx8MHx8&ixlib=rb-1.2.1&w=1000&q=80",
-          }}
-          style={
-            !photoRounded
-              ? {
-                  width: Dimensions.get("window").width * photoMultiplicator,
-                  height: Dimensions.get("window").width,
-                  alignSelf: "center",
-                }
-              : {
-                  width: 128 * photoMultiplicator,
-                  height: 128,
-                  borderRadius: 128,
-                  alignSelf: "center",
-                }
-          }
-        />
+      <ScrollView>
+        {profile.profilePhoto !== "" ? (
+          <Image
+            source={{
+              uri: profile.profilePhoto,
+            }}
+            style={{
+              width: Dimensions.get("window").width,
+              height: Dimensions.get("window").width,
+            }}
+          />
+        ) : (
+          <View
+            style={{
+              width: Dimensions.get("window").width,
+              height: Dimensions.get("window").width,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#eee",
+            }}
+          >
+            <Ionicons
+              name="camera"
+              size={Dimensions.get("window").width * 0.4}
+              color="#aaa"
+            />
+          </View>
+        )}
 
         {/* <TouchableOpacity
           style={{
@@ -196,20 +135,28 @@ export default function SettingsScreen({ navigation }) {
               )}
             </View>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={{
                 borderWidth: 1,
                 borderColor: "grey",
                 borderRadius: 24,
                 padding: 8,
               }}
-              onPress={changeName}
             >
               <Feather name="edit-3" size={24} color="#000" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+            <View
+              style={{
+                alignItems: "center",
+                paddingBottom: 16,
+              }}
+            >
+              <Text style={{ color: "green", fontSize: 24 }}>78%</Text>
+              <Text style={{ color: "grey" }}>рейтинг</Text>
+            </View>
           </View>
 
-          {/* <TouchableOpacity
+          <TouchableOpacity
             style={{
               paddingVertical: 16,
               borderColor: "#eee",
@@ -218,12 +165,14 @@ export default function SettingsScreen({ navigation }) {
           >
             <Text
               style={{
+                fontSize: 16,
                 color: "blue",
               }}
             >
-              Редагувати профіль
+              <Feather name="edit" size={18} color="blue" /> Редагувати профіль
+              та фото
             </Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
 
           <View
             style={{
@@ -286,8 +235,6 @@ export default function SettingsScreen({ navigation }) {
           </Text>
         </View>
       </ScrollView>
-
-      <AlertBox />
     </View>
   );
 }

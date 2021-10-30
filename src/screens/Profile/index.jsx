@@ -3,20 +3,13 @@ import {
   Text,
   View,
   Dimensions,
-  Image,
   TouchableOpacity,
   ScrollView,
-  Platform,
   ImageBackground,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { Ionicons, MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { Feather, Octicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import Constants from "expo-constants";
-import { AlertBox, fire } from "react-native-alertbox";
 import "moment/locale/uk";
 import Moment from "react-moment";
 
@@ -49,11 +42,7 @@ export default function ProfileScreen({ route, navigation }) {
       headerShadowVisible: false,
       headerRight: () => (
         <TouchableOpacity>
-          <MaterialCommunityIcons
-            name="dots-vertical"
-            size={26}
-            color="#000"
-          />
+          <MaterialCommunityIcons name="dots-vertical" size={26} color="#000" />
         </TouchableOpacity>
       ),
     });
@@ -84,10 +73,9 @@ export default function ProfileScreen({ route, navigation }) {
                 //textAlignVertical : "bottom",
                 fontSize: 28,
                 paddingLeft: 10,
-                textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                textShadowOffset: {width: -1, height: 1},
-                textShadowRadius: 5
-           
+                textShadowColor: "rgba(0, 0, 0, 0.75)",
+                textShadowOffset: { width: -1, height: 1 },
+                textShadowRadius: 5,
               }}
             >
               {profile.name}
@@ -194,8 +182,6 @@ export default function ProfileScreen({ route, navigation }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      <AlertBox />
     </View>
   );
 }

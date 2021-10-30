@@ -101,7 +101,20 @@ function NavigationTabs() {
         tabBarHideOnKeyboard: true,
       }}
     >
-      <Tab.Screen name="Chats" component={ChatsScreen} />
+      <Tab.Screen
+        name="Chats"
+        component={ChatsScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "chatbubbles" : "chatbubbles-outline"}
+              size={24}
+              color={color}
+            />
+          ),
+          title: "Чати",
+        }}
+      />
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}
