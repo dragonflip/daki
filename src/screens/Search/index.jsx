@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import {
   Text,
   View,
@@ -25,6 +25,7 @@ export default function SearchScreen({ navigation }) {
   const [users, setUsers] = useState([]);
   const [shouldShow, setShouldShow] = useState(false);
   const [rightUserIndex, setRightUserIndex] = useState(0);
+  const input = useRef(null);
 
   useEffect(() => {
     // Select other users
@@ -38,6 +39,8 @@ export default function SearchScreen({ navigation }) {
         );
       });
       
+    setTimeout(() => input.current.focus(), 500);
+
     return () => {
       usersSnapshotUnsubscribe();
     };
@@ -50,6 +53,10 @@ export default function SearchScreen({ navigation }) {
             <TextInput 
             style={styles.input}
             placeholder="Пошук"
+            keyboardType="phone-pad"
+            defaultValue="+380"
+            ref={input}
+            maxLength={13}
             onChangeText={number => findUser(number)}
             />
           ),
@@ -59,7 +66,7 @@ export default function SearchScreen({ navigation }) {
   function findUser(number) {
     for(let i = 0; i < users.length; i++)
     {
-      if(number === users[i].phone) {setShouldShow(true); console.log("Є"); setRightUserIndex(i); break;} else {setShouldShow(false); console.log("НЕ Є")}
+      if(number === users[i].phone) {setShouldShow(true); setRightUserIndex(i); break;} else {setShouldShow(false);}
     }
   }
 

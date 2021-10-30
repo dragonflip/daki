@@ -38,54 +38,9 @@ export default StyleSheet.create({
     height: 20,
   },
 
-  chat_date_status: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
   profile_name: {
     fontSize: 16,
     fontWeight: "bold",
     flex: 1,
-  },
-  chat_date: {
-    fontSize: 13,
-    marginLeft: 4,
-    color: "grey",
-  },
-
-  chat_message_unreadCount: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  chat_message: {
-    flexDirection: "column",
-    height: 36,
-    color: "grey",
-  },
-  chat_unreadCount: {
-    width: 20,
-    height: 20,
-    borderRadius: 20,
-    backgroundColor: "green",
-    justifyContent: "center",
-  },
-  chat_unreadCountText: {
-    color: "#fff",
-    textAlign: "center",
-    fontSize: 12,
-    includeFontPadding: false,
-  },
-
-  chat_online: {
-    position: "absolute",
-    top: 49,
-    left: 49,
-    width: 14,
-    height: 14,
-    borderRadius: 14,
-    borderColor: "#fff",
-    borderWidth: 2,
-    backgroundColor: "green",
   },
 });
