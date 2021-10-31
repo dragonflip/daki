@@ -9,6 +9,7 @@ import {
   Image,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -29,6 +30,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const input = useRef();
+  const [loading, setLoading] = useState(true);
 
   // Init
   useEffect(() => {
@@ -219,6 +221,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
           });
 
           setMessages(allMessages);
+          setLoading(false);
 
           // Update message seen
           db.collection("chats_dev")
@@ -440,6 +443,12 @@ export default function ChatHistoryScreen({ navigation, route }) {
                   </TouchableOpacity>
                 </View>
               )}
+            />
+          ) : loading ? (
+            <ActivityIndicator
+              color="#000"
+              style={{ flex: 1 }}
+              size={Platform.OS === "android" ? "large" : "small"}
             />
           ) : (
             <View

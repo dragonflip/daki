@@ -8,6 +8,7 @@ import {
   AppState,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -22,6 +23,7 @@ import { db, firebase, auth } from "../../firebase";
 
 export default function ChatsScreen({ navigation }) {
   const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Navigation
   useLayoutEffect(() => {
@@ -91,6 +93,7 @@ export default function ChatsScreen({ navigation }) {
             };
           });
           setChats(allChats);
+          setLoading(false);
 
           // Vibrate if new message
           if (
@@ -293,6 +296,12 @@ export default function ChatsScreen({ navigation }) {
               </View>
             </TouchableOpacity>
           )}
+        />
+      ) : loading ? (
+        <ActivityIndicator
+          color="#000"
+          style={{ flex: 1 }}
+          size={Platform.OS === "android" ? "large" : "small"}
         />
       ) : (
         <View
