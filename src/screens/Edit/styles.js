@@ -8,7 +8,6 @@ export default StyleSheet.create({
   profile_photo: {
     width: 70,
     height: 70,
-    borderRadius: 70,
     alignItems: "center",
     justifyContent: "center",
   },
