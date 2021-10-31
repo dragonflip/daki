@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import {
   Text,
   View,
@@ -6,10 +6,13 @@ import {
   TouchableOpacity,
   ScrollView,
   ImageBackground,
+  Image,
 } from "react-native";
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
+import Constants from "expo-constants";
+import { Feather, Octicons, Ionicons, Entypo } from "@expo/vector-icons";
 import "moment/locale/uk";
 import Moment from "react-moment";
 
@@ -20,9 +23,7 @@ import { firebase, db, auth } from "../../firebase";
 
 export default function ProfileScreen({ route, navigation }) {
   const [profile, setProfile] = useState([]);
-
-  const [photoRounded, setPhotoRounded] = useState(false);
-  const [photoMultiplicator, setPhotoMultiplicator] = useState(1);
+  let onlineChecker;
 
   // Get data from storage
   useEffect(() => {
@@ -32,75 +33,95 @@ export default function ProfileScreen({ route, navigation }) {
       .doc(route.params.userId)
       .onSnapshot((snapshot) => {
         setProfile(snapshot.data());
-      });
+        clearInterval(onlineChecker);
 
-    navigation.setOptions({
-      //headerTintColor: '#fff',
-      headerTransparent: true,
-      headerTitle: "",
-      shadowColor: "transparent",
-      headerShadowVisible: false,
-      headerRight: () => (
-        <TouchableOpacity>
-          <MaterialCommunityIcons name="dots-vertical" size={26} color="#000" />
-        </TouchableOpacity>
-      ),
-    });
+        // Check online status for changes
+        onlineChecker = setInterval(() => {
+          if (
+            snapshot.data().online?.seconds <
+            firebase.firestore.Timestamp.now().seconds
+          ) {
+            setProfile(snapshot.data());
+            clearInterval(onlineChecker);
+          }
+        }, 10000);
+
+      });
 
     return unsubscribeSnaphot;
   }, []);
 
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTransparent: true,
+      headerTitle: "",
+      shadowColor: "transparent",
+      headerShadowVisible: false,
+    });
+  });
+
   return (
     <View style={styles.container}>
-      <StatusBar style="auto" />
+    <StatusBar style="auto" />
 
-      <ScrollView>
-        <ImageBackground
+    <ScrollView>
+      {profile.profilePhoto !== "" ? (
+        <Image
           source={{
             uri: profile.profilePhoto,
           }}
           style={{
-            flexDirection: "row",
-            width: Dimensions.get("window").width * photoMultiplicator,
+            width: Dimensions.get("window").width,
             height: Dimensions.get("window").width,
-            alignSelf: "center",
+          }}
+        />
+      ) : (
+        <View
+          style={{
+            width: Dimensions.get("window").width,
+            height: Dimensions.get("window").width,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#eee",
           }}
         >
-          <View flexDirection="column" style={{ justifyContent: "flex-end" }}>
-            <Text
-              style={{
-                color: "#fff",
-                //textAlignVertical : "bottom",
-                fontSize: 28,
-                paddingLeft: 10,
-                textShadowColor: "rgba(0, 0, 0, 0.75)",
-                textShadowOffset: { width: -1, height: 1 },
-                textShadowRadius: 5,
-              }}
-            >
-              {profile.name}
-            </Text>
-            {profile.online === true ? (
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 20,
-                  paddingBottom: 5,
-                  paddingLeft: 10,
-                }}
-              >
-                Онлайн
-              </Text>
+          <Ionicons
+            name="camera"
+            size={Dimensions.get("window").width * 0.4}
+            color="#aaa"
+          />
+        </View>
+      )}
+
+      <View style={{ paddingHorizontal: 16 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingTop: 16,
+          }}
+        >
+          <View style={{ flex: 1, paddingBottom: 16 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ fontSize: 24 }}>{profile.name}</Text>
+
+              {profile.verified ? (
+                <Octicons
+                  name="verified"
+                  size={20}
+                  color="blue"
+                  style={{ marginLeft: 8 }}
+                />
+              ) : null}
+            </View>
+
+            {profile.online?.seconds >
+            firebase.firestore.Timestamp.now().seconds ? (
+              <Text style={{ color: "green" }}>онлайн</Text>
             ) : (
               <View>
-                <Text
-                  style={{
-                    color: "grey",
-                    fontSize: 20,
-                    paddingBottom: 5,
-                    paddingLeft: 10,
-                  }}
-                >
+                <Text style={{ color: "grey" }}>
                   В мережі{" "}
                   <Moment element={Text} locale="uk" fromNow unix>
                     {profile.online?.seconds}
@@ -109,79 +130,96 @@ export default function ProfileScreen({ route, navigation }) {
               </View>
             )}
           </View>
-        </ImageBackground>
 
-        <View style={{ paddingHorizontal: 16 }}>
           <View
             style={{
-              flexDirection: "row",
               alignItems: "center",
-              paddingTop: 16,
+              paddingBottom: 16,
             }}
           >
-            <View style={{ flex: 1, paddingBottom: 16 }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ fontSize: 24 }}>'Соціальний рейтинг'</Text>
-              </View>
-            </View>
+            <Text style={{ color: "green", fontSize: 24 }}>62%</Text>
+            <Text style={{ color: "grey" }}>рейтинг</Text>
           </View>
-
-          <View
-            style={{
-              paddingVertical: 16,
-              borderColor: "#eee",
-              borderTopWidth: 1,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "bold",
-                textTransform: "uppercase",
-              }}
-            >
-              {profile.phone}
-            </Text>
-            <Text style={{ fontSize: 12, color: "grey" }}>Номер телефону</Text>
-          </View>
-
-          <View
-            style={{
-              paddingVertical: 16,
-              borderColor: "#eee",
-              borderTopWidth: 1,
-            }}
-          >
-            <Text style={{ fontSize: 16 }}>
-              {profile.bio != "" ? profile.bio : "..."}
-            </Text>
-            <Text style={{ fontSize: 12, color: "grey" }}>Інформація</Text>
-          </View>
-
-          <TouchableOpacity
-            style={{
-              borderWidth: 0.5,
-              borderColor: "#eee",
-              borderRadius: 16,
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              marginTop: 8,
-            }}
-            //onPress={}
-          >
-            <Text
-              style={{
-                color: "red",
-                //textTransform: "uppercase",
-                textAlign: "left",
-                fontSize: 18,
-              }}
-            >
-              Заблокувати
-            </Text>
-          </TouchableOpacity>
         </View>
-      </ScrollView>
-    </View>
+
+        <TouchableOpacity
+          onPress={() =>
+            navigation.goBack()
+          }
+          style={{
+            paddingVertical: 16,
+            borderColor: "#eee",
+            borderTopWidth: 1,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 14,
+              color: "blue",
+              //textTransform: "uppercase",
+            }}
+          >
+          <Entypo name="message" size={14} color="blue" />
+          Написати повідомлення
+          </Text>
+        </TouchableOpacity>
+
+        <View
+          style={{
+            paddingVertical: 16,
+            borderColor: "#eee",
+            borderTopWidth: 1,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "bold",
+              textTransform: "uppercase",
+            }}
+          >
+            {profile.phone}
+          </Text>
+          <Text style={{ fontSize: 12, color: "grey" }}>Номер телефону</Text>
+        </View>
+
+        <View
+          style={{
+            paddingVertical: 16,
+            borderColor: "#eee",
+            borderTopWidth: 1,
+          }}
+        >
+          <Text style={{ fontSize: 16 }}>
+            {profile.bio != "" ? profile.bio : "Розкажіть про себе"}
+          </Text>
+          <Text style={{ fontSize: 12, color: "grey" }}>Про себе</Text>
+        </View>
+
+        <TouchableOpacity
+          style={{
+            borderWidth: 1,
+            borderColor: "#eee",
+            borderRadius: 16,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            marginTop: 8,
+          }}
+          //onPress={logout}
+        >
+          <Text
+            style={{
+              color: "red",
+              //textTransform: "uppercase",
+              textAlign: "left",
+            }}
+          >
+            Заблокувати
+          </Text>
+        </TouchableOpacity>
+
+      </View>
+    </ScrollView>
+  </View>
   );
 }
