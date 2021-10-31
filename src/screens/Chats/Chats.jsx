@@ -106,6 +106,7 @@ export default function ChatsScreen({ navigation }) {
         } else {
           // Chat list is empty
           setChats({});
+          setLoading(false);
         }
       });
 
