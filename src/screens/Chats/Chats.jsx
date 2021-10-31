@@ -100,6 +100,9 @@ export default function ChatsScreen({ navigation }) {
             Haptics.notificationAsync();
           }
           lastMessageTimestamp = allChats[0].timestamp.seconds;
+        } else {
+          // Chat list is empty
+          setChats({});
         }
       });
 

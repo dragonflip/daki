@@ -188,55 +188,59 @@ export default function ChatHistoryScreen({ navigation, route }) {
       .collection("messages")
       .orderBy("timestamp", "desc")
       .onSnapshot((snapshot) => {
-        // All messages
-        let allMessages = snapshot.docs.map((doc) => {
-          return {
-            id: doc.id,
-            me: doc.data().userId == auth.currentUser?.uid,
-            ...doc.data(),
-          };
-        });
-
-        // Date chips
-        let prevMessageDate = "";
-
-        snapshot.docs.reverse().forEach((doc, index) => {
-          let messageDateChip = false;
-
-          if (
-            prevMessageDate !=
-            moment.unix(doc.data().timestamp.seconds).format("DD.MM.YYYY")
-          ) {
-            prevMessageDate = moment
-              .unix(doc.data().timestamp.seconds)
-              .format("DD.MM.YYYY");
-            messageDateChip = true;
-          }
-
-          allMessages[allMessages.length - index - 1].dateChip =
-            messageDateChip;
-        });
-
-        setMessages(allMessages);
-
-        // Update message seen
-        db.collection("chats_dev")
-          .doc(route.params.chatId)
-          .collection("messages")
-          .where("userId", "!=", auth.currentUser?.uid)
-          .where("seen", "==", false)
-          .get()
-          .then((messages) => {
-            if (!messages.empty) {
-              messages.docs.forEach((message) => {
-                message.ref.update({ seen: true });
-              });
-
-              db.collection("chats_dev").doc(route.params.chatId).update({
-                unreadCount: 0,
-              });
-            }
+        if (!snapshot.empty) {
+          // All messages
+          let allMessages = snapshot.docs.map((doc) => {
+            return {
+              id: doc.id,
+              me: doc.data().userId == auth.currentUser?.uid,
+              ...doc.data(),
+            };
           });
+
+          // Date chips
+          let prevMessageDate = "";
+
+          snapshot.docs.reverse().forEach((doc, index) => {
+            let messageDateChip = false;
+
+            if (
+              prevMessageDate !=
+              moment.unix(doc.data().timestamp.seconds).format("DD.MM.YYYY")
+            ) {
+              prevMessageDate = moment
+                .unix(doc.data().timestamp.seconds)
+                .format("DD.MM.YYYY");
+              messageDateChip = true;
+            }
+
+            allMessages[allMessages.length - index - 1].dateChip =
+              messageDateChip;
+          });
+
+          setMessages(allMessages);
+
+          // Update message seen
+          db.collection("chats_dev")
+            .doc(route.params.chatId)
+            .collection("messages")
+            .where("userId", "!=", auth.currentUser?.uid)
+            .where("seen", "==", false)
+            .get()
+            .then((messages) => {
+              if (!messages.empty) {
+                messages.docs.forEach((message) => {
+                  message.ref.update({ seen: true });
+                });
+
+                db.collection("chats_dev").doc(route.params.chatId).update({
+                  unreadCount: 0,
+                });
+              }
+            });
+        } else {
+          navigation.goBack();
+        }
       });
 
     return () => {
@@ -300,6 +304,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
             const fromMeId = auth.currentUser?.uid;
             const toMeId = route.params.userId;
 
+            // Get info about message that will be deleted
             const deletedMessage = (
               await db
                 .collection("chats_dev")
@@ -309,6 +314,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 .get()
             ).data();
 
+            // Delete message
             await db
               .collection("chats_dev")
               .doc(route.params.chatId)
@@ -316,31 +322,45 @@ export default function ChatHistoryScreen({ navigation, route }) {
               .doc(messageId)
               .delete();
 
-            const lastMessage = (
+            // Get last message reference
+            const lastMessageRef = await db
+              .collection("chats_dev")
+              .doc(route.params.chatId)
+              .collection("messages")
+              .orderBy("timestamp", "desc")
+              .limit(1)
+              .get();
+
+            // If chat has 0 messages then delete it
+            if (lastMessageRef.empty) {
               await db
                 .collection("chats_dev")
                 .doc(route.params.chatId)
-                .collection("messages")
-                .orderBy("timestamp", "desc")
-                .limit(1)
-                .get()
-            ).docs[0].data();
+                .delete();
 
-            await db
-              .collection("chats_dev")
-              .doc(route.params.chatId)
-              .update({
-                message: {
-                  [fromMeId]:
-                    lastMessage.userId === fromMeId ? lastMessage.message : "",
-                  [toMeId]:
-                    lastMessage.userId === toMeId ? lastMessage.message : "",
-                },
-                timestamp: lastMessage.timestamp,
-                unreadCount: !deletedMessage.seen
-                  ? firebase.firestore.FieldValue.increment(-1)
-                  : firebase.firestore.FieldValue.increment(0),
-              });
+              navigation.goBack();
+            } else {
+              const lastMessage = lastMessageRef.docs[0].data();
+
+              // Change chat info
+              await db
+                .collection("chats_dev")
+                .doc(route.params.chatId)
+                .update({
+                  message: {
+                    [fromMeId]:
+                      lastMessage.userId === fromMeId
+                        ? lastMessage.message
+                        : "",
+                    [toMeId]:
+                      lastMessage.userId === toMeId ? lastMessage.message : "",
+                  },
+                  timestamp: lastMessage.timestamp,
+                  unreadCount: !deletedMessage.seen
+                    ? firebase.firestore.FieldValue.increment(-1)
+                    : firebase.firestore.FieldValue.increment(0),
+                });
+            }
           },
         },
       ]
