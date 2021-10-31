@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
+import StarRating from 'react-native-star-rating';
 import {
   Text,
   View,
@@ -23,10 +24,12 @@ import { firebase, db, auth } from "../../firebase";
 
 export default function ProfileScreen({ route, navigation }) {
   const [profile, setProfile] = useState([]);
+  const [starRate, setStarRate] = useState(2.5);
   let onlineChecker;
 
   // Get data from storage
   useEffect(() => {
+
     // Get user profile
     const unsubscribeSnaphot = db
       .collection("users")
@@ -137,11 +140,23 @@ export default function ProfileScreen({ route, navigation }) {
               paddingBottom: 16,
             }}
           >
-            <Text style={{ color: "green", fontSize: 24 }}>62%</Text>
+            <Text style={{ color: "red", fontSize: 24 }}>2.4★</Text>
             <Text style={{ color: "grey" }}>рейтинг</Text>
           </View>
         </View>
 
+        <View style={{ flex: 1, paddingBottom: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <StarRating
+              disabled={false}
+              maxStars={5}
+              rating = {starRate}
+              selectedStar = {(rating) => setStarRate(rating)}
+            />
+          </View>
+        </View>
+
+        {console.log(starRate," ", setStarRate)}
         <TouchableOpacity
           onPress={() =>
             navigation.goBack()
