@@ -9,7 +9,6 @@ import {
   Image,
   Platform,
   Alert,
-  TouchableWithoutFeedback,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -30,7 +29,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const input = useRef();
-  const [showDropdown, setShowDropdown] = useState(false);
 
   // Init
   useEffect(() => {
@@ -179,25 +177,13 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 </View>
               )}
             </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPress={() => {
-                setShowDropdown((showDropdown) => !showDropdown);
-              }}
-            >
-              <MaterialCommunityIcons
-                name="dots-vertical"
-                size={24}
-                color="#000"
-              />
-            </TouchableOpacity>
-          ),
+          ) : null,
       });
     };
 
     // Get messages
     const messagesSnapshotUnsubscribe = db
-      .collection("chats")
+      .collection("chats_dev")
       .doc(route.params.chatId)
       .collection("messages")
       .orderBy("timestamp", "desc")
@@ -234,16 +220,22 @@ export default function ChatHistoryScreen({ navigation, route }) {
         setMessages(allMessages);
 
         // Update message seen
-        db.collection("chats")
+        db.collection("chats_dev")
           .doc(route.params.chatId)
           .collection("messages")
           .where("userId", "!=", auth.currentUser?.uid)
           .where("seen", "==", false)
           .get()
           .then((messages) => {
-            messages.docs.forEach((message) => {
-              message.ref.update({ seen: true });
-            });
+            if (!messages.empty) {
+              messages.docs.forEach((message) => {
+                message.ref.update({ seen: true });
+              });
+
+              db.collection("chats_dev").doc(route.params.chatId).update({
+                unreadCount: 0,
+              });
+            }
           });
       });
 
@@ -255,9 +247,12 @@ export default function ChatHistoryScreen({ navigation, route }) {
   }, []);
 
   // Send message
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (inputMessage.trim() !== "") {
-      db.collection("chats")
+      input.current.clear();
+
+      await db
+        .collection("chats_dev")
         .doc(route.params.chatId)
         .collection("messages")
         .add({
@@ -267,8 +262,22 @@ export default function ChatHistoryScreen({ navigation, route }) {
           seen: false,
         });
 
+      const fromMeId = auth.currentUser?.uid;
+      const toMeId = route.params.userId;
+
+      await db
+        .collection("chats_dev")
+        .doc(route.params.chatId)
+        .update({
+          message: {
+            [fromMeId]: inputMessage,
+            [toMeId]: "",
+          },
+          timestamp: firebase.firestore.Timestamp.now(),
+          unreadCount: firebase.firestore.FieldValue.increment(1),
+        });
+
       setInputMessage("");
-      input.current.clear();
     }
   };
 
@@ -288,12 +297,50 @@ export default function ChatHistoryScreen({ navigation, route }) {
           text: "Видалити",
           style: "destructive",
           onPress: async () => {
+            const fromMeId = auth.currentUser?.uid;
+            const toMeId = route.params.userId;
+
+            const deletedMessage = (
+              await db
+                .collection("chats_dev")
+                .doc(route.params.chatId)
+                .collection("messages")
+                .doc(messageId)
+                .get()
+            ).data();
+
             await db
-              .collection("chats")
+              .collection("chats_dev")
               .doc(route.params.chatId)
               .collection("messages")
               .doc(messageId)
               .delete();
+
+            const lastMessage = (
+              await db
+                .collection("chats_dev")
+                .doc(route.params.chatId)
+                .collection("messages")
+                .orderBy("timestamp", "desc")
+                .limit(1)
+                .get()
+            ).docs[0].data();
+
+            await db
+              .collection("chats_dev")
+              .doc(route.params.chatId)
+              .update({
+                message: {
+                  [fromMeId]:
+                    lastMessage.userId === fromMeId ? lastMessage.message : "",
+                  [toMeId]:
+                    lastMessage.userId === toMeId ? lastMessage.message : "",
+                },
+                timestamp: lastMessage.timestamp,
+                unreadCount: !deletedMessage.seen
+                  ? firebase.firestore.FieldValue.increment(-1)
+                  : firebase.firestore.FieldValue.increment(0),
+              });
           },
         },
       ]
@@ -303,43 +350,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-
-      {showDropdown ? (
-        <TouchableWithoutFeedback
-          onPress={() => setShowDropdown((showDropdown) => !showDropdown)}
-        >
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              zIndex: 1000,
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              width: "100%",
-              height: "100%",
-            }}
-          >
-            <View
-              style={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                zIndex: 2000,
-                backgroundColor: "#fff",
-                borderRadius: 16,
-                padding: 16,
-              }}
-            >
-              <TouchableOpacity
-                style={{ flexDirection: "row", alignItems: "center" }}
-              >
-                <MaterialCommunityIcons name="delete" size={24} color="red" />
-                <Text style={{ color: "red" }}>Видалити чат</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      ) : null}
 
       <SafeAreaView style={{ flex: 1, paddingBottom: 8 }}>
         <KeyboardAvoider

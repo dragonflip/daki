@@ -7,6 +7,7 @@ import {
   FlatList,
   AppState,
   Platform,
+  Alert,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -28,7 +29,7 @@ export default function ChatsScreen({ navigation }) {
       headerLeft: () =>
         Platform.OS === "ios" ? (
           <TouchableOpacity
-            onPress={() => navigation.navigate("Search")}
+            onPress={() => navigation.navigate("CreateChat")}
             style={{ marginLeft: 12 }}
           >
             <MaterialCommunityIcons
@@ -55,155 +56,61 @@ export default function ChatsScreen({ navigation }) {
     AppState.addEventListener("change", handleAppStateChange);
     handleAppStateChange("active");
 
-    const onlineUpdater = setInterval(() => {
-      handleAppStateChange("active");
-    }, 10000);
+    // const onlineUpdater = setInterval(() => {
+    //   handleAppStateChange("active");
+    // }, 10000);
 
-    let usersSnapshotUnsubscribe,
-      messagesSnapshotUnsubscribe,
-      unreadCountSnapshotUnsubscribe;
-
-    let notifications = false;
     let lastMessageTimestamp = 0;
-    let onlineChecker;
+    // let onlineChecker;
 
     // Select chats where I'm member
     const chatsSnapshotUnsubscribe = db
-      .collection("chats")
+      .collection("chats_dev")
       .where("members", "array-contains", auth.currentUser?.uid)
-      .onSnapshot((chatsSnapshot) => {
-        let allChats = {};
+      .orderBy("timestamp", "desc")
+      .onSnapshot((snapshot) => {
+        if (!snapshot.empty) {
+          const allChats = snapshot.docs.map((chat) => {
+            const fromMeId = auth.currentUser?.uid;
+            const toMeId = chat
+              .data()
+              .members.filter((member) => member != auth.currentUser?.uid)[0];
 
-        chatsSnapshot.docs.forEach((chat) => {
-          let chatData = {};
+            return {
+              id: chat.id,
+              userId: toMeId,
+              name: chat.data().name[toMeId],
+              photo: chat.data().photo[toMeId],
+              message:
+                chat.data().message[toMeId] || chat.data().message[fromMeId],
+              me: chat.data().message[fromMeId] != "",
+              online: chat.data().online[toMeId],
+              timestamp: chat.data().timestamp,
+              unreadCount: chat.data().unreadCount,
+              seen: chat.data().unreadCount === 0,
+            };
+          });
 
-          const userId = chat
-            .data()
-            .members.filter((member) => member != auth.currentUser?.uid)[0];
+          // Vibrate if new message
+          if (
+            !allChats[0].me &&
+            allChats[0].timestamp.seconds > lastMessageTimestamp
+          ) {
+            Haptics.notificationAsync();
+          }
 
-          // Get chat user info
-          usersSnapshotUnsubscribe = db
-            .collection("users")
-            .doc(userId)
-            .onSnapshot((users) => {
-              // Chat data
-              if (users.exists) {
-                chatData = {
-                  ...chatData,
-                  id: chat.id,
-                  name: users.data().name,
-                  photo: users.data().profilePhoto,
-                  online: users.data().online,
-                  userId: users.id,
-                };
+          lastMessageTimestamp = allChats[0].timestamp.seconds;
 
-                allChats[chat.id] = chatData;
-                setChats(
-                  // Sort chats by last message timestamp
-                  Object.values(allChats).sort(
-                    (a, b) => b.timestamp?.seconds > a.timestamp?.seconds
-                  )
-                );
-                clearInterval(onlineChecker);
-
-                // Check online status for changes
-                onlineChecker = setInterval(() => {
-                  if (
-                    users.data().online?.seconds <
-                    firebase.firestore.Timestamp.now().seconds
-                  ) {
-                    setChats(
-                      // Sort chats by last message timestamp
-                      Object.values(allChats).sort(
-                        (a, b) => b.timestamp?.seconds > a.timestamp?.seconds
-                      )
-                    );
-                    clearInterval(onlineChecker);
-                  }
-                }, 10000);
-              }
-            });
-
-          // Get message
-          messagesSnapshotUnsubscribe = db
-            .collection("chats")
-            .doc(chat.id)
-            .collection("messages")
-            .orderBy("timestamp", "desc")
-            .limit(20) // Caching messages
-            .onSnapshot((messages) => {
-              // Chat data
-              chatData = {
-                ...chatData,
-                id: chat.id,
-                message: messages.docs[0].data().message,
-                timestamp: messages.docs[0].data().timestamp,
-                seen: messages.docs[0].data().seen,
-                me: messages.docs[0].data().userId == auth.currentUser?.uid,
-              };
-
-              allChats[chat.id] = chatData;
-              setChats(
-                // Sort chats by last message timestamp
-                Object.values(allChats).sort(
-                  (a, b) => b.timestamp?.seconds > a.timestamp?.seconds
-                )
-              );
-
-              // Vibrate if new message
-              if (
-                messages.docs[0].data().userId !== auth.currentUser?.uid &&
-                messages.docs[0].data().seen === false &&
-                messages.docs[0].data().timestamp.seconds >
-                  lastMessageTimestamp &&
-                notifications
-              ) {
-                Haptics.notificationAsync();
-              } else {
-                notifications = true;
-              }
-
-              lastMessageTimestamp = messages.docs[0].data().timestamp.seconds;
-            });
-
-          // Get unread messages count
-          unreadCountSnapshotUnsubscribe = db
-            .collection("chats")
-            .doc(chat.id)
-            .collection("messages")
-            .where("userId", "!=", auth.currentUser?.uid)
-            .where("seen", "==", false)
-            .onSnapshot((unreadMessages) => {
-              // Chat data
-              chatData = {
-                ...chatData,
-                id: chat.id,
-                unreadCount: unreadMessages.docs.length,
-              };
-
-              allChats[chat.id] = chatData;
-              setChats(
-                // Sort chats by last message timestamp
-                Object.values(allChats).sort(
-                  (a, b) => b.timestamp?.seconds > a.timestamp?.seconds
-                )
-              );
-
-              // console.log(Object.values(allChats));
-            });
-        });
+          setChats(allChats);
+        }
       });
 
     return () => {
-      // TODO fix this try-catch
-      try {
-        chatsSnapshotUnsubscribe();
-        usersSnapshotUnsubscribe();
-        messagesSnapshotUnsubscribe();
-        unreadCountSnapshotUnsubscribe();
-        clearInterval(onlineChecker);
-        clearInterval(onlineUpdater);
-      } catch {}
+      chatsSnapshotUnsubscribe();
+
+      // TODO without intervals in all screens
+      // clearInterval(onlineChecker);
+      // clearInterval(onlineUpdater);
 
       AppState.removeEventListener("change", handleAppStateChange);
     };
@@ -229,6 +136,35 @@ export default function ChatsScreen({ navigation }) {
     } else {
       return moment.unix(seconds).format("DD.MM.YYYY");
     }
+  };
+
+  // Delete chat
+  const deleteChat = (chatId) => {
+    Haptics.selectionAsync();
+
+    Alert.alert("Видалити чат?", "Чат буде видалено для всіх", [
+      {
+        text: "Скасувати",
+        style: "cancel",
+      },
+      {
+        text: "Видалити",
+        style: "destructive",
+        onPress: () => {
+          db.collection("chats_dev")
+            .doc(chatId)
+            .collection("messages")
+            .get()
+            .then(async (messages) => {
+              for (const message of messages.docs) {
+                await message.ref.delete();
+              }
+
+              await db.collection("chats_dev").doc(chatId).delete();
+            });
+        },
+      },
+    ]);
   };
 
   return (
@@ -270,6 +206,7 @@ export default function ChatsScreen({ navigation }) {
                   userId: item.userId,
                 })
               }
+              onLongPress={() => deleteChat(item.id)}
             >
               {item.photo != "" ? (
                 <Image
@@ -315,7 +252,7 @@ export default function ChatsScreen({ navigation }) {
                     ) : null}
                     {item.message}
                   </Text>
-                  {item.unreadCount > 0 ? (
+                  {item.unreadCount > 0 && !item.me ? (
                     <View style={styles.chat_unreadCount}>
                       <Text style={styles.chat_unreadCountText}>
                         {item.unreadCount}

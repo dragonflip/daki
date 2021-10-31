@@ -31,11 +31,38 @@ export default function CreateChatScreen({ navigation }) {
   }, []);
 
   const createChat = async (userId) => {
-    const ref = await db.collection("chats").add({
+    const fromMeId = auth.currentUser?.uid;
+    const toMeId = userId;
+
+    const fromMeInfo = (
+      await db.collection("users").doc(fromMeId).get()
+    ).data();
+    const toMeInfo = (await db.collection("users").doc(toMeId).get()).data();
+
+    const ref = await db.collection("chats_dev").add({
       group: false,
+      groupMessage: "",
       groupName: "",
       groupPhoto: "",
-      members: [auth.currentUser?.uid, userId],
+      members: [fromMeId, toMeId],
+      message: {
+        [fromMeId]: "Привіт, розпочнемо спілкування😎",
+        [toMeId]: "",
+      },
+      name: {
+        [fromMeId]: fromMeInfo.name,
+        [toMeId]: toMeInfo.name,
+      },
+      online: {
+        [fromMeId]: fromMeInfo.online,
+        [toMeId]: toMeInfo.online,
+      },
+      photo: {
+        [fromMeId]: fromMeInfo.profilePhoto,
+        [toMeId]: toMeInfo.profilePhoto,
+      },
+      timestamp: firebase.firestore.Timestamp.now(),
+      unreadCount: 1,
     });
 
     await ref.collection("messages").add({
