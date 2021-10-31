@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   AppState,
+  Platform,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -24,6 +25,19 @@ export default function ChatsScreen({ navigation }) {
   // Navigation
   useLayoutEffect(() => {
     navigation.setOptions({
+      headerLeft: () =>
+        Platform.OS === "ios" ? (
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Search")}
+            style={{ marginLeft: 12 }}
+          >
+            <MaterialCommunityIcons
+              name="chat-plus-outline"
+              size={24}
+              color="#000"
+            />
+          </TouchableOpacity>
+        ) : null,
       headerRight: () => (
         <TouchableOpacity
           onPress={() => navigation.navigate("Search")}
@@ -220,6 +234,27 @@ export default function ChatsScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
+
+      {Platform.OS === "android" && chats.length > 0 ? (
+        <TouchableOpacity
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 64,
+            backgroundColor: "#000",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "absolute",
+            bottom: 16,
+            right: 16,
+            zIndex: 1000,
+          }}
+          activeOpacity={0.5}
+          onPress={() => navigation.navigate("CreateChat")}
+        >
+          <MaterialCommunityIcons name="chat-plus" size={32} color="#fff" />
+        </TouchableOpacity>
+      ) : null}
 
       {chats.length > 0 ? (
         <FlatList
