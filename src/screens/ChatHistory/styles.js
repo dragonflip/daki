@@ -38,6 +38,7 @@ export default StyleSheet.create({
   },
   messageTextFromMe: {
     color: "#fff",
+    maxWidth: "80%",
   },
 
   messageToMe: {
@@ -59,6 +60,7 @@ export default StyleSheet.create({
   },
   messageTextToMe: {
     color: "#000",
+    maxWidth: "80%",
   },
 
   messageTime: {
