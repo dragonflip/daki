@@ -103,23 +103,6 @@ export default function SettingsScreen({ navigation }) {
           </View>
         )}
 
-        {/* <TouchableOpacity
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 64,
-            backgroundColor: "#000",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "absolute",
-            top: Dimensions.get("window").width - 32,
-            right: 16,
-            zIndex: 1,
-          }}
-        >
-          <MaterialIcons name="add-a-photo" size={24} color="#fff" />
-        </TouchableOpacity> */}
-
         <View style={{ paddingHorizontal: 16 }}>
           <View
             style={{
@@ -157,16 +140,6 @@ export default function SettingsScreen({ navigation }) {
               )}
             </View>
 
-            {/* <TouchableOpacity
-              style={{
-                borderWidth: 1,
-                borderColor: "grey",
-                borderRadius: 24,
-                padding: 8,
-              }}
-            >
-              <Feather name="edit-3" size={24} color="#000" />
-            </TouchableOpacity> */}
             <View
               style={{
                 alignItems: "center",
@@ -179,7 +152,13 @@ export default function SettingsScreen({ navigation }) {
           </View>
 
           <TouchableOpacity
-          onPress={() => navigation.navigate("Edit", {userName: profile.name, userBio: profile.bio, userPhoto: profile.profilePhoto})}
+            onPress={() =>
+              navigation.navigate("Edit", {
+                userName: profile.name,
+                userBio: profile.bio,
+                userPhoto: profile.profilePhoto,
+              })
+            }
             style={{
               paddingVertical: 16,
               borderColor: "#eee",
@@ -188,11 +167,11 @@ export default function SettingsScreen({ navigation }) {
           >
             <Text
               style={{
-                fontSize: 16,
+                fontSize: 14,
                 color: "blue",
               }}
             >
-              <Feather name="edit" size={18} color="blue" /> Редагувати профіль
+              <Feather name="edit" size={14} color="blue" /> Редагувати профіль
               та фото
             </Text>
           </TouchableOpacity>
