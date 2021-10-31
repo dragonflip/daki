@@ -26,9 +26,8 @@ import { firebase, db, auth } from "../../firebase";
 export default function EditScreen({ route, navigation }) {
   const [image, setImage] = useState(null);
   const [photo, setPhoto] = useState(route.params.profile_photo);
-  const [newName, setNewName] = useState("");
-  const [newBio, setNewBio] = useState("");
-
+  const [newName, setNewName] = useState(route.params.userName);
+  const [newBio, setNewBio] = useState(route.params.userBio);
 
   useEffect(() => {
     (async () => {
@@ -55,10 +54,10 @@ export default function EditScreen({ route, navigation }) {
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.5,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
     });
 
     //console.log(result);
@@ -141,7 +140,7 @@ export default function EditScreen({ route, navigation }) {
 
           <TextInput 
           placeholder = "Про себе" 
-          style = {[styles.input, {marginTop: 5}]} onChangeText = {(bio) => setNewBio(bio)} defaultValue = {route.params.userBio} />
+          style = {[styles.input, {marginTop: 5}]} on onChangeText = {(bio) => setNewBio(bio)} defaultValue = {route.params.userBio} />
         </View>
       </View>
     </View>
