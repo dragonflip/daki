@@ -101,6 +101,7 @@ export default function AuthPhoneScreen({ navigation }) {
           defaultValue="+380"
           ref={input}
           maxLength={13}
+          selectionColor="#000"
         />
 
         <ButtonWithLoading

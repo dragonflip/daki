@@ -72,6 +72,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
           ref={input}
           maxLength={20}
           autoFocus={Platform.OS === "ios"}
+          selectionColor="#000"
         />
 
         <ButtonWithLoading

@@ -91,6 +91,7 @@ export default function AuthCodeScreen({ navigation, route }) {
           ref={input}
           maxLength={6}
           autoFocus={Platform.OS === "ios"}
+          selectionColor="#000"
         />
 
         <ButtonWithLoading

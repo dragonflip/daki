@@ -1,31 +1,27 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
-import StarRating from "react-native-star-rating";
 import {
   Text,
   View,
   Dimensions,
   TouchableOpacity,
   ScrollView,
-  ImageBackground,
   Image,
 } from "react-native";
 
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import Constants from "expo-constants";
-import { Feather, Octicons, Ionicons, Entypo } from "@expo/vector-icons";
+import { Octicons, Ionicons, Entypo } from "@expo/vector-icons";
 import "moment/locale/uk";
 import Moment from "react-moment";
+import StarRating from "react-native-star-rating";
 
 // Styles
 import styles from "./styles";
 // Firebase
-import { firebase, db, auth } from "../../firebase";
+import { firebase, db } from "../../firebase";
 
 export default function ProfileScreen({ route, navigation }) {
   const [profile, setProfile] = useState([]);
   const [starRate, setStarRate] = useState(2.5);
-  let onlineChecker;
 
   // Get data from storage
   useEffect(() => {
@@ -35,18 +31,6 @@ export default function ProfileScreen({ route, navigation }) {
       .doc(route.params.userId)
       .onSnapshot((snapshot) => {
         setProfile(snapshot.data());
-        clearInterval(onlineChecker);
-
-        // Check online status for changes
-        onlineChecker = setInterval(() => {
-          if (
-            snapshot.data().online?.seconds <
-            firebase.firestore.Timestamp.now().seconds
-          ) {
-            setProfile(snapshot.data());
-            clearInterval(onlineChecker);
-          }
-        }, 10000);
       });
 
     return unsubscribeSnaphot;

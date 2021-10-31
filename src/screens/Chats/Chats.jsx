@@ -119,6 +119,7 @@ export default function ChatsScreen({ navigation }) {
 
   const handleAppStateChange = async (state) => {
     if (state !== "inactive") {
+      // Update online status in users
       await db
         .collection("users")
         .doc(auth.currentUser?.uid)
@@ -131,6 +132,7 @@ export default function ChatsScreen({ navigation }) {
               : firebase.firestore.Timestamp.now(),
         });
 
+      // Update online status in chats
       db.collection("chats_dev")
         .where("members", "array-contains", auth.currentUser?.uid)
         .orderBy("timestamp", "desc")
