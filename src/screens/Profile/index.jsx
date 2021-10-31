@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
-import StarRating from 'react-native-star-rating';
+import StarRating from "react-native-star-rating";
 import {
   Text,
   View,
@@ -29,7 +29,6 @@ export default function ProfileScreen({ route, navigation }) {
 
   // Get data from storage
   useEffect(() => {
-
     // Get user profile
     const unsubscribeSnaphot = db
       .collection("users")
@@ -48,12 +47,10 @@ export default function ProfileScreen({ route, navigation }) {
             clearInterval(onlineChecker);
           }
         }, 10000);
-
       });
 
     return unsubscribeSnaphot;
   }, []);
-
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -66,175 +63,172 @@ export default function ProfileScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-    <StatusBar style="auto" />
+      <StatusBar style="auto" />
 
-    <ScrollView>
-      {profile.profilePhoto !== "" ? (
-        <Image
-          source={{
-            uri: profile.profilePhoto,
-          }}
-          style={{
-            width: Dimensions.get("window").width,
-            height: Dimensions.get("window").width,
-          }}
-        />
-      ) : (
-        <View
-          style={{
-            width: Dimensions.get("window").width,
-            height: Dimensions.get("window").width,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#eee",
-          }}
-        >
-          <Ionicons
-            name="camera"
-            size={Dimensions.get("window").width * 0.4}
-            color="#aaa"
+      <ScrollView>
+        {profile.profilePhoto !== "" ? (
+          <Image
+            source={{
+              uri: profile.profilePhoto,
+            }}
+            style={{
+              width: Dimensions.get("window").width,
+              height: Dimensions.get("window").width,
+            }}
           />
-        </View>
-      )}
+        ) : (
+          <View
+            style={{
+              width: Dimensions.get("window").width,
+              height: Dimensions.get("window").width,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#eee",
+            }}
+          >
+            <Ionicons
+              name="camera"
+              size={Dimensions.get("window").width * 0.4}
+              color="#aaa"
+            />
+          </View>
+        )}
 
-      <View style={{ paddingHorizontal: 16 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            paddingTop: 16,
-          }}
-        >
-          <View style={{ flex: 1, paddingBottom: 16 }}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={{ fontSize: 24 }}>{profile.name}</Text>
+        <View style={{ paddingHorizontal: 16 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingTop: 16,
+            }}
+          >
+            <View style={{ flex: 1, paddingBottom: 16 }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={{ fontSize: 24 }}>{profile.name}</Text>
 
-              {profile.verified ? (
-                <Octicons
-                  name="verified"
-                  size={20}
-                  color="blue"
-                  style={{ marginLeft: 8 }}
-                />
-              ) : null}
+                {profile.verified ? (
+                  <Octicons
+                    name="verified"
+                    size={20}
+                    color="blue"
+                    style={{ marginLeft: 8 }}
+                  />
+                ) : null}
+              </View>
+
+              {profile.online?.seconds >
+              firebase.firestore.Timestamp.now().seconds + 10 ? (
+                <Text style={{ color: "green" }}>онлайн</Text>
+              ) : (
+                <View>
+                  <Text style={{ color: "grey" }}>
+                    В мережі{" "}
+                    <Moment element={Text} locale="uk" fromNow unix>
+                      {profile.online?.seconds}
+                    </Moment>
+                  </Text>
+                </View>
+              )}
             </View>
 
-            {profile.online?.seconds >
-            firebase.firestore.Timestamp.now().seconds ? (
-              <Text style={{ color: "green" }}>онлайн</Text>
-            ) : (
-              <View>
-                <Text style={{ color: "grey" }}>
-                  В мережі{" "}
-                  <Moment element={Text} locale="uk" fromNow unix>
-                    {profile.online?.seconds}
-                  </Moment>
-                </Text>
-              </View>
-            )}
+            <View
+              style={{
+                alignItems: "center",
+                paddingBottom: 16,
+              }}
+            >
+              <Text style={{ color: "red", fontSize: 24 }}>2.4★</Text>
+              <Text style={{ color: "grey" }}>рейтинг</Text>
+            </View>
+          </View>
+
+          <View style={{ flex: 1, paddingBottom: 16 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <StarRating
+                disabled={false}
+                maxStars={5}
+                rating={starRate}
+                selectedStar={(rating) => setStarRate(rating)}
+              />
+            </View>
+          </View>
+
+          {console.log(starRate)}
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{
+              paddingVertical: 16,
+              borderColor: "#eee",
+              borderTopWidth: 1,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 14,
+                color: "blue",
+                //textTransform: "uppercase",
+              }}
+            >
+              <Entypo name="message" size={14} color="blue" />
+              Написати повідомлення
+            </Text>
+          </TouchableOpacity>
+
+          <View
+            style={{
+              paddingVertical: 16,
+              borderColor: "#eee",
+              borderTopWidth: 1,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "bold",
+                textTransform: "uppercase",
+              }}
+            >
+              {profile.phone}
+            </Text>
+            <Text style={{ fontSize: 12, color: "grey" }}>Номер телефону</Text>
           </View>
 
           <View
             style={{
-              alignItems: "center",
-              paddingBottom: 16,
+              paddingVertical: 16,
+              borderColor: "#eee",
+              borderTopWidth: 1,
             }}
           >
-            <Text style={{ color: "red", fontSize: 24 }}>2.4★</Text>
-            <Text style={{ color: "grey" }}>рейтинг</Text>
+            <Text style={{ fontSize: 16 }}>
+              {profile.bio != "" ? profile.bio : "Розкажіть про себе"}
+            </Text>
+            <Text style={{ fontSize: 12, color: "grey" }}>Про себе</Text>
           </View>
-        </View>
 
-        <View style={{ flex: 1, paddingBottom: 16 }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <StarRating
-              disabled={false}
-              maxStars={5}
-              rating = {starRate}
-              selectedStar = {(rating) => setStarRate(rating)}
-            />
-          </View>
-        </View>
-
-        {console.log(starRate," ", setStarRate)}
-        <TouchableOpacity
-          onPress={() =>
-            navigation.goBack()
-          }
-          style={{
-            paddingVertical: 16,
-            borderColor: "#eee",
-            borderTopWidth: 1,
-          }}
-        >
-          <Text
+          <TouchableOpacity
             style={{
-              fontSize: 14,
-              color: "blue",
-              //textTransform: "uppercase",
+              borderWidth: 1,
+              borderColor: "#eee",
+              borderRadius: 16,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              marginTop: 8,
             }}
+            //onPress={logout}
           >
-          <Entypo name="message" size={14} color="blue" />
-          Написати повідомлення
-          </Text>
-        </TouchableOpacity>
-
-        <View
-          style={{
-            paddingVertical: 16,
-            borderColor: "#eee",
-            borderTopWidth: 1,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "bold",
-              textTransform: "uppercase",
-            }}
-          >
-            {profile.phone}
-          </Text>
-          <Text style={{ fontSize: 12, color: "grey" }}>Номер телефону</Text>
+            <Text
+              style={{
+                color: "red",
+                //textTransform: "uppercase",
+                textAlign: "left",
+              }}
+            >
+              Заблокувати
+            </Text>
+          </TouchableOpacity>
         </View>
-
-        <View
-          style={{
-            paddingVertical: 16,
-            borderColor: "#eee",
-            borderTopWidth: 1,
-          }}
-        >
-          <Text style={{ fontSize: 16 }}>
-            {profile.bio != "" ? profile.bio : "Розкажіть про себе"}
-          </Text>
-          <Text style={{ fontSize: 12, color: "grey" }}>Про себе</Text>
-        </View>
-
-        <TouchableOpacity
-          style={{
-            borderWidth: 1,
-            borderColor: "#eee",
-            borderRadius: 16,
-            paddingVertical: 12,
-            paddingHorizontal: 16,
-            marginTop: 8,
-          }}
-          //onPress={logout}
-        >
-          <Text
-            style={{
-              color: "red",
-              //textTransform: "uppercase",
-              textAlign: "left",
-            }}
-          >
-            Заблокувати
-          </Text>
-        </TouchableOpacity>
-
-      </View>
-    </ScrollView>
-  </View>
+      </ScrollView>
+    </View>
   );
 }

@@ -126,7 +126,7 @@ export default function SettingsScreen({ navigation }) {
               </View>
 
               {profile.online?.seconds >
-              firebase.firestore.Timestamp.now().seconds ? (
+              firebase.firestore.Timestamp.now().seconds + 10 ? (
                 <Text style={{ color: "green" }}>онлайн</Text>
               ) : (
                 <View>

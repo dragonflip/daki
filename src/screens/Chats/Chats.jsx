@@ -74,7 +74,7 @@ export default function ChatsScreen({ navigation }) {
             const fromMeId = auth.currentUser?.uid;
             const toMeId = chat
               .data()
-              .members.filter((member) => member != auth.currentUser?.uid)[0];
+              .members.filter((member) => member != fromMeId)[0];
 
             return {
               id: chat.id,
@@ -90,6 +90,7 @@ export default function ChatsScreen({ navigation }) {
               seen: chat.data().unreadCount === 0,
             };
           });
+          setChats(allChats);
 
           // Vibrate if new message
           if (
@@ -98,10 +99,7 @@ export default function ChatsScreen({ navigation }) {
           ) {
             Haptics.notificationAsync();
           }
-
           lastMessageTimestamp = allChats[0].timestamp.seconds;
-
-          setChats(allChats);
         }
       });
 
@@ -117,17 +115,44 @@ export default function ChatsScreen({ navigation }) {
   }, []);
 
   const handleAppStateChange = async (state) => {
-    await db
-      .collection("users")
-      .doc(auth.currentUser?.uid)
-      .update({
-        online:
-          state != "background"
-            ? firebase.firestore.Timestamp.fromMillis(
-                (firebase.firestore.Timestamp.now().seconds + 60) * 1000
-              )
-            : firebase.firestore.Timestamp.now(),
-      });
+    if (state !== "inactive") {
+      await db
+        .collection("users")
+        .doc(auth.currentUser?.uid)
+        .update({
+          online:
+            state != "background"
+              ? firebase.firestore.Timestamp.fromMillis(
+                  (firebase.firestore.Timestamp.now().seconds + 60) * 1000
+                )
+              : firebase.firestore.Timestamp.now(),
+        });
+
+      db.collection("chats_dev")
+        .where("members", "array-contains", auth.currentUser?.uid)
+        .orderBy("timestamp", "desc")
+        .get()
+        .then((chats) => {
+          chats.docs.forEach(async (chat) => {
+            const fromMeId = auth.currentUser?.uid;
+            const toMeId = chat
+              .data()
+              .members.filter((member) => member != fromMeId)[0];
+
+            await chat.ref.update({
+              online: {
+                [fromMeId]:
+                  state != "background"
+                    ? firebase.firestore.Timestamp.fromMillis(
+                        (firebase.firestore.Timestamp.now().seconds + 60) * 1000
+                      )
+                    : firebase.firestore.Timestamp.now(),
+                [toMeId]: chat.data().online[toMeId],
+              },
+            });
+          });
+        });
+    }
   };
 
   const dateFormat = (seconds) => {
@@ -224,7 +249,7 @@ export default function ChatsScreen({ navigation }) {
               )}
 
               {item.online?.seconds >
-              firebase.firestore.Timestamp.now().seconds ? (
+              firebase.firestore.Timestamp.now().seconds + 10 ? (
                 <View style={styles.chat_online}></View>
               ) : null}
 

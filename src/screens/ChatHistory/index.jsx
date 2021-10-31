@@ -72,7 +72,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                   {chatInfo.name}
                 </Text>
                 {chatInfo.online?.seconds >
-                firebase.firestore.Timestamp.now().seconds ? (
+                firebase.firestore.Timestamp.now().seconds + 10 ? (
                   <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
                 ) : (
                   <View>
@@ -127,7 +127,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     {chatInfo.name}
                   </Text>
                   {chatInfo.online?.seconds >
-                  firebase.firestore.Timestamp.now().seconds ? (
+                  firebase.firestore.Timestamp.now().seconds + 10 ? (
                     <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
                   ) : (
                     <View>
