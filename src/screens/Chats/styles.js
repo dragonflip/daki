@@ -84,9 +84,4 @@ export default StyleSheet.create({
     borderWidth: 2,
     backgroundColor: "green",
   },
-  input: {
-    height: 40,
-    width: 300,
-    fontSize: 18
-  },
 });

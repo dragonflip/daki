@@ -11,6 +11,7 @@ import {
   Alert,
   ActivityIndicator,
   AppState,
+  Dimensions,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -40,102 +41,57 @@ export default function ChatHistoryScreen({ navigation, route }) {
   useEffect(() => {
     AppState.addEventListener("change", handleAppStateChange);
 
-    let onlineChecker;
-
     // Get member
     // TODO chat group info
     const memberSnapshotUnsubscribe = db
-      .collection("users")
-      .doc(route.params.userId)
+      .collection("chats_dev")
+      .doc(route.params.chatId)
       .onSnapshot((snapshot) => {
-        changeHeader(snapshot.data());
-        clearInterval(onlineChecker);
+        const fromMeId = auth.currentUser?.uid;
+        const toMeId = snapshot
+          .data()
+          .members.filter((member) => member != fromMeId)[0];
 
-        // Check online status for changes
-        onlineChecker = setInterval(() => {
-          if (
-            snapshot.data().online?.seconds <
-            firebase.firestore.Timestamp.now().seconds
-          ) {
-            changeHeader(snapshot.data());
-            clearInterval(onlineChecker);
-          }
-        }, 10000);
-      });
+        let chatInfo;
 
-    const changeHeader = (chatInfo) => {
-      // Change header
-      navigation.setOptions({
-        headerTitle: () => (
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Profile", {
-                userId: route.params.userId,
-              })
-            }
-          >
-            {Platform.OS === "ios" ? (
-              <View style={{ alignItems: "center" }}>
-                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                  {chatInfo.name}
-                </Text>
-                {chatInfo.online?.seconds >
-                firebase.firestore.Timestamp.now().seconds + 10 ? (
-                  <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
-                ) : (
-                  <View>
-                    <Text style={{ fontSize: 12, color: "grey" }}>
-                      В мережі{" "}
-                      <Moment element={Text} locale="uk" fromNow unix>
-                        {chatInfo.online?.seconds}
-                      </Moment>
-                    </Text>
-                  </View>
-                )}
-              </View>
-            ) : (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginLeft: -8,
-                }}
-              >
-                {chatInfo.profilePhoto != "" ? (
-                  <Image
-                    style={{
-                      width: 42,
-                      height: 42,
-                      borderRadius: 42,
-                      marginRight: 12,
-                    }}
-                    source={{
-                      uri: chatInfo.profilePhoto,
-                    }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      backgroundColor: "#aaa",
-                      width: 42,
-                      height: 42,
-                      borderRadius: 42,
-                      marginRight: 12,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text style={{ fontSize: 20, color: "#fff" }}>
-                      {chatInfo.name[0]}
-                    </Text>
-                  </View>
-                )}
-                <View style={{ flexDirection: "column" }}>
+        if (snapshot.data().group) {
+          // Group
+          chatInfo = {
+            group: true,
+            name: snapshot.data().groupName,
+            photo: snapshot.data().groupPhoto,
+            membersCount: snapshot.data().members.length,
+          };
+        } else {
+          // Dialog
+          chatInfo = {
+            name: snapshot.data().name[toMeId],
+            photo: snapshot.data().photo[toMeId],
+            online: snapshot.data().online[toMeId],
+          };
+        }
+
+        // Change header
+        navigation.setOptions({
+          headerTitle: () => (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Profile", {
+                  userId: route.params.userId,
+                })
+              }
+            >
+              {Platform.OS === "ios" ? (
+                <View style={{ alignItems: "center" }}>
                   <Text style={{ fontSize: 16, fontWeight: "bold" }}>
                     {chatInfo.name}
                   </Text>
-                  {chatInfo.online?.seconds >
-                  firebase.firestore.Timestamp.now().seconds + 10 ? (
+                  {chatInfo.group ? (
+                    <Text style={{ fontSize: 12, color: "grey" }}>
+                      Учасників: {chatInfo.membersCount}
+                    </Text>
+                  ) : chatInfo.online?.seconds >
+                    firebase.firestore.Timestamp.now().seconds + 10 ? (
                     <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
                   ) : (
                     <View>
@@ -148,46 +104,108 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     </View>
                   )}
                 </View>
-              </View>
-            )}
-          </TouchableOpacity>
-        ),
-        headerRight: () =>
-          Platform.OS === "ios" ? (
-            <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
-              {chatInfo.profilePhoto != "" ? (
-                <Image
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 32,
-                    marginRight: -8,
-                  }}
-                  source={{
-                    uri: chatInfo.profilePhoto,
-                  }}
-                />
               ) : (
                 <View
                   style={{
-                    backgroundColor: "#aaa",
-                    width: 32,
-                    height: 32,
-                    borderRadius: 32,
-                    marginRight: -8,
+                    flexDirection: "row",
                     alignItems: "center",
-                    justifyContent: "center",
+                    marginLeft: -8,
                   }}
                 >
-                  <Text style={{ fontSize: 20, color: "#fff" }}>
-                    {chatInfo.name[0]}
-                  </Text>
+                  {chatInfo.photo != "" ? (
+                    <Image
+                      style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 42,
+                        marginRight: 12,
+                      }}
+                      source={{
+                        uri: chatInfo.photo,
+                      }}
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        backgroundColor: "#aaa",
+                        width: 42,
+                        height: 42,
+                        borderRadius: 42,
+                        marginRight: 12,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text style={{ fontSize: 20, color: "#fff" }}>
+                        {chatInfo.name[0]}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={{ flexDirection: "column" }}>
+                    <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                      {chatInfo.name}
+                    </Text>
+
+                    {chatInfo.group ? (
+                      <Text style={{ fontSize: 12, color: "grey" }}>
+                        Учасників: {chatInfo.membersCount}
+                      </Text>
+                    ) : chatInfo.online?.seconds >
+                      firebase.firestore.Timestamp.now().seconds + 10 ? (
+                      <Text style={{ fontSize: 12, color: "green" }}>
+                        онлайн
+                      </Text>
+                    ) : (
+                      <View>
+                        <Text style={{ fontSize: 12, color: "grey" }}>
+                          В мережі{" "}
+                          <Moment element={Text} locale="uk" fromNow unix>
+                            {chatInfo.online?.seconds}
+                          </Moment>
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
               )}
             </TouchableOpacity>
-          ) : null,
+          ),
+          headerRight: () =>
+            Platform.OS === "ios" ? (
+              <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+                {chatInfo.photo != "" ? (
+                  <Image
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 32,
+                      marginRight: -8,
+                    }}
+                    source={{
+                      uri: chatInfo.photo,
+                    }}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      backgroundColor: "#aaa",
+                      width: 32,
+                      height: 32,
+                      borderRadius: 32,
+                      marginRight: -8,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 20, color: "#fff" }}>
+                      {chatInfo.name[0]}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ) : null,
+        });
       });
-    };
 
     // Get messages
     const messagesSnapshotUnsubscribe = db
@@ -202,6 +220,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
             return {
               id: doc.id,
               me: doc.data().userId == auth.currentUser?.uid,
+              group: route.params.chatId === route.params.userId,
               ...doc.data(),
             };
           });
@@ -236,7 +255,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
     return () => {
       memberSnapshotUnsubscribe();
       messagesSnapshotUnsubscribe();
-      clearInterval(onlineChecker);
       AppState.removeEventListener("change", handleAppStateChange);
     };
   }, []);
@@ -275,31 +293,63 @@ export default function ChatHistoryScreen({ navigation, route }) {
     if (inputMessage.trim() !== "") {
       input.current.clear();
 
-      await db
-        .collection("chats_dev")
-        .doc(route.params.chatId)
-        .collection("messages")
-        .add({
-          message: inputMessage,
-          timestamp: firebase.firestore.Timestamp.now(),
-          userId: auth.currentUser?.uid,
-          seen: false,
-        });
-
       const fromMeId = auth.currentUser?.uid;
       const toMeId = route.params.userId;
 
-      await db
-        .collection("chats_dev")
-        .doc(route.params.chatId)
-        .update({
-          message: {
-            [fromMeId]: inputMessage,
-            [toMeId]: "",
-          },
-          timestamp: firebase.firestore.Timestamp.now(),
-          unreadCount: firebase.firestore.FieldValue.increment(1),
-        });
+      const fromMeInfo = (
+        await db.collection("users").doc(fromMeId).get()
+      ).data();
+      // const toMeInfo = (await db.collection("users").doc(toMeId).get()).data();
+
+      if (route.params.chatId === route.params.userId) {
+        // Group
+        await db
+          .collection("chats_dev")
+          .doc(route.params.chatId)
+          .collection("messages")
+          .add({
+            message: inputMessage,
+            timestamp: firebase.firestore.Timestamp.now(),
+            userId: auth.currentUser?.uid,
+            userName: fromMeInfo.name,
+            seen: false,
+          });
+
+        await db
+          .collection("chats_dev")
+          .doc(route.params.chatId)
+          .update({
+            groupMessage: inputMessage,
+            groupMessageSenderId: fromMeId,
+            groupMessageSenderName: fromMeInfo.name,
+            timestamp: firebase.firestore.Timestamp.now(),
+            unreadCount: firebase.firestore.FieldValue.increment(1),
+          });
+      } else {
+        // Dialog
+        await db
+          .collection("chats_dev")
+          .doc(route.params.chatId)
+          .collection("messages")
+          .add({
+            message: inputMessage,
+            timestamp: firebase.firestore.Timestamp.now(),
+            userId: auth.currentUser?.uid,
+            seen: false,
+          });
+
+        await db
+          .collection("chats_dev")
+          .doc(route.params.chatId)
+          .update({
+            message: {
+              [fromMeId]: inputMessage,
+              [toMeId]: "",
+            },
+            timestamp: firebase.firestore.Timestamp.now(),
+            unreadCount: firebase.firestore.FieldValue.increment(1),
+          });
+      }
 
       setInputMessage("");
     }
@@ -427,15 +477,28 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     onLongPress={() => deleteMessage(item.id)}
                     disabled={!item.me}
                   >
-                    <Text
-                      style={
-                        item.me
-                          ? styles.messageTextFromMe
-                          : styles.messageTextToMe
-                      }
-                    >
-                      {item.message}
-                    </Text>
+                    <View>
+                      {item.group && !item.me ? (
+                        <TouchableOpacity style={{ alignSelf: "baseline" }}>
+                          <Text style={{ fontWeight: "bold" }}>
+                            {item.userName}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : null}
+                      <Text
+                        style={[
+                          item.me
+                            ? styles.messageTextFromMe
+                            : styles.messageTextToMe,
+                          {
+                            maxWidth: Dimensions.get("window").width - 128,
+                          },
+                        ]}
+                      >
+                        {item.message}
+                      </Text>
+                    </View>
+
                     <Text style={styles.messageTime}>
                       <Moment element={Text} unix format="HH:mm">
                         {item.timestamp}

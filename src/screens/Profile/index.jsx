@@ -30,30 +30,28 @@ export default function ProfileScreen({ route, navigation }) {
     // Get member
     // TODO chat group info
     const memberSnapshotUnsubscribe = db
-    .collection("users")
-    .doc(route.params.userId)
-    .onSnapshot((snapshot) => {
-      setProfile(snapshot.data());
-      clearInterval(onlineChecker);
+      .collection("users")
+      .doc(route.params.userId)
+      .onSnapshot((snapshot) => {
+        setProfile(snapshot.data());
+        clearInterval(onlineChecker);
 
-      // Check online status for changes
-      onlineChecker = setInterval(() => {
-        if (
-          snapshot.data().online?.seconds <
-          firebase.firestore.Timestamp.now().seconds
-        ) {
-          setProfile(snapshot.data());
-          clearInterval(onlineChecker);
-        }
-      }, 10000);
-    });
-    
+        // Check online status for changes
+        onlineChecker = setInterval(() => {
+          if (
+            snapshot.data().online?.seconds <
+            firebase.firestore.Timestamp.now().seconds
+          ) {
+            setProfile(snapshot.data());
+            clearInterval(onlineChecker);
+          }
+        }, 10000);
+      });
 
-    return() => {
+    return () => {
       memberSnapshotUnsubscribe;
       clearInterval(onlineChecker);
-    } 
-
+    };
   }, []);
 
   useLayoutEffect(() => {

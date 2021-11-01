@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   View,
@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -24,25 +25,6 @@ import { db, firebase, auth } from "../../firebase";
 export default function ChatsScreen({ navigation }) {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Navigation
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () =>
-        Platform.OS === "ios" ? (
-          <TouchableOpacity
-            onPress={() => navigation.navigate("CreateChat")}
-            style={{ marginLeft: 12 }}
-          >
-            <MaterialCommunityIcons
-              name="chat-plus-outline"
-              size={24}
-              color="#000"
-            />
-          </TouchableOpacity>
-        ) : null,
-    });
-  });
 
   // Init
   useEffect(() => {
@@ -70,19 +52,42 @@ export default function ChatsScreen({ navigation }) {
               .data()
               .members.filter((member) => member != fromMeId)[0];
 
-            return {
-              id: chat.id,
-              userId: toMeId,
-              name: chat.data().name[toMeId],
-              photo: chat.data().photo[toMeId],
-              message:
-                chat.data().message[toMeId] || chat.data().message[fromMeId],
-              me: chat.data().message[fromMeId] != "",
-              online: chat.data().online[toMeId],
-              timestamp: chat.data().timestamp,
-              unreadCount: chat.data().unreadCount,
-              seen: chat.data().unreadCount === 0,
-            };
+            if (chat.data().group) {
+              // Group
+              return {
+                id: chat.id,
+                userId: chat.id,
+                group: true,
+                name: chat.data().groupName,
+                photo: chat.data().groupPhoto,
+
+                message: chat.data().groupMessage,
+                messageSenderId: chat.data().groupMessageSenderId,
+                messageSenderName: chat.data().groupMessageSenderName,
+                me: chat.data().groupMessageSenderId === fromMeId,
+
+                timestamp: chat.data().timestamp,
+                unreadCount: chat.data().unreadCount, // TODO
+                seen: chat.data().unreadCount === 0, // TODO
+              };
+            } else {
+              // Dialog
+              return {
+                id: chat.id,
+                userId: toMeId,
+                name: chat.data().name[toMeId],
+                photo: chat.data().photo[toMeId],
+
+                message:
+                  chat.data().message[toMeId] || chat.data().message[fromMeId],
+                me: chat.data().message[fromMeId] != "",
+                online: chat.data().online[toMeId],
+
+                timestamp: chat.data().timestamp,
+                unreadCount: chat.data().unreadCount,
+                seen: chat.data().unreadCount === 0,
+              };
+            }
           });
           setChats(allChats);
           setLoading(false);
@@ -90,7 +95,8 @@ export default function ChatsScreen({ navigation }) {
           // Vibrate if new message
           if (
             !allChats[0].me &&
-            allChats[0].timestamp.seconds > lastMessageTimestamp
+            allChats[0].timestamp.seconds > lastMessageTimestamp &&
+            lastMessageTimestamp > 0
           ) {
             Haptics.notificationAsync();
           }
@@ -136,22 +142,25 @@ export default function ChatsScreen({ navigation }) {
         .get()
         .then((chats) => {
           chats.docs.forEach(async (chat) => {
-            const fromMeId = auth.currentUser?.uid;
-            const toMeId = chat
-              .data()
-              .members.filter((member) => member != fromMeId)[0];
+            if (!chat.data().group) {
+              const fromMeId = auth.currentUser?.uid;
+              const toMeId = chat
+                .data()
+                .members.filter((member) => member != fromMeId)[0];
 
-            await chat.ref.update({
-              online: {
-                [fromMeId]:
-                  state != "background"
-                    ? firebase.firestore.Timestamp.fromMillis(
-                        (firebase.firestore.Timestamp.now().seconds + 60) * 1000
-                      )
-                    : firebase.firestore.Timestamp.now(),
-                [toMeId]: chat.data().online[toMeId],
-              },
-            });
+              await chat.ref.update({
+                online: {
+                  [fromMeId]:
+                    state != "background"
+                      ? firebase.firestore.Timestamp.fromMillis(
+                          (firebase.firestore.Timestamp.now().seconds + 60) *
+                            1000
+                        )
+                      : firebase.firestore.Timestamp.now(),
+                  [toMeId]: chat.data().online[toMeId],
+                },
+              });
+            }
           });
         });
     }
@@ -198,7 +207,7 @@ export default function ChatsScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar style="auto" />
 
-      {Platform.OS === "android" && chats.length > 0 ? (
+      {chats.length > 0 ? (
         <TouchableOpacity
           style={{
             width: 64,
@@ -250,8 +259,9 @@ export default function ChatsScreen({ navigation }) {
                 </View>
               )}
 
-              {item.online?.seconds >
-              firebase.firestore.Timestamp.now().seconds + 10 ? (
+              {!item.group &&
+              item.online?.seconds >
+                firebase.firestore.Timestamp.now().seconds + 10 ? (
                 <View style={styles.chat_online}></View>
               ) : null}
 
@@ -273,9 +283,21 @@ export default function ChatsScreen({ navigation }) {
                 </View>
 
                 <View style={styles.chat_message_unreadCount}>
-                  <Text style={styles.chat_message} numberOfLines={2}>
+                  <Text
+                    style={[
+                      styles.chat_message,
+                      {
+                        maxWidth: Dimensions.get("window").width - 100,
+                      },
+                    ]}
+                    numberOfLines={2}
+                  >
                     {item.me ? (
                       <Text style={{ fontWeight: "bold" }}>Я: </Text>
+                    ) : item.group ? (
+                      <Text style={{ fontWeight: "bold" }}>
+                        {item.messageSenderName}:{" "}
+                      </Text>
                     ) : null}
                     {item.message}
                   </Text>
