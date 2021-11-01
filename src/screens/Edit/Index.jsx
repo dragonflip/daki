@@ -25,20 +25,9 @@ import { firebase, db, auth } from "../../firebase";
 
 export default function EditScreen({ route, navigation }) {
   const [image, setImage] = useState(null);
-  const [photo, setPhoto] = useState(route.params.profile_photo);
   const [newName, setNewName] = useState(route.params.userName);
   const [newBio, setNewBio] = useState(route.params.userBio);
 
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS !== 'web') {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          alert('Sorry, we need camera roll permissions to make this work!');
-        }
-      }
-    })();
-  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -51,6 +40,38 @@ export default function EditScreen({ route, navigation }) {
     });
   });
 
+  
+  function updateInfo(uri){
+    if(uri != null) uploadImageAsync(uri); else{
+      db.collection("users").doc(auth.currentUser?.uid).update({
+        name : newName,
+        bio : newBio,
+      });
+
+      db.collection("chats_dev")
+      .where("members", "array-contains", auth.currentUser?.uid)
+      .orderBy("timestamp", "desc")
+      .get()
+      .then((chats) => {
+        chats.docs.forEach(async (chat) => {
+          const fromMeId = auth.currentUser?.uid;
+          const toMeId = chat
+            .data()
+            .members.filter((member) => member != fromMeId)[0];
+  
+          await chat.ref.update({
+            name: {
+              [fromMeId]:
+                newName,
+              [toMeId]: chat.data().name[toMeId]
+            },
+          });
+        });
+      });
+      
+      navigation.goBack();
+    }
+  }
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -60,23 +81,11 @@ export default function EditScreen({ route, navigation }) {
       aspect: [1, 1],
     });
 
-    //console.log(result);
-
     if (!result.cancelled) {
       setImage(result.uri);
-      setPhoto(result.uri);
     }
   };
-  
-  function updateInfo(uri){
-    if(uri != null) uploadImageAsync(uri); else{
-      db.collection("users").doc(auth.currentUser?.uid).update({
-        name : newName,
-        bio : newBio,
-      });
-      navigation.goBack();
-    }
-  }
+
 
   async function uploadImageAsync(uri) {
     const blob = await new Promise((resolve, reject) => {
@@ -110,9 +119,34 @@ export default function EditScreen({ route, navigation }) {
       profilePhoto: url
     });
 
+    db.collection("chats_dev")
+    .where("members", "array-contains", auth.currentUser?.uid)
+    .orderBy("timestamp", "desc")
+    .get()
+    .then((chats) => {
+      chats.docs.forEach(async (chat) => {
+        const fromMeId = auth.currentUser?.uid;
+        const toMeId = chat
+          .data()
+          .members.filter((member) => member != fromMeId)[0];
+
+        await chat.ref.update({
+          name: {
+            [fromMeId]:
+              newName,
+            [toMeId]: chat.data().name[toMeId]
+          },
+          photo: {
+            [fromMeId]:
+              url,
+            [toMeId]: chat.data().photo[toMeId]
+          },
+        });
+      });
+    });
+
     navigation.goBack();
     return url;
-    
   }
   
 
