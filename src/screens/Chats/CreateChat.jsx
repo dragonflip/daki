@@ -73,7 +73,7 @@ export default function CreateChatScreen({ navigation }) {
 
     if (selectedUsersCount.current > 1) {
       // Group
-      const ref = await db.collection("chats_dev").add({
+      const newChatRef = await db.collection("chats_dev").add({
         group: true,
         groupMessage: "Привіт, розпочнемо спілкування😎",
         groupMessageSenderId: fromMeId,
@@ -86,47 +86,73 @@ export default function CreateChatScreen({ navigation }) {
         unreadCount: 1,
       });
 
-      await ref.collection("messages").add({
+      await newChatRef.collection("messages").add({
         message: "Привіт, розпочнемо спілкування😎",
         timestamp: firebase.firestore.Timestamp.now(),
         seen: false,
         userId: auth.currentUser?.uid,
         userName: fromMeInfo.name,
       });
+
+      navigation.replace("ChatHistory", {
+        chatId: newChatRef.id,
+        userId: newChatRef.id,
+      });
     } else {
       // Dialog
-      const ref = await db.collection("chats_dev").add({
-        group: false,
-        members: [fromMeId, toMeId],
-        message: {
-          [fromMeId]: "Привіт, розпочнемо спілкування😎",
-          [toMeId]: "",
-        },
-        name: {
-          [fromMeId]: fromMeInfo.name,
-          [toMeId]: toMeInfo.name,
-        },
-        online: {
-          [fromMeId]: fromMeInfo.online,
-          [toMeId]: toMeInfo.online,
-        },
-        photo: {
-          [fromMeId]: fromMeInfo.profilePhoto,
-          [toMeId]: toMeInfo.profilePhoto,
-        },
-        timestamp: firebase.firestore.Timestamp.now(),
-        unreadCount: 1,
-      });
+      const chatsRef = await db
+        .collection("chats_dev")
+        .where("group", "==", false)
+        .where("members", "array-contains", fromMeId)
+        .get();
 
-      await ref.collection("messages").add({
-        message: "Привіт, розпочнемо спілкування😎",
-        timestamp: firebase.firestore.Timestamp.now(),
-        seen: false,
-        userId: auth.currentUser?.uid,
-      });
+      const chatExists = chatsRef.docs.filter(
+        (chat) =>
+          chat.data().members.filter((member) => member === toMeId).length > 0
+      );
+
+      if (!chatExists.length) {
+        const newChatRef = await db.collection("chats_dev").add({
+          group: false,
+          members: [fromMeId, toMeId],
+          message: {
+            [fromMeId]: "Привіт, розпочнемо спілкування😎",
+            [toMeId]: "",
+          },
+          name: {
+            [fromMeId]: fromMeInfo.name,
+            [toMeId]: toMeInfo.name,
+          },
+          online: {
+            [fromMeId]: fromMeInfo.online,
+            [toMeId]: toMeInfo.online,
+          },
+          photo: {
+            [fromMeId]: fromMeInfo.profilePhoto,
+            [toMeId]: toMeInfo.profilePhoto,
+          },
+          timestamp: firebase.firestore.Timestamp.now(),
+          unreadCount: 1,
+        });
+
+        await newChatRef.collection("messages").add({
+          message: "Привіт, розпочнемо спілкування😎",
+          timestamp: firebase.firestore.Timestamp.now(),
+          seen: false,
+          userId: auth.currentUser?.uid,
+        });
+
+        navigation.replace("ChatHistory", {
+          chatId: newChatRef.id,
+          userId: userId,
+        });
+      } else {
+        navigation.replace("ChatHistory", {
+          chatId: chatExists[0].id,
+          userId: userId,
+        });
+      }
     }
-
-    // navigation.replace("ChatHistory", { chatId: ref.id, userId: userId });
   };
 
   // Select users in list
