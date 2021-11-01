@@ -113,6 +113,7 @@ export default function ChatsScreen({ navigation }) {
     };
   }, []);
 
+  // Handle app state
   const handleAppStateChange = async (state) => {
     if (state !== "inactive") {
       // Update online status in users

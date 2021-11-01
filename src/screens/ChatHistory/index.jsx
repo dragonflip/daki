@@ -10,6 +10,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  AppState,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -18,6 +19,7 @@ import * as Haptics from "expo-haptics";
 import moment from "moment";
 import "moment/locale/uk";
 import Moment from "react-moment";
+import { useIsFocused } from "@react-navigation/native";
 
 // Styles
 import styles from "./styles";
@@ -31,9 +33,13 @@ export default function ChatHistoryScreen({ navigation, route }) {
   const [inputMessage, setInputMessage] = useState("");
   const input = useRef();
   const [loading, setLoading] = useState(true);
+  const isFocused = useIsFocused();
+  const [appState, setAppState] = useState("active");
 
   // Init
   useEffect(() => {
+    AppState.addEventListener("change", handleAppStateChange);
+
     let onlineChecker;
 
     // Get member
@@ -222,25 +228,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
           setMessages(allMessages);
           setLoading(false);
-
-          // Update message seen
-          db.collection("chats_dev")
-            .doc(route.params.chatId)
-            .collection("messages")
-            .where("userId", "!=", auth.currentUser?.uid)
-            .where("seen", "==", false)
-            .get()
-            .then((messages) => {
-              if (!messages.empty) {
-                messages.docs.forEach((message) => {
-                  message.ref.update({ seen: true });
-                });
-
-                db.collection("chats_dev").doc(route.params.chatId).update({
-                  unreadCount: 0,
-                });
-              }
-            });
         } else {
           navigation.goBack();
         }
@@ -250,8 +237,38 @@ export default function ChatHistoryScreen({ navigation, route }) {
       memberSnapshotUnsubscribe();
       messagesSnapshotUnsubscribe();
       clearInterval(onlineChecker);
+      AppState.removeEventListener("change", handleAppStateChange);
     };
   }, []);
+
+  // Handle app state
+  const handleAppStateChange = (state) => {
+    setAppState(state);
+  };
+
+  // Read messages
+  useEffect(() => {
+    if (isFocused && appState !== "background" && messages.length > 0) {
+      // Update message seen
+      db.collection("chats_dev")
+        .doc(route.params.chatId)
+        .collection("messages")
+        .where("userId", "!=", auth.currentUser?.uid)
+        .where("seen", "==", false)
+        .get()
+        .then((messages) => {
+          if (!messages.empty) {
+            messages.docs.forEach((message) => {
+              message.ref.update({ seen: true });
+            });
+
+            db.collection("chats_dev").doc(route.params.chatId).update({
+              unreadCount: 0,
+            });
+          }
+        });
+    }
+  }, [appState, isFocused, messages]);
 
   // Send message
   const sendMessage = async () => {
