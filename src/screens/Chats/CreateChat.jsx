@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Text, View, Image, TouchableOpacity, FlatList } from "react-native";
+import React, { useEffect, useState, useLayoutEffect } from "react";
+import { Text, View, Image, TouchableOpacity, TextInput, FlatList } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,6 +11,8 @@ import { db, firebase, auth } from "../../firebase";
 
 export default function CreateChatScreen({ navigation }) {
   const [users, setUsers] = useState([]);
+  const [value, setValue] = useState("");
+
 
   useEffect(() => {
     // Select other users
@@ -29,6 +31,20 @@ export default function CreateChatScreen({ navigation }) {
       usersSnapshotUnsubscribe();
     };
   }, []);
+
+    useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
+        <TextInput
+          style={styles.input}
+          placeholder="Пошук"
+          onChangeText={(number) => setValue(number)}
+          selectionColor="#000"
+        />
+      ),
+    });
+  });
+
 
   const createChat = async (userId) => {
     const fromMeId = auth.currentUser?.uid;
@@ -79,7 +95,7 @@ export default function CreateChatScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar style="auto" />
       <FlatList
-        data={users}
+        data={users.filter((item) => item.name.substr(0, value.length) == value || item.phone.substr(0, value.length) == value)}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity

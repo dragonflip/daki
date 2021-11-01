@@ -41,14 +41,6 @@ export default function ChatsScreen({ navigation }) {
             />
           </TouchableOpacity>
         ) : null,
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Search")}
-          style={{ marginRight: 12 }}
-        >
-          <Ionicons name="search" size={24} color="#000" />
-        </TouchableOpacity>
-      ),
     });
   });
 

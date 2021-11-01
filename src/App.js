@@ -73,7 +73,6 @@ function App() {
           component={CreateChatScreen}
           options={{
             headerBackTitle: "Чати",
-            headerTitle: "Створення чату",
           }}
         />
         <Stack.Screen name="Profile" component={ProfileScreen} />
