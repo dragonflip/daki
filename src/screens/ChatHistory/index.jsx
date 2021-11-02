@@ -41,9 +41,8 @@ export default function ChatHistoryScreen({ navigation, route }) {
   useEffect(() => {
     AppState.addEventListener("change", handleAppStateChange);
 
-    // Get member
-    // TODO chat group info
-    const memberSnapshotUnsubscribe = db
+    // Get chat info
+    const chatSnapshotUnsubscribe = db
       .collection("chats_dev")
       .doc(route.params.chatId)
       .onSnapshot((snapshot) => {
@@ -253,7 +252,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
       });
 
     return () => {
-      memberSnapshotUnsubscribe();
+      chatSnapshotUnsubscribe();
       messagesSnapshotUnsubscribe();
       AppState.removeEventListener("change", handleAppStateChange);
     };

@@ -28,19 +28,24 @@ export default function CreateChatScreen({ navigation }) {
   // Navigation
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitleAlign: "left",
-      headerTitle: () => (
-        <TextInput
-          style={{
-            fontSize: 18,
-            width: Dimensions.get("screen").width - 140,
-            textAlign: Platform.OS === "ios" ? "center" : null,
-          }}
-          placeholder="Пошук"
-          onChangeText={(number) => setValue(number)}
-          selectionColor="#000"
-        />
-      ),
+      headerTitle: () =>
+        Platform.OS === "android" ? (
+          <TextInput
+            style={{
+              fontSize: 18,
+              width: Dimensions.get("screen").width - 140,
+              textAlign: Platform.OS === "ios" ? "center" : null,
+            }}
+            placeholder="Пошук"
+            onChangeText={setValue}
+            selectionColor="#000"
+          />
+        ) : null,
+      headerSearchBarOptions: {
+        placeholder: "Пошук",
+        hideWhenScrolling: false,
+        onChangeText: (event) => setValue(event.nativeEvent.text),
+      },
     });
   });
 

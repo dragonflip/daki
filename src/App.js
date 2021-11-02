@@ -16,7 +16,6 @@ import { ChatsScreen, CreateChatScreen } from "./screens/Chats";
 import ChatHistoryScreen from "./screens/ChatHistory";
 import SettingsScreen from "./screens/Settings";
 import ProfileScreen from "./screens/Profile";
-import SearchScreen from "./screens/Search";
 import EditScreen from "./screens/Edit/Index";
 
 // Main App
@@ -58,7 +57,9 @@ function App() {
         <Stack.Screen
           name="Home"
           component={NavigationTabs}
-          options={{ headerShown: false }}
+          options={{
+            headerShown: false,
+          }}
         />
 
         <Stack.Screen
@@ -73,16 +74,11 @@ function App() {
           component={CreateChatScreen}
           options={{
             headerBackTitle: "Чати",
+            title: "Новий чат",
+            headerLargeTitle: true,
           }}
         />
         <Stack.Screen name="Profile" component={ProfileScreen} />
-        <Stack.Screen
-          name="Search"
-          component={SearchScreen}
-          options={{
-            headerBackTitle: "Назад",
-          }}
-        />
         <Stack.Screen name="Edit" component={EditScreen} />
       </Stack.Navigator>
     </NavigationContainer>
