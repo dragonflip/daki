@@ -36,6 +36,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
   const [appState, setAppState] = useState("active");
+  const [chatinfo, setChatInfo] = useState();
 
   // Init
   useEffect(() => {
@@ -64,10 +65,13 @@ export default function ChatHistoryScreen({ navigation, route }) {
         } else {
           // Dialog
           chatInfo = {
+            id: toMeId,
             name: snapshot.data().name[toMeId],
             photo: snapshot.data().photo[toMeId],
             online: snapshot.data().online[toMeId],
+            typing: snapshot.data().typing[toMeId],
           };
+          setChatInfo(chatInfo);
         }
 
         // Change header
@@ -149,20 +153,26 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       <Text style={{ fontSize: 12, color: "grey" }}>
                         Учасників: {chatInfo.membersCount}
                       </Text>
-                    ) : chatInfo.online?.seconds >
-                      firebase.firestore.Timestamp.now().seconds + 10 ? (
-                      <Text style={{ fontSize: 12, color: "green" }}>
-                        онлайн
-                      </Text>
+                    ) : chatInfo.typing ? (
+                      <Text style={{ fontSize: 12, color: "blue" }}>
+                      Набирає...
+                    </Text>
                     ) : (
-                      <View>
-                        <Text style={{ fontSize: 12, color: "grey" }}>
-                          В мережі{" "}
-                          <Moment element={Text} locale="uk" fromNow unix>
-                            {chatInfo.online?.seconds}
-                          </Moment>
+                        chatInfo.online?.seconds >
+                        firebase.firestore.Timestamp.now().seconds + 10 ? (
+                        <Text style={{ fontSize: 12, color: "green" }}>
+                          онлайн
                         </Text>
-                      </View>
+                      ) : (
+                        <View>
+                          <Text style={{ fontSize: 12, color: "grey" }}>
+                            В мережі{" "}
+                            <Moment element={Text} locale="uk" fromNow unix>
+                              {chatInfo.online?.seconds}
+                            </Moment>
+                          </Text>
+                        </View>
+                      )
                     )}
                   </View>
                 </View>
@@ -436,6 +446,25 @@ export default function ChatHistoryScreen({ navigation, route }) {
     );
   };
 
+  // Typing
+  const typing = () => 
+  {
+    db.collection("chats_dev").doc(route.params.chatId).update({
+      typing: {
+      [auth.currentUser?.uid]: true,
+      [chatinfo.id]: false, //tomeid
+      }
+    });
+    setTimeout(() => {
+      db.collection("chats_dev").doc(route.params.chatId).update({
+        typing: {
+        [auth.currentUser?.uid]: false,
+        [chatinfo.id]: chatinfo.typing, //tomeid
+        }
+      });
+    }, 4000)
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
@@ -565,7 +594,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 flex: 1,
               }}
               placeholder="Повідомлення..."
-              onChangeText={setInputMessage}
+              onChangeText={(message) => {setInputMessage(message); typing();}}
               ref={input}
               selectionColor="#000"
             />

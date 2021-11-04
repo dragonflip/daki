@@ -132,6 +132,10 @@ export default function CreateChatScreen({ navigation }) {
             [fromMeId]: fromMeInfo.online,
             [toMeId]: toMeInfo.online,
           },
+          typing: {
+            [fromMeId]: false,
+            [toMeId]: false,
+          },
           photo: {
             [fromMeId]: fromMeInfo.profilePhoto,
             [toMeId]: toMeInfo.profilePhoto,
