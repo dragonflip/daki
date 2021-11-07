@@ -120,6 +120,10 @@ export default function CreateChatScreen({ navigation }) {
         const newChatRef = await db.collection("chats").add({
           group: false,
           members: [fromMeId, toMeId],
+          blocked: {
+            [fromMeId]: false,
+            [toMeId]: false,
+          },
           message: {
             [fromMeId]: "Привіт, розпочнемо спілкування😎",
             [toMeId]: "",

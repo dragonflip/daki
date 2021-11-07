@@ -37,6 +37,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
   const isFocused = useIsFocused();
   const [appState, setAppState] = useState("active");
   const typingTimeout = useRef({ timer: null, typing: false });
+  const [chatInfo, setChatInfo] = useState([]);
 
   // Init
   useEffect(() => {
@@ -69,8 +70,13 @@ export default function ChatHistoryScreen({ navigation, route }) {
             photo: snapshot.data().photo[toMeId],
             online: snapshot.data().online[toMeId],
             typing: snapshot.data().typing[toMeId],
+            blocked:
+              snapshot.data().blocked[fromMeId] ||
+              snapshot.data().blocked[toMeId],
           };
         }
+
+        setChatInfo(chatInfo);
 
         // Change header
         navigation.setOptions({
@@ -380,9 +386,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
           text: "Видалити",
           style: "destructive",
           onPress: async () => {
-            const fromMeId = auth.currentUser?.uid;
-            const toMeId = route.params.userId;
-
             // Get info about message that will be deleted
             const deletedMessage = (
               await db
@@ -583,31 +586,53 @@ export default function ChatHistoryScreen({ navigation, route }) {
             </View>
           )}
 
-          <View
-            style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
-          >
-            <TextInput
+          {!chatInfo.blocked ? (
+            <View
               style={{
-                borderColor: "#eee",
-                borderWidth: 2,
-                borderRadius: 44,
-                height: 44,
-                paddingHorizontal: 16,
-                marginHorizontal: 16,
-                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 8,
               }}
-              placeholder="Повідомлення..."
-              onChangeText={(message) => {
-                setInputMessage(message);
-                typing();
+            >
+              <TextInput
+                style={{
+                  borderColor: "#eee",
+                  borderWidth: 2,
+                  borderRadius: 44,
+                  height: 44,
+                  paddingHorizontal: 16,
+                  marginHorizontal: 16,
+                  flex: 1,
+                }}
+                placeholder="Повідомлення..."
+                onChangeText={(message) => {
+                  setInputMessage(message);
+                  typing();
+                }}
+                ref={input}
+                selectionColor="#000"
+              />
+              <TouchableOpacity
+                style={{ marginRight: 16 }}
+                onPress={sendMessage}
+              >
+                <Ionicons name="send" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View
+              style={{
+                backgroundColor: "#eee",
+                alignItems: "center",
+                paddingVertical: 16,
+                marginTop: 8,
               }}
-              ref={input}
-              selectionColor="#000"
-            />
-            <TouchableOpacity style={{ marginRight: 16 }} onPress={sendMessage}>
-              <Ionicons name="send" size={24} color="#000" />
-            </TouchableOpacity>
-          </View>
+            >
+              <Text style={{ color: "red" }}>
+                Ви не можете писати через блокування
+              </Text>
+            </View>
+          )}
         </KeyboardAvoider>
       </SafeAreaView>
     </View>

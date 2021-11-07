@@ -10,7 +10,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { StatusBar } from "expo-status-bar";
-import { Feather, Octicons, Ionicons } from "@expo/vector-icons";
+import { Octicons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import "moment/locale/uk";
 import Moment from "react-moment";
@@ -146,35 +146,10 @@ export default function SettingsScreen({ navigation }) {
                 paddingBottom: 16,
               }}
             >
-              <Text style={{ color: "green", fontSize: 24 }}>78%</Text>
+              <Text style={{ color: "red", fontSize: 24 }}>2.4★</Text>
               <Text style={{ color: "grey" }}>рейтинг</Text>
             </View>
           </View>
-
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Edit", {
-                userName: profile.name,
-                userBio: profile.bio,
-                userPhoto: profile.profilePhoto,
-              })
-            }
-            style={{
-              paddingVertical: 16,
-              borderColor: "#eee",
-              borderTopWidth: 1,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: "blue",
-              }}
-            >
-              <Feather name="edit" size={14} color="blue" /> Редагувати профіль
-              та фото
-            </Text>
-          </TouchableOpacity>
 
           <View
             style={{
@@ -200,6 +175,7 @@ export default function SettingsScreen({ navigation }) {
               paddingVertical: 16,
               borderColor: "#eee",
               borderTopWidth: 1,
+              // borderBottomWidth: 1,
             }}
           >
             <Text style={{ fontSize: 16 }}>
@@ -209,6 +185,29 @@ export default function SettingsScreen({ navigation }) {
           </View>
 
           <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("Edit", {
+                userName: profile.name,
+                userBio: profile.bio,
+                userPhoto: profile.profilePhoto,
+              })
+            }
+            style={{
+              borderWidth: 1,
+              borderColor: "#eee",
+              borderRadius: 16,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <MaterialCommunityIcons name="pencil" size={16} color="blue" />
+            <Text style={{ color: "blue", fontSize: 16, marginLeft: 4 }}>
+              Редагувати профіль та фото
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={{
               borderWidth: 1,
               borderColor: "#eee",
@@ -216,16 +215,13 @@ export default function SettingsScreen({ navigation }) {
               paddingVertical: 12,
               paddingHorizontal: 16,
               marginTop: 8,
+              flexDirection: "row",
+              alignItems: "center",
             }}
             onPress={logout}
           >
-            <Text
-              style={{
-                color: "red",
-                textTransform: "uppercase",
-                textAlign: "center",
-              }}
-            >
+            <MaterialCommunityIcons name="logout" size={16} color="red" />
+            <Text style={{ color: "red", fontSize: 16, marginLeft: 4 }}>
               Вийти
             </Text>
           </TouchableOpacity>

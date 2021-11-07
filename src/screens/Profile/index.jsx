@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Octicons, Ionicons, Entypo } from "@expo/vector-icons";
+import { Octicons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import "moment/locale/uk";
 import Moment from "react-moment";
 import StarRating from "react-native-star-rating";
@@ -23,37 +23,7 @@ export default function ProfileScreen({ route, navigation }) {
   const [profile, setProfile] = useState([]);
   const [starRate, setStarRate] = useState(2.5);
 
-  // Get data from storage
-  useEffect(() => {
-    let onlineChecker;
-
-    // Get member
-    // TODO chat group info
-    const memberSnapshotUnsubscribe = db
-      .collection("users")
-      .doc(route.params.userId)
-      .onSnapshot((snapshot) => {
-        setProfile(snapshot.data());
-        clearInterval(onlineChecker);
-
-        // Check online status for changes
-        onlineChecker = setInterval(() => {
-          if (
-            snapshot.data().online?.seconds <
-            firebase.firestore.Timestamp.now().seconds
-          ) {
-            setProfile(snapshot.data());
-            clearInterval(onlineChecker);
-          }
-        }, 10000);
-      });
-
-    return () => {
-      memberSnapshotUnsubscribe;
-      clearInterval(onlineChecker);
-    };
-  }, []);
-
+  // Navigation
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTransparent: true,
@@ -62,6 +32,20 @@ export default function ProfileScreen({ route, navigation }) {
       headerShadowVisible: false,
     });
   });
+
+  // Get data from storage
+  useEffect(() => {
+    // Get member
+    // TODO chat group info
+    const memberSnapshotUnsubscribe = db
+      .collection("users")
+      .doc(route.params.userId)
+      .onSnapshot((snapshot) => {
+        setProfile(snapshot.data());
+      });
+
+    return memberSnapshotUnsubscribe;
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -155,27 +139,6 @@ export default function ProfileScreen({ route, navigation }) {
             </View>
           </View>
 
-          {console.log(starRate)}
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{
-              paddingVertical: 16,
-              borderColor: "#eee",
-              borderTopWidth: 1,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: "blue",
-                //textTransform: "uppercase",
-              }}
-            >
-              <Entypo name="message" size={14} color="blue" />
-              Написати повідомлення
-            </Text>
-          </TouchableOpacity>
-
           <View
             style={{
               paddingVertical: 16,
@@ -209,6 +172,23 @@ export default function ProfileScreen({ route, navigation }) {
           </View>
 
           <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{
+              borderWidth: 1,
+              borderColor: "#eee",
+              borderRadius: 16,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <MaterialCommunityIcons name="send" size={16} color="blue" />
+            <Text style={{ color: "blue", fontSize: 16, marginLeft: 4 }}>
+              Написати повідомлення
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={{
               borderWidth: 1,
               borderColor: "#eee",
@@ -216,16 +196,12 @@ export default function ProfileScreen({ route, navigation }) {
               paddingVertical: 12,
               paddingHorizontal: 16,
               marginTop: 8,
+              flexDirection: "row",
+              alignItems: "center",
             }}
-            //onPress={logout}
           >
-            <Text
-              style={{
-                color: "red",
-                //textTransform: "uppercase",
-                textAlign: "left",
-              }}
-            >
+            <MaterialCommunityIcons name="block-helper" size={16} color="red" />
+            <Text style={{ color: "red", fontSize: 16, marginLeft: 4 }}>
               Заблокувати
             </Text>
           </TouchableOpacity>
