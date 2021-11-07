@@ -78,7 +78,7 @@ export default function CreateChatScreen({ navigation }) {
 
     if (selectedUsersCount.current > 1) {
       // Group
-      const newChatRef = await db.collection("chats_dev").add({
+      const newChatRef = await db.collection("chats").add({
         group: true,
         groupMessage: "Привіт, розпочнемо спілкування😎",
         groupMessageSenderId: fromMeId,
@@ -106,7 +106,7 @@ export default function CreateChatScreen({ navigation }) {
     } else {
       // Dialog
       const chatsRef = await db
-        .collection("chats_dev")
+        .collection("chats")
         .where("group", "==", false)
         .where("members", "array-contains", fromMeId)
         .get();
@@ -117,7 +117,7 @@ export default function CreateChatScreen({ navigation }) {
       );
 
       if (!chatExists.length) {
-        const newChatRef = await db.collection("chats_dev").add({
+        const newChatRef = await db.collection("chats").add({
           group: false,
           members: [fromMeId, toMeId],
           message: {
@@ -132,15 +132,15 @@ export default function CreateChatScreen({ navigation }) {
             [fromMeId]: fromMeInfo.online,
             [toMeId]: toMeInfo.online,
           },
-          typing: {
-            [fromMeId]: false,
-            [toMeId]: false,
-          },
           photo: {
             [fromMeId]: fromMeInfo.profilePhoto,
             [toMeId]: toMeInfo.profilePhoto,
           },
           timestamp: firebase.firestore.Timestamp.now(),
+          typing: {
+            [fromMeId]: false,
+            [toMeId]: false,
+          },
           unreadCount: 1,
         });
 

@@ -41,7 +41,7 @@ export default function ChatsScreen({ navigation }) {
 
     // Select chats where I'm member
     const chatsSnapshotUnsubscribe = db
-      .collection("chats_dev")
+      .collection("chats")
       .where("members", "array-contains", auth.currentUser?.uid)
       .orderBy("timestamp", "desc")
       .onSnapshot((snapshot) => {
@@ -136,7 +136,7 @@ export default function ChatsScreen({ navigation }) {
         });
 
       // Update online status in chats
-      db.collection("chats_dev")
+      db.collection("chats")
         .where("members", "array-contains", auth.currentUser?.uid)
         .orderBy("timestamp", "desc")
         .get()
@@ -187,7 +187,7 @@ export default function ChatsScreen({ navigation }) {
         text: "Видалити",
         style: "destructive",
         onPress: () => {
-          db.collection("chats_dev")
+          db.collection("chats")
             .doc(chatId)
             .collection("messages")
             .get()
@@ -196,7 +196,7 @@ export default function ChatsScreen({ navigation }) {
                 await message.ref.delete();
               }
 
-              await db.collection("chats_dev").doc(chatId).delete();
+              await db.collection("chats").doc(chatId).delete();
             });
         },
       },

@@ -44,7 +44,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
     // Get chat info
     const chatSnapshotUnsubscribe = db
-      .collection("chats_dev")
+      .collection("chats")
       .doc(route.params.chatId)
       .onSnapshot((snapshot) => {
         const fromMeId = auth.currentUser?.uid;
@@ -155,24 +155,22 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       </Text>
                     ) : chatInfo.typing ? (
                       <Text style={{ fontSize: 12, color: "blue" }}>
-                      Набирає...
-                    </Text>
+                        Набирає...
+                      </Text>
+                    ) : chatInfo.online?.seconds >
+                      firebase.firestore.Timestamp.now().seconds + 10 ? (
+                      <Text style={{ fontSize: 12, color: "green" }}>
+                        онлайн
+                      </Text>
                     ) : (
-                        chatInfo.online?.seconds >
-                        firebase.firestore.Timestamp.now().seconds + 10 ? (
-                        <Text style={{ fontSize: 12, color: "green" }}>
-                          онлайн
+                      <View>
+                        <Text style={{ fontSize: 12, color: "grey" }}>
+                          В мережі{" "}
+                          <Moment element={Text} locale="uk" fromNow unix>
+                            {chatInfo.online?.seconds}
+                          </Moment>
                         </Text>
-                      ) : (
-                        <View>
-                          <Text style={{ fontSize: 12, color: "grey" }}>
-                            В мережі{" "}
-                            <Moment element={Text} locale="uk" fromNow unix>
-                              {chatInfo.online?.seconds}
-                            </Moment>
-                          </Text>
-                        </View>
-                      )
+                      </View>
                     )}
                   </View>
                 </View>
@@ -218,7 +216,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
     // Get messages
     const messagesSnapshotUnsubscribe = db
-      .collection("chats_dev")
+      .collection("chats")
       .doc(route.params.chatId)
       .collection("messages")
       .orderBy("timestamp", "desc")
@@ -277,7 +275,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
   useEffect(() => {
     if (isFocused && appState !== "background" && messages.length > 0) {
       // Update message seen
-      db.collection("chats_dev")
+      db.collection("chats")
         .doc(route.params.chatId)
         .collection("messages")
         .where("userId", "!=", auth.currentUser?.uid)
@@ -289,7 +287,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
               message.ref.update({ seen: true });
             });
 
-            db.collection("chats_dev").doc(route.params.chatId).update({
+            db.collection("chats").doc(route.params.chatId).update({
               unreadCount: 0,
             });
           }
@@ -313,7 +311,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
       if (route.params.chatId === route.params.userId) {
         // Group
         await db
-          .collection("chats_dev")
+          .collection("chats")
           .doc(route.params.chatId)
           .collection("messages")
           .add({
@@ -325,7 +323,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
           });
 
         await db
-          .collection("chats_dev")
+          .collection("chats")
           .doc(route.params.chatId)
           .update({
             groupMessage: inputMessage,
@@ -337,7 +335,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
       } else {
         // Dialog
         await db
-          .collection("chats_dev")
+          .collection("chats")
           .doc(route.params.chatId)
           .collection("messages")
           .add({
@@ -348,7 +346,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
           });
 
         await db
-          .collection("chats_dev")
+          .collection("chats")
           .doc(route.params.chatId)
           .update({
             message: {
@@ -386,7 +384,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
             // Get info about message that will be deleted
             const deletedMessage = (
               await db
-                .collection("chats_dev")
+                .collection("chats")
                 .doc(route.params.chatId)
                 .collection("messages")
                 .doc(messageId)
@@ -395,7 +393,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
             // Delete message
             await db
-              .collection("chats_dev")
+              .collection("chats")
               .doc(route.params.chatId)
               .collection("messages")
               .doc(messageId)
@@ -403,7 +401,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
             // Get last message reference
             const lastMessageRef = await db
-              .collection("chats_dev")
+              .collection("chats")
               .doc(route.params.chatId)
               .collection("messages")
               .orderBy("timestamp", "desc")
@@ -412,28 +410,19 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
             // If chat has 0 messages then delete it
             if (lastMessageRef.empty) {
-              await db
-                .collection("chats_dev")
-                .doc(route.params.chatId)
-                .delete();
+              await db.collection("chats").doc(route.params.chatId).delete();
 
               navigation.goBack();
             } else {
               const lastMessage = lastMessageRef.docs[0].data();
 
-              // Change chat info
+              // Update chat info
               await db
-                .collection("chats_dev")
+                .collection("chats")
                 .doc(route.params.chatId)
                 .update({
-                  message: {
-                    [fromMeId]:
-                      lastMessage.userId === fromMeId
-                        ? lastMessage.message
-                        : "",
-                    [toMeId]:
-                      lastMessage.userId === toMeId ? lastMessage.message : "",
-                  },
+                  [`message.${lastMessage.userId}`]: lastMessage.message,
+
                   timestamp: lastMessage.timestamp,
                   unreadCount: !deletedMessage.seen
                     ? firebase.firestore.FieldValue.increment(-1)
@@ -447,23 +436,26 @@ export default function ChatHistoryScreen({ navigation, route }) {
   };
 
   // Typing
-  const typing = () => 
-  {
-    db.collection("chats_dev").doc(route.params.chatId).update({
-      typing: {
-      [auth.currentUser?.uid]: true,
-      [chatinfo.id]: false, //tomeid
-      }
-    });
-    setTimeout(() => {
-      db.collection("chats_dev").doc(route.params.chatId).update({
+  const typing = () => {
+    db.collection("chats")
+      .doc(route.params.chatId)
+      .update({
         typing: {
-        [auth.currentUser?.uid]: false,
-        [chatinfo.id]: chatinfo.typing, //tomeid
-        }
+          [auth.currentUser?.uid]: true,
+          [chatinfo.id]: false, //tomeid
+        },
       });
-    }, 4000)
-  }
+    setTimeout(() => {
+      db.collection("chats")
+        .doc(route.params.chatId)
+        .update({
+          typing: {
+            [auth.currentUser?.uid]: false,
+            [chatinfo.id]: chatinfo.typing, //tomeid
+          },
+        });
+    }, 4000);
+  };
 
   return (
     <View style={styles.container}>
@@ -594,7 +586,10 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 flex: 1,
               }}
               placeholder="Повідомлення..."
-              onChangeText={(message) => {setInputMessage(message); typing();}}
+              onChangeText={(message) => {
+                setInputMessage(message);
+                typing();
+              }}
               ref={input}
               selectionColor="#000"
             />
