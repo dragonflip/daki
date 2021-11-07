@@ -36,6 +36,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
   const [appState, setAppState] = useState("active");
+  const typingTimeout = useRef({ timer: null, typing: false });
 
   // Init
   useEffect(() => {
@@ -438,13 +439,27 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
   // Typing
   const typing = () => {
-    db.collection("chats")
-      .doc(route.params.chatId)
-      .update({
-        [`typing.${auth.currentUser?.uid}`]: true,
-      });
+    // Start typing
+    if (!typingTimeout.current.typing) {
+      typingTimeout.current.typing = true;
 
-    setTimeout(() => {
+      db.collection("chats")
+        .doc(route.params.chatId)
+        .update({
+          [`typing.${auth.currentUser?.uid}`]: true,
+        });
+    }
+
+    // Clear timer
+    if (typingTimeout.current.timer) {
+      clearTimeout(typingTimeout.current.timer);
+      typingTimeout.current.timer = null;
+    }
+
+    // Stop typing
+    typingTimeout.current.timer = setTimeout(() => {
+      typingTimeout.current.typing = false;
+
       db.collection("chats")
         .doc(route.params.chatId)
         .update({
