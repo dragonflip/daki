@@ -36,7 +36,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
   const [appState, setAppState] = useState("active");
-  const [chatinfo, setChatInfo] = useState();
 
   // Init
   useEffect(() => {
@@ -65,13 +64,11 @@ export default function ChatHistoryScreen({ navigation, route }) {
         } else {
           // Dialog
           chatInfo = {
-            id: toMeId,
             name: snapshot.data().name[toMeId],
             photo: snapshot.data().photo[toMeId],
             online: snapshot.data().online[toMeId],
             typing: snapshot.data().typing[toMeId],
           };
-          setChatInfo(chatInfo);
         }
 
         // Change header
@@ -91,7 +88,11 @@ export default function ChatHistoryScreen({ navigation, route }) {
                   </Text>
                   {chatInfo.group ? (
                     <Text style={{ fontSize: 12, color: "grey" }}>
-                      Учасників: {chatInfo.membersCount}
+                      учасників: {chatInfo.membersCount}
+                    </Text>
+                  ) : chatInfo.typing ? (
+                    <Text style={{ fontSize: 12, color: "grey" }}>
+                      набирає...
                     </Text>
                   ) : chatInfo.online?.seconds >
                     firebase.firestore.Timestamp.now().seconds + 10 ? (
@@ -99,7 +100,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                   ) : (
                     <View>
                       <Text style={{ fontSize: 12, color: "grey" }}>
-                        В мережі{" "}
+                        в мережі{" "}
                         <Moment element={Text} locale="uk" fromNow unix>
                           {chatInfo.online?.seconds}
                         </Moment>
@@ -151,11 +152,11 @@ export default function ChatHistoryScreen({ navigation, route }) {
 
                     {chatInfo.group ? (
                       <Text style={{ fontSize: 12, color: "grey" }}>
-                        Учасників: {chatInfo.membersCount}
+                        учасників: {chatInfo.membersCount}
                       </Text>
                     ) : chatInfo.typing ? (
-                      <Text style={{ fontSize: 12, color: "blue" }}>
-                        Набирає...
+                      <Text style={{ fontSize: 12, color: "grey" }}>
+                        набирає...
                       </Text>
                     ) : chatInfo.online?.seconds >
                       firebase.firestore.Timestamp.now().seconds + 10 ? (
@@ -165,7 +166,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     ) : (
                       <View>
                         <Text style={{ fontSize: 12, color: "grey" }}>
-                          В мережі{" "}
+                          в мережі{" "}
                           <Moment element={Text} locale="uk" fromNow unix>
                             {chatInfo.online?.seconds}
                           </Moment>
@@ -440,21 +441,16 @@ export default function ChatHistoryScreen({ navigation, route }) {
     db.collection("chats")
       .doc(route.params.chatId)
       .update({
-        typing: {
-          [auth.currentUser?.uid]: true,
-          [chatinfo.id]: false, //tomeid
-        },
+        [`typing.${auth.currentUser?.uid}`]: true,
       });
+
     setTimeout(() => {
       db.collection("chats")
         .doc(route.params.chatId)
         .update({
-          typing: {
-            [auth.currentUser?.uid]: false,
-            [chatinfo.id]: chatinfo.typing, //tomeid
-          },
+          [`typing.${auth.currentUser?.uid}`]: false,
         });
-    }, 4000);
+    }, 2000);
   };
 
   return (
