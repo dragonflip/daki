@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Text, View, Image, TextInput } from "react-native";
+import { Text, View, Image, TextInput, Alert } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 
 // Firebase
@@ -14,7 +13,7 @@ import ButtonWithLoading from "../../components/ButtonWithLoading";
 import KeyboardAvoider from "../../components/KeyboardAvoider";
 
 export default function AuthPhoneScreen({ navigation }) {
-  const [phone, setPhone] = useState(null);
+  const [phone, setPhone] = useState("");
   const recaptchaVerifier = useRef(null);
 
   const input = useRef(null);
@@ -48,28 +47,27 @@ export default function AuthPhoneScreen({ navigation }) {
 
   // Send SMS verification code
   const sendVerificationCode = async () => {
-    try {
-      setLoading(true);
+    if (phone.trim().length === 13) {
+      try {
+        setLoading(true);
 
-      const phoneProvider = new firebase.auth.PhoneAuthProvider();
-      const verificationId = await phoneProvider.verifyPhoneNumber(
-        phone,
-        recaptchaVerifier.current
-      );
+        const phoneProvider = new firebase.auth.PhoneAuthProvider();
+        const verificationId = await phoneProvider.verifyPhoneNumber(
+          phone,
+          recaptchaVerifier.current
+        );
 
-      await AsyncStorage.setItem("phone", phone);
+        setLoading(false);
+        navigation.navigate("Code", {
+          phone: phone,
+          verificationId: verificationId,
+        });
 
-      setLoading(false);
-      navigation.navigate("Code", {
-        phone: phone,
-        verificationId: verificationId,
-      });
-
-      console.log(verificationId);
-    } catch (err) {
-      setLoading(false);
-
-      console.log(err);
+        console.log(verificationId);
+      } catch (err) {
+        setLoading(false);
+        Alert.alert("Помилка", "Некоректний номер телефону");
+      }
     }
   };
 

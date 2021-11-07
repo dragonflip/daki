@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Text, View, Image, TextInput, Platform } from "react-native";
+import { Text, View, Image, TextInput, Platform, Alert } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
 
@@ -38,29 +38,30 @@ export default function AuthCodeScreen({ navigation, route }) {
 
   // Confirm SMS verification code
   const confirmVerificationCode = async () => {
-    try {
-      setLoading(true);
+    if (code.trim().length === 6) {
+      try {
+        setLoading(true);
 
-      const credential = firebase.auth.PhoneAuthProvider.credential(
-        route.params.verificationId,
-        code
-      );
-      await firebase.auth().signInWithCredential(credential);
+        const credential = firebase.auth.PhoneAuthProvider.credential(
+          route.params.verificationId,
+          code
+        );
+        await firebase.auth().signInWithCredential(credential);
 
-      // Check if user exists
-      if (!userExists) {
+        // Check if user exists
+        if (!userExists) {
+          setLoading(false);
+          navigation.navigate("Welcome", { ...route.params });
+        } else {
+          navigation.popToTop();
+          navigation.replace("Home");
+        }
+
+        console.log("Success");
+      } catch (err) {
         setLoading(false);
-        navigation.navigate("Welcome", { ...route.params });
-      } else {
-        navigation.popToTop();
-        navigation.replace("Home");
+        Alert.alert("Помилка", "Неправильний код підтвердження");
       }
-
-      console.log("Success");
-    } catch (err) {
-      setLoading(false);
-
-      console.log(err);
     }
   };
 

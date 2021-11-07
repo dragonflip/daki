@@ -24,7 +24,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
 
   // User registration
   const userSignup = async () => {
-    try {
+    if (name.trim().length > 0) {
       setLoading(true);
 
       // Add new user
@@ -41,10 +41,6 @@ export default function AuthWelcomeScreen({ navigation, route }) {
       navigation.replace("Home");
 
       console.log("Registered");
-    } catch (err) {
-      setLoading(false);
-
-      console.log(err);
     }
   };
 
