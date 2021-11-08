@@ -70,9 +70,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
             photo: snapshot.data().photo[toMeId],
             online: snapshot.data().online[toMeId],
             typing: snapshot.data().typing[toMeId],
-            blocked:
-              snapshot.data().blocked[fromMeId] ||
-              snapshot.data().blocked[toMeId],
           };
         }
 
@@ -295,11 +292,23 @@ export default function ChatHistoryScreen({ navigation, route }) {
               message.ref.update({ seen: true });
             });
 
-            db.collection("chats").doc(route.params.chatId).update({
-              unreadCount: 0,
-            });
+            // Dialog
+            if (route.params.chatId !== route.params.userId) {
+              db.collection("chats").doc(route.params.chatId).update({
+                unreadCount: 0,
+              });
+            }
           }
         });
+
+      // Update group unread messages
+      if (route.params.chatId === route.params.userId) {
+        db.collection("chats")
+          .doc(route.params.chatId)
+          .update({
+            [`unreadCount.${auth.currentUser?.uid}`]: 0,
+          });
+      }
     }
   }, [appState, isFocused, messages]);
 
@@ -314,7 +323,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
       const fromMeInfo = (
         await db.collection("users").doc(fromMeId).get()
       ).data();
-      // const toMeInfo = (await db.collection("users").doc(toMeId).get()).data();
 
       if (route.params.chatId === route.params.userId) {
         // Group
@@ -330,6 +338,10 @@ export default function ChatHistoryScreen({ navigation, route }) {
             seen: false,
           });
 
+        const members = (
+          await db.collection("chats").doc(route.params.chatId).get()
+        ).data().members;
+
         await db
           .collection("chats")
           .doc(route.params.chatId)
@@ -338,7 +350,12 @@ export default function ChatHistoryScreen({ navigation, route }) {
             groupMessageSenderId: fromMeId,
             groupMessageSenderName: fromMeInfo.name,
             timestamp: firebase.firestore.Timestamp.now(),
-            unreadCount: firebase.firestore.FieldValue.increment(1),
+            ...Object.fromEntries(
+              members.map((id) => [
+                `unreadCount.${id}`,
+                firebase.firestore.FieldValue.increment(+(id !== fromMeId)),
+              ])
+            ),
           });
       } else {
         // Dialog
@@ -422,17 +439,44 @@ export default function ChatHistoryScreen({ navigation, route }) {
               const lastMessage = lastMessageRef.docs[0].data();
 
               // Update chat info
-              await db
-                .collection("chats")
-                .doc(route.params.chatId)
-                .update({
-                  [`message.${lastMessage.userId}`]: lastMessage.message,
+              if (route.params.chatId === route.params.userId) {
+                // Group
+                const members = (
+                  await db.collection("chats").doc(route.params.chatId).get()
+                ).data().members;
 
-                  timestamp: lastMessage.timestamp,
-                  unreadCount: !deletedMessage.seen
-                    ? firebase.firestore.FieldValue.increment(-1)
-                    : firebase.firestore.FieldValue.increment(0),
-                });
+                await db
+                  .collection("chats")
+                  .doc(route.params.chatId)
+                  .update({
+                    groupMessage: lastMessage.message,
+                    groupMessageSenderId: lastMessage.userId,
+                    groupMessageSenderName: lastMessage.userName,
+                    timestamp: lastMessage.timestamp,
+                    ...Object.fromEntries(
+                      members.map((id) => [
+                        `unreadCount.${id}`,
+                        firebase.firestore.FieldValue.increment(
+                          -(
+                            id !== auth.currentUser?.uid && !deletedMessage.seen
+                          )
+                        ),
+                      ])
+                    ),
+                  });
+              } else {
+                // Dialog
+                await db
+                  .collection("chats")
+                  .doc(route.params.chatId)
+                  .update({
+                    [`message.${lastMessage.userId}`]: lastMessage.message,
+                    timestamp: lastMessage.timestamp,
+                    unreadCount: firebase.firestore.FieldValue.increment(
+                      -!deletedMessage.seen
+                    ),
+                  });
+              }
             }
           },
         },

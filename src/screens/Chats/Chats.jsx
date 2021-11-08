@@ -67,8 +67,11 @@ export default function ChatsScreen({ navigation }) {
                 me: chat.data().groupMessageSenderId === fromMeId,
 
                 timestamp: chat.data().timestamp,
-                unreadCount: chat.data().unreadCount, // TODO
-                seen: chat.data().unreadCount === 0, // TODO
+                unreadCount: chat.data().unreadCount[fromMeId],
+                seen:
+                  Object.keys(chat.data().unreadCount).filter(
+                    (id) => id !== fromMeId && chat.data().unreadCount[id] === 0
+                  ).length > 0,
               };
             } else {
               // Dialog

@@ -88,7 +88,9 @@ export default function CreateChatScreen({ navigation }) {
           "https://firebasestorage.googleapis.com/v0/b/daki-messenger.appspot.com/o/photo_2019-08-31_10-12-35.jpg?alt=media&token=16ab1801-45c1-43e4-9b75-732bd78b12f7",
         members: [fromMeId, ...selectedUsersRef.current],
         timestamp: firebase.firestore.Timestamp.now(),
-        unreadCount: 1,
+        unreadCount: Object.fromEntries(
+          [fromMeId, ...selectedUsersRef.current].map((id) => [id, 1])
+        ),
       });
 
       await newChatRef.collection("messages").add({
