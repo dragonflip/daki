@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -23,43 +23,17 @@ export default function ProfileScreen({ route, navigation }) {
   const [profile, setProfile] = useState([]);
   const [starRate, setStarRate] = useState(2.5);
 
-  // Navigation
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTransparent: true,
-      headerTitle: "",
-      shadowColor: "transparent",
-      headerShadowVisible: false,
-    });
-  });
-
   // Init
   useEffect(() => {
-    // Get chat info
-    if (route.params.chatId === route.params.userId) {
-      // Group
-      const chatSnapshotUnsubscribe = db
-        .collection("chats")
-        .doc(route.params.chatId)
-        .onSnapshot((snapshot) => {
-          setProfile({
-            name: snapshot.data().groupName,
-            photo: snapshot.data().groupPhoto,
-          });
-        });
+    // Get user info
+    const userSnapshotUnsubscribe = db
+      .collection("users")
+      .doc(route.params.userId)
+      .onSnapshot((snapshot) => {
+        setProfile(snapshot.data());
+      });
 
-      return chatSnapshotUnsubscribe;
-    } else {
-      // Dialog
-      const userSnapshotUnsubscribe = db
-        .collection("users")
-        .doc(route.params.userId)
-        .onSnapshot((snapshot) => {
-          setProfile(snapshot.data());
-        });
-
-      return userSnapshotUnsubscribe;
-    }
+    return userSnapshotUnsubscribe;
   }, []);
 
   return (
@@ -67,54 +41,61 @@ export default function ProfileScreen({ route, navigation }) {
       <StatusBar style="auto" />
 
       <ScrollView>
-        {profile.photo !== "" ? (
+        {profile.profilePhoto !== "" ? (
           <Image
             source={{
-              uri: profile.photo,
+              uri: profile.profilePhoto,
             }}
             style={{
-              width: Dimensions.get("window").width,
-              height: Dimensions.get("window").width,
+              width: 192,
+              height: 192,
+              borderRadius: 192,
+              alignSelf: "center",
+              marginTop: 64,
             }}
           />
         ) : (
           <View
             style={{
-              width: Dimensions.get("window").width,
-              height: Dimensions.get("window").width,
+              width: 192,
+              height: 192,
+              borderRadius: 192,
+              alignSelf: "center",
               alignItems: "center",
               justifyContent: "center",
+              marginTop: 64,
               backgroundColor: "#eee",
             }}
           >
-            <Ionicons
-              name="camera"
-              size={Dimensions.get("window").width * 0.4}
-              color="#aaa"
-            />
+            <Text style={{ fontSize: 48 }}>{profile.name[0]}</Text>
           </View>
         )}
 
         <View style={{ paddingHorizontal: 16 }}>
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
               paddingTop: 16,
+              alignItems: "center",
             }}
           >
-            <View style={{ flex: 1, paddingBottom: 16 }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ paddingBottom: 16, alignItems: "center" }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
                 <Text style={{ fontSize: 24 }}>{profile.name}</Text>
-
-                {profile.verified ? (
-                  <Octicons
-                    name="verified"
-                    size={20}
-                    color="blue"
-                    style={{ marginLeft: 8 }}
-                  />
-                ) : null}
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "bold",
+                    color: "red",
+                    marginLeft: 8,
+                  }}
+                >
+                  2.4★
+                </Text>
               </View>
 
               {profile.online?.seconds >
@@ -131,19 +112,9 @@ export default function ProfileScreen({ route, navigation }) {
                 </View>
               )}
             </View>
-
-            <View
-              style={{
-                alignItems: "center",
-                paddingBottom: 16,
-              }}
-            >
-              <Text style={{ color: "red", fontSize: 24 }}>2.4★</Text>
-              <Text style={{ color: "grey" }}>рейтинг</Text>
-            </View>
           </View>
 
-          <View style={{ flex: 1, paddingBottom: 16 }}>
+          {/* <View style={{ flex: 1, paddingBottom: 16 }}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <StarRating
                 disabled={false}
@@ -152,7 +123,27 @@ export default function ProfileScreen({ route, navigation }) {
                 selectedStar={(rating) => setStarRate(rating)}
               />
             </View>
-          </View>
+          </View> */}
+
+          {/* <View
+            style={{
+              paddingVertical: 16,
+              borderColor: "#eee",
+              borderTopWidth: 1,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                textTransform: "uppercase",
+                color: "red",
+              }}
+            >
+              2.4★
+            </Text>
+            <Text style={{ fontSize: 12, color: "grey" }}>Рейтинг</Text>
+          </View> */}
 
           <View
             style={{

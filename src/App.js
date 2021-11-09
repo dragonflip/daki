@@ -32,18 +32,18 @@ function App() {
           name="AuthPhone"
           component={AuthPhoneScreen}
           options={{
-            headerShadowVisible: false,
             headerTitle: "",
             headerTransparent: true,
+            headerShadowVisible: false,
           }}
         />
         <Stack.Screen
           name="AuthCode"
           component={AuthCodeScreen}
           options={{
-            headerShadowVisible: false,
             headerTitle: "",
             headerTransparent: true,
+            headerShadowVisible: false,
             headerBackTitle: "Назад",
           }}
         />
@@ -51,9 +51,9 @@ function App() {
           name="AuthWelcome"
           component={AuthWelcomeScreen}
           options={{
-            headerShadowVisible: false,
             headerTitle: "",
             headerTransparent: true,
+            headerShadowVisible: false,
             headerBackTitle: "Назад",
           }}
         />
@@ -77,15 +77,39 @@ function App() {
           name="ChatsCreate"
           component={ChatsCreateScreen}
           options={{
-            headerBackTitle: "Чати",
             title: "Новий чат",
             headerLargeTitle: true,
+            headerBackTitle: "Чати",
           }}
         />
-        <Stack.Screen name="ChatsUserInfo" component={ChatsUserInfoScreen} />
-        <Stack.Screen name="ChatsGroupInfo" component={ChatsGroupInfoScreen} />
+        <Stack.Screen
+          name="ChatsUserInfo"
+          component={ChatsUserInfoScreen}
+          options={{
+            headerTitle: "",
+            headerTransparent: true,
+            headerShadowVisible: false,
+            headerBackTitle: "Назад",
+          }}
+        />
+        <Stack.Screen
+          name="ChatsGroupInfo"
+          component={ChatsGroupInfoScreen}
+          options={{
+            headerTitle: "",
+            headerTransparent: true,
+            headerShadowVisible: false,
+            headerBackTitle: "Назад",
+          }}
+        />
 
-        <Stack.Screen name="MyProfileEdit" component={MyProfileEditScreen} />
+        <Stack.Screen
+          name="MyProfileEdit"
+          component={MyProfileEditScreen}
+          options={{
+            headerBackTitle: "Мій профіль",
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -135,9 +159,10 @@ function NavigationTabs() {
               color={color}
             />
           ),
-          headerTransparent: true,
-          headerTitle: "",
           title: "Мій профіль",
+          headerTitle: "",
+          headerTransparent: true,
+          headerShadowVisible: false,
         }}
       />
     </Tab.Navigator>

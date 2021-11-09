@@ -148,10 +148,10 @@ export default function EditScreen({ route, navigation }) {
         <TouchableOpacity onPress={pickImage}>
           <ImageBackground
             source={
-              image != null ? { uri: image } : { uri: route.params.userPhoto }
+              image != "" ? { uri: image } : { uri: route.params.userPhoto }
             }
-            style={styles.profile_photo}
             imageStyle={{ borderRadius: 40 }}
+            style={{ width: 96, height: 96 }}
           >
             <Feather
               name="camera"
@@ -168,15 +168,12 @@ export default function EditScreen({ route, navigation }) {
         <View style={{ marginLeft: 10 }}>
           <TextInput
             placeholder="Ім'я"
-            style={styles.input}
             onChangeText={(name) => setNewName(name)}
             defaultValue={route.params.userName}
           />
 
           <TextInput
             placeholder="Про себе"
-            style={[styles.input, { marginTop: 5 }]}
-            on
             onChangeText={(bio) => setNewBio(bio)}
             defaultValue={route.params.userBio}
           />

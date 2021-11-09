@@ -80,6 +80,7 @@ export default function CreateChatScreen({ navigation }) {
       // Group
       const newChatRef = await db.collection("chats").add({
         group: true,
+        admin: fromMeId,
         groupMessage: "Привіт, розпочнемо спілкування😎",
         groupMessageSenderId: fromMeId,
         groupMessageSenderName: fromMeInfo.name,
@@ -190,7 +191,7 @@ export default function CreateChatScreen({ navigation }) {
       navigation.setOptions({
         headerRight: () => (
           <TouchableOpacity onPress={() => createChat(userId)}>
-            <AntDesign name="check" size={24} color="black" />
+            <AntDesign name="check" size={24} color="#000" />
           </TouchableOpacity>
         ),
       });

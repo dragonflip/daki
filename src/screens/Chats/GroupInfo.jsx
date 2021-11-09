@@ -1,227 +1,228 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
   Dimensions,
   TouchableOpacity,
-  ScrollView,
   Image,
+  FlatList,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
 import { Octicons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import "moment/locale/uk";
 import Moment from "react-moment";
-import StarRating from "react-native-star-rating";
 
 // Styles
 import styles from "./styles";
 // Firebase
-import { firebase, db } from "../../firebase";
+import { firebase, db, auth } from "../../firebase";
 
-export default function ProfileScreen({ route, navigation }) {
-  const [profile, setProfile] = useState([]);
-  const [starRate, setStarRate] = useState(2.5);
-
-  // Navigation
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTransparent: true,
-      headerTitle: "",
-      shadowColor: "transparent",
-      headerShadowVisible: false,
-    });
-  });
+export default function ChatGroupInfoScreen({ route, navigation }) {
+  const [groupInfo, setGroupInfo] = useState([]);
+  const [members, setMembers] = useState([]);
 
   // Init
   useEffect(() => {
-    // Get chat info
-    if (route.params.chatId === route.params.userId) {
-      // Group
-      const chatSnapshotUnsubscribe = db
-        .collection("chats")
-        .doc(route.params.chatId)
-        .onSnapshot((snapshot) => {
-          setProfile({
-            name: snapshot.data().groupName,
-            photo: snapshot.data().groupPhoto,
-          });
+    // Get group info
+    const chatSnapshotUnsubscribe = db
+      .collection("chats")
+      .doc(route.params.chatId)
+      .onSnapshot(async (snapshot) => {
+        setGroupInfo({
+          ...snapshot.data(),
+          membersCount: snapshot.data().members.length,
         });
 
-      return chatSnapshotUnsubscribe;
-    } else {
-      // Dialog
-      const userSnapshotUnsubscribe = db
-        .collection("users")
-        .doc(route.params.userId)
-        .onSnapshot((snapshot) => {
-          setProfile(snapshot.data());
-        });
+        // Get group members
+        setMembers(
+          await Promise.all(
+            snapshot.data().members.map(async (member) => {
+              const memberInfo = await db.collection("users").doc(member).get();
 
-      return userSnapshotUnsubscribe;
-    }
+              return {
+                id: memberInfo.id,
+                ...memberInfo.data(),
+                admin: snapshot.data().admin === memberInfo.id,
+              };
+            })
+          )
+        );
+      });
+
+    return chatSnapshotUnsubscribe;
   }, []);
 
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
 
-      <ScrollView>
-        {profile.photo !== "" ? (
-          <Image
-            source={{
-              uri: profile.photo,
-            }}
-            style={{
-              width: Dimensions.get("window").width,
-              height: Dimensions.get("window").width,
-            }}
-          />
-        ) : (
-          <View
-            style={{
-              width: Dimensions.get("window").width,
-              height: Dimensions.get("window").width,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#eee",
-            }}
-          >
-            <Ionicons
-              name="camera"
-              size={Dimensions.get("window").width * 0.4}
-              color="#aaa"
-            />
+      <FlatList
+        data={members}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={() => (
+          <View>
+            {groupInfo.groupPhoto !== "" ? (
+              <Image
+                source={{
+                  uri: groupInfo.groupPhoto,
+                }}
+                style={{
+                  width: 192,
+                  height: 192,
+                  borderRadius: 192,
+                  alignSelf: "center",
+                  marginTop: 64,
+                }}
+              />
+            ) : (
+              <View
+                style={{
+                  width: Dimensions.get("window").width,
+                  height: Dimensions.get("window").width,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#eee",
+                }}
+              >
+                <Ionicons
+                  name="camera"
+                  size={Dimensions.get("window").width * 0.4}
+                  color="#aaa"
+                />
+              </View>
+            )}
+
+            <View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingTop: 16,
+                }}
+              >
+                <View style={{ flex: 1, paddingBottom: 16 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 24 }}>{groupInfo.groupName}</Text>
+                  </View>
+
+                  <Text style={{ color: "grey", textAlign: "center" }}>
+                    Учасників: {groupInfo.membersCount}
+                  </Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#eee",
+                  borderRadius: 16,
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <MaterialCommunityIcons name="send" size={14} color="blue" />
+                <Text style={{ color: "blue", fontSize: 14, marginLeft: 4 }}>
+                  Написати повідомлення
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#eee",
+                  borderRadius: 16,
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  marginTop: 8,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <MaterialCommunityIcons name="logout" size={14} color="red" />
+                <Text style={{ color: "red", fontSize: 14, marginLeft: 4 }}>
+                  Вийти з групи
+                </Text>
+              </TouchableOpacity>
+
+              <Text style={{ fontSize: 20, fontWeight: "300", marginTop: 16 }}>
+                Учасники
+              </Text>
+            </View>
           </View>
         )}
-
-        <View style={{ paddingHorizontal: 16 }}>
-          <View
+        contentContainerStyle={{ padding: 16 }}
+        renderItem={({ item }) => (
+          <TouchableOpacity
             style={{
               flexDirection: "row",
+              borderBottomWidth: 1,
+              borderColor: "#eee",
+              padding: 8,
               alignItems: "center",
-              paddingTop: 16,
             }}
+            activeOpacity={0.5}
+            onPress={() =>
+              navigation.navigate("ChatsUserInfo", { userId: item.id })
+            }
           >
-            <View style={{ flex: 1, paddingBottom: 16 }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ fontSize: 24 }}>{profile.name}</Text>
-
-                {profile.verified ? (
-                  <Octicons
-                    name="verified"
-                    size={20}
-                    color="blue"
-                    style={{ marginLeft: 8 }}
-                  />
+            {item.profilePhoto !== "" ? (
+              <Image
+                source={{ uri: item.profilePhoto }}
+                style={{ width: 48, height: 48, borderRadius: 48 }}
+              />
+            ) : (
+              <View
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 48,
+                  backgroundColor: "#aaa",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontSize: 18, color: "#fff" }}>
+                  {item.name[0]}
+                </Text>
+              </View>
+            )}
+            <View style={{ marginLeft: 8, flex: 1 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text style={{ fontWeight: "bold" }}>{item.name}</Text>
+                {item.admin ? (
+                  <Text style={{ color: "blue", fontSize: 12 }}>адмін</Text>
                 ) : null}
               </View>
 
-              {profile.online?.seconds >
+              {item.online.seconds >
               firebase.firestore.Timestamp.now().seconds + 10 ? (
-                <Text style={{ color: "green" }}>онлайн</Text>
+                <Text style={{ color: "green", fontSize: 12 }}>онлайн</Text>
               ) : (
-                <View>
-                  <Text style={{ color: "grey" }}>
-                    В мережі{" "}
-                    <Moment element={Text} locale="uk" fromNow unix>
-                      {profile.online?.seconds}
-                    </Moment>
-                  </Text>
-                </View>
+                <Text style={{ color: "grey", fontSize: 12 }}>
+                  в мережі{" "}
+                  <Moment element={Text} locale="uk" fromNow unix>
+                    {item.online?.seconds}
+                  </Moment>
+                </Text>
               )}
             </View>
-
-            <View
-              style={{
-                alignItems: "center",
-                paddingBottom: 16,
-              }}
-            >
-              <Text style={{ color: "red", fontSize: 24 }}>2.4★</Text>
-              <Text style={{ color: "grey" }}>рейтинг</Text>
-            </View>
-          </View>
-
-          <View style={{ flex: 1, paddingBottom: 16 }}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <StarRating
-                disabled={false}
-                maxStars={5}
-                rating={starRate}
-                selectedStar={(rating) => setStarRate(rating)}
-              />
-            </View>
-          </View>
-
-          <View
-            style={{
-              paddingVertical: 16,
-              borderColor: "#eee",
-              borderTopWidth: 1,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "bold",
-                textTransform: "uppercase",
-              }}
-            >
-              {profile.phone}
-            </Text>
-            <Text style={{ fontSize: 12, color: "grey" }}>Номер телефону</Text>
-          </View>
-
-          <View
-            style={{
-              paddingVertical: 16,
-              borderColor: "#eee",
-              borderTopWidth: 1,
-            }}
-          >
-            <Text style={{ fontSize: 16 }}>
-              {profile.bio != "" ? profile.bio : "Розкажіть про себе"}
-            </Text>
-            <Text style={{ fontSize: 12, color: "grey" }}>Про себе</Text>
-          </View>
-
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{
-              borderWidth: 1,
-              borderColor: "#eee",
-              borderRadius: 16,
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <MaterialCommunityIcons name="send" size={16} color="blue" />
-            <Text style={{ color: "blue", fontSize: 16, marginLeft: 4 }}>
-              Написати повідомлення
-            </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              borderWidth: 1,
-              borderColor: "#eee",
-              borderRadius: 16,
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              marginTop: 8,
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <MaterialCommunityIcons name="block-helper" size={16} color="red" />
-            <Text style={{ color: "red", fontSize: 16, marginLeft: 4 }}>
-              Заблокувати
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        )}
+      />
     </View>
   );
 }
