@@ -110,7 +110,8 @@ export default function ChatsScreen({ navigation }) {
           const unreadCount = snapshot.docs.filter(
             (doc) =>
               doc.data().unreadCount[auth.currentUser?.uid] > 0 ||
-              doc.data().unreadCount > 0
+              (doc.data().unreadCount > 0 &&
+                doc.data().message[auth.currentUser?.uid] === "")
           ).length;
 
           navigation.setOptions({
