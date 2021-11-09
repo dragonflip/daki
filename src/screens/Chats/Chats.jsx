@@ -237,7 +237,7 @@ export default function ChatsScreen({ navigation }) {
             zIndex: 1000,
           }}
           activeOpacity={0.5}
-          onPress={() => navigation.navigate("CreateChat")}
+          onPress={() => navigation.navigate("ChatsCreate")}
         >
           <MaterialCommunityIcons name="chat-plus" size={32} color="#fff" />
         </TouchableOpacity>
@@ -252,7 +252,7 @@ export default function ChatsScreen({ navigation }) {
               style={styles.chat}
               activeOpacity={0.5}
               onPress={() =>
-                navigation.navigate("ChatHistory", {
+                navigation.navigate("ChatsMessages", {
                   chatId: item.id,
                   userId: item.userId,
                 })
@@ -346,7 +346,7 @@ export default function ChatsScreen({ navigation }) {
           <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>
             Немає чатів
           </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("CreateChat")}>
+          <TouchableOpacity onPress={() => navigation.navigate("ChatsCreate")}>
             <Text style={{ color: "blue" }}>Створити</Text>
           </TouchableOpacity>
         </View>

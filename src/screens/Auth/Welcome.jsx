@@ -38,7 +38,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
       });
 
       navigation.popToTop();
-      navigation.replace("Home");
+      navigation.replace("Main");
 
       console.log("Registered");
     }

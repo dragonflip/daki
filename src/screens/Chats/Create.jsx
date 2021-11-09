@@ -101,7 +101,7 @@ export default function CreateChatScreen({ navigation }) {
         userName: fromMeInfo.name,
       });
 
-      navigation.replace("ChatHistory", {
+      navigation.replace("ChatsMessages", {
         chatId: newChatRef.id,
         userId: newChatRef.id,
       });
@@ -157,12 +157,12 @@ export default function CreateChatScreen({ navigation }) {
           userId: auth.currentUser?.uid,
         });
 
-        navigation.replace("ChatHistory", {
+        navigation.replace("ChatsMessages", {
           chatId: newChatRef.id,
           userId: userId,
         });
       } else {
-        navigation.replace("ChatHistory", {
+        navigation.replace("ChatsMessages", {
           chatId: chatExists[0].id,
           userId: userId,
         });

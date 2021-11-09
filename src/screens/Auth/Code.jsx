@@ -51,10 +51,10 @@ export default function AuthCodeScreen({ navigation, route }) {
         // Check if user exists
         if (!userExists) {
           setLoading(false);
-          navigation.navigate("Welcome", { ...route.params });
+          navigation.navigate("AuthWelcome", { ...route.params });
         } else {
           navigation.popToTop();
-          navigation.replace("Home");
+          navigation.replace("Main");
         }
 
         console.log("Success");

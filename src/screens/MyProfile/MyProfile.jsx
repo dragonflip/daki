@@ -67,7 +67,7 @@ export default function SettingsScreen({ navigation }) {
     await AsyncStorage.removeItem("phone");
     auth.signOut();
 
-    navigation.replace("Phone");
+    navigation.replace("AuthPhone");
   }
 
   return (
@@ -186,7 +186,7 @@ export default function SettingsScreen({ navigation }) {
 
           <TouchableOpacity
             onPress={() =>
-              navigation.navigate("Edit", {
+              navigation.navigate("MyProfileEdit", {
                 userName: profile.name,
                 userBio: profile.bio,
                 userPhoto: profile.profilePhoto,

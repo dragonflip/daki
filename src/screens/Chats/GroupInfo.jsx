@@ -33,18 +33,33 @@ export default function ProfileScreen({ route, navigation }) {
     });
   });
 
-  // Get data from storage
+  // Init
   useEffect(() => {
-    // Get member
-    // TODO chat group info
-    const memberSnapshotUnsubscribe = db
-      .collection("users")
-      .doc(route.params.userId)
-      .onSnapshot((snapshot) => {
-        setProfile(snapshot.data());
-      });
+    // Get chat info
+    if (route.params.chatId === route.params.userId) {
+      // Group
+      const chatSnapshotUnsubscribe = db
+        .collection("chats")
+        .doc(route.params.chatId)
+        .onSnapshot((snapshot) => {
+          setProfile({
+            name: snapshot.data().groupName,
+            photo: snapshot.data().groupPhoto,
+          });
+        });
 
-    return memberSnapshotUnsubscribe;
+      return chatSnapshotUnsubscribe;
+    } else {
+      // Dialog
+      const userSnapshotUnsubscribe = db
+        .collection("users")
+        .doc(route.params.userId)
+        .onSnapshot((snapshot) => {
+          setProfile(snapshot.data());
+        });
+
+      return userSnapshotUnsubscribe;
+    }
   }, []);
 
   return (
@@ -52,10 +67,10 @@ export default function ProfileScreen({ route, navigation }) {
       <StatusBar style="auto" />
 
       <ScrollView>
-        {profile.profilePhoto !== "" ? (
+        {profile.photo !== "" ? (
           <Image
             source={{
-              uri: profile.profilePhoto,
+              uri: profile.photo,
             }}
             style={{
               width: Dimensions.get("window").width,

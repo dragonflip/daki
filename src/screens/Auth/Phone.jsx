@@ -29,10 +29,10 @@ export default function AuthPhoneScreen({ navigation }) {
         .doc(auth.currentUser?.uid)
         .get();
 
-      // If user exists go to home screen
+      // If user exists go to main screen
       if (user && userDoc.exists) {
         if (navigation.isFocused()) {
-          navigation.replace("Home");
+          navigation.replace("Main");
         }
       } else {
         setLoading(false);
@@ -58,7 +58,7 @@ export default function AuthPhoneScreen({ navigation }) {
         );
 
         setLoading(false);
-        navigation.navigate("Code", {
+        navigation.navigate("AuthCode", {
           phone: phone,
           verificationId: verificationId,
         });

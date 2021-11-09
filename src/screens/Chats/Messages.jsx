@@ -80,9 +80,13 @@ export default function ChatHistoryScreen({ navigation, route }) {
           headerTitle: () => (
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("Profile", {
-                  userId: route.params.userId,
-                })
+                chatInfo.group
+                  ? navigation.navigate("ChatsGroupInfo", {
+                      chatId: route.params.chatId,
+                    })
+                  : navigation.navigate("ChatsUserInfo", {
+                      userId: route.params.userId,
+                    })
               }
             >
               {Platform.OS === "ios" ? (
@@ -184,7 +188,9 @@ export default function ChatHistoryScreen({ navigation, route }) {
           ),
           headerRight: () =>
             Platform.OS === "ios" ? (
-              <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("MyProfile")}
+              >
                 {chatInfo.photo != "" ? (
                   <Image
                     style={{

@@ -12,11 +12,14 @@ import {
   AuthCodeScreen,
   AuthWelcomeScreen,
 } from "./screens/Auth";
-import { ChatsScreen, CreateChatScreen } from "./screens/Chats";
-import ChatHistoryScreen from "./screens/ChatHistory";
-import SettingsScreen from "./screens/Settings";
-import ProfileScreen from "./screens/Profile";
-import EditScreen from "./screens/Edit/Index";
+import {
+  ChatsScreen,
+  ChatsCreateScreen,
+  ChatsMessagesScreen,
+  ChatsUserInfoScreen,
+  ChatsGroupInfoScreen,
+} from "./screens/Chats";
+import { MyProfileScreen, MyProfileEditScreen } from "./screens/MyProfile";
 
 // Main App
 function App() {
@@ -26,7 +29,7 @@ function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Phone">
         <Stack.Screen
-          name="Phone"
+          name="AuthPhone"
           component={AuthPhoneScreen}
           options={{
             headerShadowVisible: false,
@@ -35,7 +38,7 @@ function App() {
           }}
         />
         <Stack.Screen
-          name="Code"
+          name="AuthCode"
           component={AuthCodeScreen}
           options={{
             headerShadowVisible: false,
@@ -45,7 +48,7 @@ function App() {
           }}
         />
         <Stack.Screen
-          name="Welcome"
+          name="AuthWelcome"
           component={AuthWelcomeScreen}
           options={{
             headerShadowVisible: false,
@@ -54,8 +57,9 @@ function App() {
             headerBackTitle: "Назад",
           }}
         />
+
         <Stack.Screen
-          name="Home"
+          name="Main"
           component={NavigationTabs}
           options={{
             headerShown: false,
@@ -63,23 +67,25 @@ function App() {
         />
 
         <Stack.Screen
-          name="ChatHistory"
-          component={ChatHistoryScreen}
+          name="ChatsMessages"
+          component={ChatsMessagesScreen}
           options={{
             headerBackTitle: "Чати",
           }}
         />
         <Stack.Screen
-          name="CreateChat"
-          component={CreateChatScreen}
+          name="ChatsCreate"
+          component={ChatsCreateScreen}
           options={{
             headerBackTitle: "Чати",
             title: "Новий чат",
             headerLargeTitle: true,
           }}
         />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
-        <Stack.Screen name="Edit" component={EditScreen} />
+        <Stack.Screen name="ChatsUserInfo" component={ChatsUserInfoScreen} />
+        <Stack.Screen name="ChatsGroupInfo" component={ChatsGroupInfoScreen} />
+
+        <Stack.Screen name="MyProfileEdit" component={MyProfileEditScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -119,8 +125,8 @@ function NavigationTabs() {
         }}
       />
       <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
+        name="MyProfile"
+        component={MyProfileScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
@@ -131,7 +137,7 @@ function NavigationTabs() {
           ),
           headerTransparent: true,
           headerTitle: "",
-          title: "Налаштування",
+          title: "Мій профіль",
         }}
       />
     </Tab.Navigator>
