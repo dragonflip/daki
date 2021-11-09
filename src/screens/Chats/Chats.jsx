@@ -46,6 +46,7 @@ export default function ChatsScreen({ navigation }) {
       .orderBy("timestamp", "desc")
       .onSnapshot((snapshot) => {
         if (!snapshot.empty) {
+          // All chats
           const allChats = snapshot.docs.map((chat) => {
             const fromMeId = auth.currentUser?.uid;
             const toMeId = chat
@@ -104,6 +105,17 @@ export default function ChatsScreen({ navigation }) {
             Haptics.notificationAsync();
           }
           lastMessageTimestamp = allChats[0].timestamp.seconds;
+
+          // Count unread chats
+          const unreadCount = snapshot.docs.filter(
+            (doc) =>
+              doc.data().unreadCount[auth.currentUser?.uid] > 0 ||
+              doc.data().unreadCount > 0
+          ).length;
+
+          navigation.setOptions({
+            tabBarBadge: unreadCount > 0 ? unreadCount : null,
+          });
         } else {
           // Chat list is empty
           setChats({});
