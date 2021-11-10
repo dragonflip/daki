@@ -546,7 +546,9 @@ export default function ChatHistoryScreen({ navigation, route }) {
           hasScrollable={true}
           topSpacing={-24}
         >
-          {messages.length > 0 ? (
+          {loading ? (
+            <LoadingScreen />
+          ) : messages.length > 0 ? (
             <FlatList
               data={messages}
               keyExtractor={(item) => item.id}
@@ -623,8 +625,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 </View>
               )}
             />
-          ) : loading ? (
-            <LoadingScreen />
           ) : (
             <View
               style={{

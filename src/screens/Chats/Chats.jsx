@@ -157,8 +157,8 @@ export default function ChatsScreen({ navigation }) {
         .where("members", "array-contains", auth.currentUser?.uid)
         .orderBy("timestamp", "desc")
         .get()
-        .then((chats) => {
-          chats.docs.forEach(async (chat) => {
+        .then(async (chats) => {
+          for (const chat of chats.docs) {
             if (chat.data().group) {
               // Group
               await chat.ref
@@ -184,7 +184,7 @@ export default function ChatsScreen({ navigation }) {
                     : firebase.firestore.Timestamp.now(),
               });
             }
-          });
+          }
         });
     }
   };
@@ -209,18 +209,35 @@ export default function ChatsScreen({ navigation }) {
       {
         text: "Видалити",
         style: "destructive",
-        onPress: () => {
-          db.collection("chats")
+        onPress: async () => {
+          setLoading(true);
+
+          // Delete messages
+          const messages = await db
+            .collection("chats")
             .doc(chatId)
             .collection("messages")
-            .get()
-            .then(async (messages) => {
-              for (const message of messages.docs) {
-                await message.ref.delete();
-              }
+            .get();
 
-              await db.collection("chats").doc(chatId).delete();
-            });
+          for (const message of messages.docs) {
+            await message.ref.delete();
+          }
+
+          // Delete members
+          const members = await db
+            .collection("chats")
+            .doc(chatId)
+            .collection("members")
+            .get();
+
+          for (const member of members.docs) {
+            await member.ref.delete();
+          }
+
+          // Delete chat
+          await db.collection("chats").doc(chatId).delete();
+
+          setLoading(false);
         },
       },
     ]);
@@ -251,7 +268,9 @@ export default function ChatsScreen({ navigation }) {
         </TouchableOpacity>
       ) : null}
 
-      {chats.length > 0 ? (
+      {loading ? (
+        <LoadingScreen />
+      ) : chats.length > 0 ? (
         <FlatList
           data={chats}
           keyExtractor={(item) => item.id}
@@ -336,8 +355,6 @@ export default function ChatsScreen({ navigation }) {
             </TouchableOpacity>
           )}
         />
-      ) : loading ? (
-        <LoadingScreen />
       ) : (
         <View
           style={{
