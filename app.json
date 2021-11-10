@@ -3,7 +3,7 @@
     "entryPoint": "./src/App.js",
     "name": "Daki",
     "slug": "daki",
-    "version": "0.14.11",
+    "version": "0.14.12",
     "orientation": "portrait",
     "primaryColor": "#000000",
     "icon": "./assets/logo.png",

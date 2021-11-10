@@ -476,7 +476,11 @@ export default function ChatHistoryScreen({ navigation, route }) {
                   .collection("chats")
                   .doc(route.params.chatId)
                   .update({
-                    [`message.${lastMessage.userId}`]: lastMessage.message,
+                    message: {
+                      [auth.currentUser?.uid]: "",
+                      [route.params.userId]: "",
+                      [lastMessage.userId]: lastMessage.message,
+                    },
                     timestamp: lastMessage.timestamp,
                     unreadCount: firebase.firestore.FieldValue.increment(
                       -!deletedMessage.seen
