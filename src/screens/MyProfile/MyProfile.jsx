@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { StatusBar } from "expo-status-bar";
 import { Octicons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -56,17 +55,11 @@ export default function SettingsScreen({ navigation }) {
   // Logout
   async function logout() {
     // Change online status
-    db.collection("users")
-      .doc(auth.currentUser?.uid)
-      .update({
-        online: firebase.firestore.Timestamp.fromMillis(
-          (firebase.firestore.Timestamp.now().seconds + 60) * 1000
-        ),
-      });
+    db.collection("users").doc(auth.currentUser?.uid).update({
+      online: firebase.firestore.Timestamp.now(),
+    });
 
-    await AsyncStorage.removeItem("phone");
     auth.signOut();
-
     navigation.replace("AuthPhone");
   }
 
