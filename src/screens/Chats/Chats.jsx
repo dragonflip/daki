@@ -8,7 +8,6 @@ import {
   AppState,
   Platform,
   Alert,
-  ActivityIndicator,
   Dimensions,
 } from "react-native";
 
@@ -21,6 +20,8 @@ import moment from "moment";
 import styles from "./styles";
 // Firebase
 import { db, firebase, auth } from "../../firebase";
+// Components
+import LoadingScreen from "../../components/LoadingScreen";
 
 export default function ChatsScreen({ navigation }) {
   const [chats, setChats] = useState([]);
@@ -336,11 +337,7 @@ export default function ChatsScreen({ navigation }) {
           )}
         />
       ) : loading ? (
-        <ActivityIndicator
-          color="#000"
-          style={{ flex: 1 }}
-          size={Platform.OS === "android" ? "large" : "small"}
-        />
+        <LoadingScreen />
       ) : (
         <View
           style={{

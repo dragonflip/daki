@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  ActivityIndicator,
-} from "react-native";
+import { Text, View, TouchableOpacity, ScrollView, Image } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -18,6 +11,8 @@ import StarRating from "react-native-star-rating";
 import styles from "./styles";
 // Firebase
 import { firebase, db } from "../../firebase";
+// Components
+import LoadingScreen from "../../components/LoadingScreen";
 
 export default function ProfileScreen({ route, navigation }) {
   const [profile, setProfile] = useState([]);
@@ -223,11 +218,7 @@ export default function ProfileScreen({ route, navigation }) {
           </View>
         </ScrollView>
       ) : (
-        <ActivityIndicator
-          color="#000"
-          style={{ flex: 1 }}
-          size={Platform.OS === "android" ? "large" : "small"}
-        />
+        <LoadingScreen />
       )}
     </View>
   );

@@ -9,7 +9,6 @@ import {
   Image,
   Platform,
   Alert,
-  ActivityIndicator,
   AppState,
   Dimensions,
 } from "react-native";
@@ -28,6 +27,7 @@ import styles from "./styles";
 import { firebase, db, auth } from "../../firebase";
 // Components
 import KeyboardAvoider from "../../components/KeyboardAvoider";
+import LoadingScreen from "../../components/LoadingScreen";
 
 export default function ChatHistoryScreen({ navigation, route }) {
   const [messages, setMessages] = useState([]);
@@ -613,11 +613,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
               )}
             />
           ) : loading ? (
-            <ActivityIndicator
-              color="#000"
-              style={{ flex: 1 }}
-              size={Platform.OS === "android" ? "large" : "small"}
-            />
+            <LoadingScreen />
           ) : (
             <View
               style={{

@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
-  ActivityIndicator,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -18,6 +17,8 @@ import Moment from "react-moment";
 import styles from "./styles";
 // Firebase
 import { firebase, db, auth } from "../../firebase";
+// Components
+import LoadingScreen from "../../components/LoadingScreen";
 
 export default function ChatGroupInfoScreen({ route, navigation }) {
   const [groupInfo, setGroupInfo] = useState([]);
@@ -236,11 +237,7 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
           )}
         />
       ) : (
-        <ActivityIndicator
-          color="#000"
-          style={{ flex: 1 }}
-          size={Platform.OS === "android" ? "large" : "small"}
-        />
+        <LoadingScreen />
       )}
     </View>
   );
