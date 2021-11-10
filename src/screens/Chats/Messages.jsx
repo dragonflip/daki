@@ -116,12 +116,26 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     </View>
                   )}
                 </View>
-              ) : (
+              ) : null}
+            </TouchableOpacity>
+          ),
+          headerLeft: () =>
+            Platform.OS === "android" ? (
+              <TouchableOpacity
+                onPress={() =>
+                  chatInfo.group
+                    ? navigation.navigate("ChatsGroupInfo", {
+                        chatId: route.params.chatId,
+                      })
+                    : navigation.navigate("ChatsUserInfo", {
+                        userId: route.params.userId,
+                      })
+                }
+              >
                 <View
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    marginLeft: -8,
                   }}
                 >
                   {chatInfo.photo != "" ? (
@@ -183,9 +197,8 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     )}
                   </View>
                 </View>
-              )}
-            </TouchableOpacity>
-          ),
+              </TouchableOpacity>
+            ) : null,
           headerRight: () =>
             Platform.OS === "ios" ? (
               <TouchableOpacity
@@ -197,7 +210,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       width: 32,
                       height: 32,
                       borderRadius: 32,
-                      marginRight: -8,
                     }}
                     source={{
                       uri: chatInfo.photo,
@@ -210,7 +222,6 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       width: 32,
                       height: 32,
                       borderRadius: 32,
-                      marginRight: -8,
                       alignItems: "center",
                       justifyContent: "center",
                     }}

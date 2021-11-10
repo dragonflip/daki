@@ -84,16 +84,25 @@ export default function ProfileScreen({ route, navigation }) {
                   }}
                 >
                   <Text style={{ fontSize: 24 }}>{profile.name}</Text>
-                  <Text
+                  <TouchableOpacity
                     style={{
-                      fontSize: 20,
-                      fontWeight: "bold",
-                      color: "red",
+                      borderWidth: 1,
+                      borderColor: "red",
+                      borderRadius: 16,
+                      paddingHorizontal: 8,
                       marginLeft: 8,
                     }}
                   >
-                    2.4★
-                  </Text>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: "300",
+                        color: "red",
+                      }}
+                    >
+                      2.4★
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
                 {profile.online?.seconds >
