@@ -94,6 +94,7 @@ export default function CreateChatScreen({ navigation }) {
         ),
       });
 
+      // Send message
       await newChatRef.collection("messages").add({
         message: "Привіт, розпочнемо спілкування😎",
         timestamp: firebase.firestore.Timestamp.now(),
@@ -101,6 +102,16 @@ export default function CreateChatScreen({ navigation }) {
         userId: auth.currentUser?.uid,
         userName: fromMeInfo.name,
       });
+
+      // Add members info
+      for (const userId of [fromMeId, ...selectedUsersRef.current]) {
+        const userInfo = await db.collection("users").doc(userId).get();
+
+        await newChatRef
+          .collection("members")
+          .doc(userId)
+          .set({ ...userInfo.data() });
+      }
 
       navigation.replace("ChatsMessages", {
         chatId: newChatRef.id,

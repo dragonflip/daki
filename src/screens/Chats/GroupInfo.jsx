@@ -25,32 +25,32 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
   // Init
   useEffect(() => {
     // Get group info
-    const chatSnapshotUnsubscribe = db
+    const groupSnapshotUnsubscribe = db
       .collection("chats")
       .doc(route.params.chatId)
-      .onSnapshot(async (snapshot) => {
+      .onSnapshot((snapshot) => {
         setGroupInfo({
           ...snapshot.data(),
           membersCount: snapshot.data().members.length,
         });
+      });
 
-        // Get group members
+    const membersSnapshotUnsubscribe = db
+      .collection("chats")
+      .doc(route.params.chatId)
+      .collection("members")
+      .onSnapshot((snapshot) => {
         setMembers(
-          await Promise.all(
-            snapshot.data().members.map(async (member) => {
-              const memberInfo = await db.collection("users").doc(member).get();
-
-              return {
-                id: memberInfo.id,
-                ...memberInfo.data(),
-                admin: snapshot.data().admin === memberInfo.id,
-              };
-            })
-          )
+          snapshot.docs.map((doc) => {
+            return { id: doc.id, ...doc.data() }; // admin todo
+          })
         );
       });
 
-    return chatSnapshotUnsubscribe;
+    return () => {
+      groupSnapshotUnsubscribe();
+      membersSnapshotUnsubscribe();
+    };
   }, []);
 
   return (

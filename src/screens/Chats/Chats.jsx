@@ -160,14 +160,18 @@ export default function ChatsScreen({ navigation }) {
           chats.docs.forEach(async (chat) => {
             if (chat.data().group) {
               // Group
-              await chat.ref.update({
-                [`membersOnline.${auth.currentUser?.uid}`]:
-                  state != "background"
-                    ? firebase.firestore.Timestamp.fromMillis(
-                        (firebase.firestore.Timestamp.now().seconds + 60) * 1000
-                      )
-                    : firebase.firestore.Timestamp.now(),
-              });
+              await chat.ref
+                .collection("members")
+                .doc(auth.currentUser?.uid)
+                .update({
+                  online:
+                    state != "background"
+                      ? firebase.firestore.Timestamp.fromMillis(
+                          (firebase.firestore.Timestamp.now().seconds + 60) *
+                            1000
+                        )
+                      : firebase.firestore.Timestamp.now(),
+                });
             } else {
               // Dialog
               await chat.ref.update({
