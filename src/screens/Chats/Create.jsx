@@ -110,7 +110,10 @@ export default function CreateChatScreen({ navigation }) {
         await newChatRef
           .collection("members")
           .doc(userId)
-          .set({ ...userInfo.data() });
+          .set({
+            ...userInfo.data(),
+            admin: userId === fromMeId,
+          });
       }
 
       navigation.replace("ChatsMessages", {

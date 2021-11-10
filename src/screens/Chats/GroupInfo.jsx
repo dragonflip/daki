@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Octicons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import "moment/locale/uk";
 import Moment from "react-moment";
 
@@ -39,10 +39,14 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
       .collection("chats")
       .doc(route.params.chatId)
       .collection("members")
+      .orderBy("admin", "desc")
       .onSnapshot((snapshot) => {
         setMembers(
           snapshot.docs.map((doc) => {
-            return { id: doc.id, ...doc.data() }; // admin todo
+            return {
+              ...doc.data(),
+              id: doc.id,
+            };
           })
         );
       });
