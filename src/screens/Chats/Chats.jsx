@@ -33,12 +33,11 @@ export default function ChatsScreen({ navigation }) {
     AppState.addEventListener("change", handleAppStateChange);
     handleAppStateChange("active");
 
-    // const onlineUpdater = setInterval(() => {
-    //   handleAppStateChange("active");
-    // }, 10000);
+    const onlineUpdater = setInterval(() => {
+      handleAppStateChange("active");
+    }, 30000);
 
     let lastMessageTimestamp = 0;
-    // let onlineChecker;
 
     // Select chats where I'm member
     const chatsSnapshotUnsubscribe = db
@@ -128,10 +127,7 @@ export default function ChatsScreen({ navigation }) {
     return () => {
       chatsSnapshotUnsubscribe();
 
-      // TODO without intervals in all screens
-      // clearInterval(onlineChecker);
-      // clearInterval(onlineUpdater);
-
+      clearInterval(onlineUpdater);
       AppState.removeEventListener("change", handleAppStateChange);
     };
   }, []);
