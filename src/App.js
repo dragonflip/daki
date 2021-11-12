@@ -107,6 +107,8 @@ function App() {
           name="MyProfileEdit"
           component={MyProfileEditScreen}
           options={{
+            // presentation: "modal",
+            title: "Редагування",
             headerBackTitle: "Мій профіль",
           }}
         />

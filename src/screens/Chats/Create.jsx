@@ -80,7 +80,7 @@ export default function CreateChatScreen({ navigation }) {
       // Group
       const newChatRef = await db.collection("chats").add({
         group: true,
-        admin: fromMeId,
+        adminId: fromMeId,
         groupMessage: "Привіт, розпочнемо спілкування😎",
         groupMessageSenderId: fromMeId,
         groupMessageSenderName: fromMeInfo.name,

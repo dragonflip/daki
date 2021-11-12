@@ -99,6 +99,7 @@ export default function ChatsScreen({ navigation }) {
           // Vibrate if new message
           if (
             !allChats[0].me &&
+            allChats[0].unreadCount > 0 &&
             allChats[0].timestamp.seconds > lastMessageTimestamp &&
             lastMessageTimestamp > 0
           ) {

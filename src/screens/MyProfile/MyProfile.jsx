@@ -16,6 +16,7 @@ import Moment from "react-moment";
 
 // Styles
 import styles from "./styles";
+import colors from "../../styles/colors";
 // Firebase
 import { firebase, db, auth } from "../../firebase";
 // Components
@@ -102,7 +103,7 @@ export default function SettingsScreen({ navigation }) {
                     <Octicons
                       name="verified"
                       size={20}
-                      color="blue"
+                      color={colors.purple}
                       style={{ marginLeft: 8 }}
                     />
                   ) : null}
@@ -187,8 +188,12 @@ export default function SettingsScreen({ navigation }) {
                 alignItems: "center",
               }}
             >
-              <MaterialCommunityIcons name="pencil" size={16} color="blue" />
-              <Text style={{ color: "blue", fontSize: 16, marginLeft: 4 }}>
+              <MaterialCommunityIcons
+                name="pencil"
+                size={16}
+                color={colors.blue}
+              />
+              <Text style={{ color: colors.blue, fontSize: 16, marginLeft: 4 }}>
                 Редагувати профіль та фото
               </Text>
             </TouchableOpacity>
@@ -205,8 +210,12 @@ export default function SettingsScreen({ navigation }) {
               }}
               onPress={logout}
             >
-              <MaterialCommunityIcons name="logout" size={16} color="red" />
-              <Text style={{ color: "red", fontSize: 16, marginLeft: 4 }}>
+              <MaterialCommunityIcons
+                name="logout"
+                size={16}
+                color={colors.red}
+              />
+              <Text style={{ color: colors.red, fontSize: 16, marginLeft: 4 }}>
                 Вийти
               </Text>
             </TouchableOpacity>
