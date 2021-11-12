@@ -2,20 +2,20 @@ import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
-  Dimensions,
-  Image,
   TouchableOpacity,
   ScrollView,
+  ImageBackground,
+  Button,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Octicons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import "moment/locale/uk";
 import Moment from "react-moment";
+import Modal from "react-native-modal";
 
 // Styles
-import styles from "./styles";
 import colors from "../../styles/colors";
 // Firebase
 import { firebase, db, auth } from "../../firebase";
@@ -25,6 +25,7 @@ import LoadingScreen from "../../components/LoadingScreen";
 export default function SettingsScreen({ navigation }) {
   const [profile, setProfile] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
 
   // Get data from storage
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function SettingsScreen({ navigation }) {
   }, []);
 
   // Logout
-  async function logout() {
+  const logout = async () => {
     // Change online status
     db.collection("users").doc(auth.currentUser?.uid).update({
       online: firebase.firestore.Timestamp.now(),
@@ -51,160 +52,195 @@ export default function SettingsScreen({ navigation }) {
 
     auth.signOut();
     navigation.replace("AuthPhone");
-  }
+  };
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, backgroundColor: colors.gray6 }}>
       <StatusBar style="auto" />
+
+      <Modal
+        isVisible={modal}
+        useNativeDriverForBackdrop={true}
+        onBackdropPress={() => setModal(false)}
+      >
+        <View
+          style={{
+            width: "100%",
+            backgroundColor: "#fff",
+            padding: 16,
+            borderRadius: 16,
+          }}
+        >
+          <Text style={{ fontSize: 28, fontWeight: "300" }}>
+            Що таке рейтинг?
+          </Text>
+          <Text style={{ marginVertical: 16 }}>
+            Ваш рейтинг - це середнє значення всіх оцінок, які Ви отримали від
+            інших людей.
+          </Text>
+          <Button onPress={() => setModal(false)} title="Закрити" />
+        </View>
+      </Modal>
 
       {!loading ? (
         <ScrollView>
-          {profile.profilePhoto !== "" ? (
-            <Image
-              source={{
-                uri: profile.profilePhoto,
-              }}
+          <View
+            style={{
+              backgroundColor: "#fff",
+              paddingBottom: 16,
+            }}
+          >
+            <ImageBackground
+              source={profile.photo != "" ? { uri: profile.photo } : null}
               style={{
-                width: Dimensions.get("window").width,
-                height: Dimensions.get("window").width,
-              }}
-            />
-          ) : (
-            <View
-              style={{
-                width: Dimensions.get("window").width,
-                height: Dimensions.get("window").width,
+                width: 192,
+                height: 192,
+                borderRadius: 192,
+                backgroundColor: colors.gray6,
+                alignSelf: "center",
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: "#eee",
+                marginTop: 64,
               }}
+              imageStyle={{ borderRadius: 192 }}
             >
-              <Ionicons
-                name="camera"
-                size={Dimensions.get("window").width * 0.4}
-                color="#aaa"
-              />
-            </View>
-          )}
+              {profile.photo === "" ? (
+                <Text style={{ fontSize: 48 }}>{profile.name[0]}</Text>
+              ) : null}
+            </ImageBackground>
 
-          <View style={{ paddingHorizontal: 16 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                paddingTop: 16,
-              }}
-            >
-              <View style={{ flex: 1, paddingBottom: 16 }}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ fontSize: 24 }}>{profile.name}</Text>
-
-                  {profile.verified ? (
-                    <Octicons
-                      name="verified"
-                      size={20}
-                      color={colors.purple}
-                      style={{ marginLeft: 8 }}
-                    />
-                  ) : null}
-                </View>
-
-                {profile.online?.seconds >
-                firebase.firestore.Timestamp.now().seconds + 10 ? (
-                  <Text style={{ color: "green" }}>онлайн</Text>
-                ) : (
-                  <View>
-                    <Text style={{ color: "grey" }}>
-                      В мережі{" "}
-                      <Moment element={Text} locale="uk" fromNow unix>
-                        {profile.online?.seconds}
-                      </Moment>
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              <View
-                style={{
-                  alignItems: "center",
-                  paddingBottom: 16,
-                }}
-              >
-                <Text style={{ color: "red", fontSize: 24 }}>2.4★</Text>
-                <Text style={{ color: "grey" }}>рейтинг</Text>
-              </View>
-            </View>
-
-            <View
-              style={{
-                paddingVertical: 16,
-                borderColor: "#eee",
-                borderTopWidth: 1,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: "bold",
-                  textTransform: "uppercase",
-                }}
-              >
-                {auth.currentUser?.phoneNumber}
+            <View style={{ alignItems: "center", marginTop: 8 }}>
+              <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+                {profile.name}
               </Text>
-              <Text style={{ fontSize: 12, color: "grey" }}>
-                Номер телефону
-              </Text>
-            </View>
 
-            <View
-              style={{
-                paddingVertical: 16,
-                borderColor: "#eee",
-                borderTopWidth: 1,
-                // borderBottomWidth: 1,
-              }}
-            >
-              <Text style={{ fontSize: 16 }}>
-                {profile.bio != "" ? profile.bio : "Розкажіть про себе"}
-              </Text>
-              <Text style={{ fontSize: 12, color: "grey" }}>Про себе</Text>
+              {profile.online?.seconds >
+              firebase.firestore.Timestamp.now().seconds + 10 ? (
+                <Text style={{ color: colors.green }}>онлайн</Text>
+              ) : (
+                <Text style={{ color: colors.gray }}>
+                  В мережі{" "}
+                  <Moment element={Text} locale="uk" fromNow unix>
+                    {profile.online?.seconds}
+                  </Moment>
+                </Text>
+              )}
             </View>
+          </View>
 
+          <View
+            style={{
+              marginTop: 16,
+              paddingHorizontal: 16,
+              backgroundColor: "#fff",
+            }}
+          >
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate("MyProfileEdit", {
                   userName: profile.name,
                   userBio: profile.bio,
-                  userPhoto: profile.profilePhoto,
+                  userPhoto: profile.photo,
                 })
               }
               style={{
-                borderWidth: 1,
-                borderColor: "#eee",
-                borderRadius: 16,
                 paddingVertical: 12,
-                paddingHorizontal: 16,
                 flexDirection: "row",
                 alignItems: "center",
               }}
             >
               <MaterialCommunityIcons
                 name="pencil"
-                size={16}
+                size={18}
                 color={colors.blue}
               />
-              <Text style={{ color: colors.blue, fontSize: 16, marginLeft: 4 }}>
+              <Text
+                style={{ color: colors.blue, fontSize: 16, marginLeft: 12 }}
+              >
                 Редагувати профіль та фото
               </Text>
             </TouchableOpacity>
+          </View>
+
+          <View
+            style={{
+              marginTop: 16,
+              paddingHorizontal: 16,
+              backgroundColor: "#fff",
+            }}
+          >
             <TouchableOpacity
               style={{
-                borderWidth: 1,
-                borderColor: "#eee",
-                borderRadius: 16,
+                paddingVertical: 16,
+                backgroundColor: "#fff",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderBottomWidth: 1,
+                borderBottomColor: colors.gray6,
+              }}
+              onPress={() => setModal(true)}
+            >
+              <View>
+                <Text style={{ fontSize: 16 }}>Соціальний рейтинг</Text>
+                <Text style={{ fontSize: 12, color: colors.gray }}>
+                  Натисніть для детальнішої інформації
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderColor: "red",
+                  borderRadius: 16,
+                  paddingHorizontal: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "300",
+                    color: "red",
+                  }}
+                >
+                  2.4★
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <View
+              style={{
+                paddingVertical: 16,
+                borderBottomColor: colors.gray6,
+                borderBottomWidth: 1,
+              }}
+            >
+              <Text style={{ fontSize: 16 }}>
+                {auth.currentUser?.phoneNumber}
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.gray }}>
+                Номер телефону
+              </Text>
+            </View>
+
+            <View style={{ paddingVertical: 16 }}>
+              <Text style={{ fontSize: 16 }}>
+                {profile.bio != "" ? profile.bio : "Розкажіть про себе"}
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.gray }}>Про себе</Text>
+            </View>
+          </View>
+
+          <View
+            style={{
+              marginTop: 16,
+              paddingHorizontal: 16,
+              backgroundColor: "#fff",
+            }}
+          >
+            <TouchableOpacity
+              style={{
                 paddingVertical: 12,
-                paddingHorizontal: 16,
-                marginTop: 8,
                 flexDirection: "row",
                 alignItems: "center",
               }}
@@ -212,16 +248,22 @@ export default function SettingsScreen({ navigation }) {
             >
               <MaterialCommunityIcons
                 name="logout"
-                size={16}
+                size={18}
                 color={colors.red}
               />
-              <Text style={{ color: colors.red, fontSize: 16, marginLeft: 4 }}>
-                Вийти
+              <Text style={{ color: colors.red, fontSize: 16, marginLeft: 12 }}>
+                Вийти з аккаунта
               </Text>
             </TouchableOpacity>
+          </View>
 
+          <View>
             <Text
-              style={{ textAlign: "center", color: "grey", marginVertical: 32 }}
+              style={{
+                textAlign: "center",
+                color: colors.gray,
+                marginVertical: 32,
+              }}
             >
               Версія: {Constants.manifest.version}
             </Text>

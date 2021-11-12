@@ -154,8 +154,8 @@ export default function CreateChatScreen({ navigation }) {
             [toMeId]: toMeInfo.online,
           },
           photo: {
-            [fromMeId]: fromMeInfo.profilePhoto,
-            [toMeId]: toMeInfo.profilePhoto,
+            [fromMeId]: fromMeInfo.photo,
+            [toMeId]: toMeInfo.photo,
           },
           timestamp: firebase.firestore.Timestamp.now(),
           typing: {
@@ -232,11 +232,11 @@ export default function CreateChatScreen({ navigation }) {
             activeOpacity={0.5}
             onPress={() => selectUser(item.userId)}
           >
-            {item.profilePhoto != "" ? (
+            {item.photo != "" ? (
               <Image
                 style={styles.chat_photo}
                 source={{
-                  uri: item.profilePhoto,
+                  uri: item.photo,
                 }}
               />
             ) : (

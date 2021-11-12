@@ -108,7 +108,7 @@ export default function EditScreen({ navigation }) {
       .update({
         name: profile.name,
         bio: profile.bio,
-        profilePhoto: url ?? profile.profilePhoto,
+        photo: url ?? profile.photo,
       });
 
     // Update profile in chats
@@ -127,13 +127,13 @@ export default function EditScreen({ navigation }) {
           .update({
             name: profile.name,
             bio: profile.bio,
-            profilePhoto: url ?? profile.profilePhoto,
+            photo: url ?? profile.photo,
           });
       } else {
         // Dialog
         chat.ref.update({
           [`name.${auth.currentUser?.uid}`]: profile.name,
-          [`photo.${auth.currentUser?.uid}`]: url ?? profile.profilePhoto,
+          [`photo.${auth.currentUser?.uid}`]: url ?? profile.photo,
         });
       }
     }
@@ -147,7 +147,7 @@ export default function EditScreen({ navigation }) {
       <StatusBar style="auto" />
 
       <ScrollView>
-        <KeyboardAvoider style={{ padding: 16 }}>
+        <KeyboardAvoider style={{ paddingHorizontal: 16 }}>
           <TouchableOpacity
             style={{ alignSelf: "center", alignItems: "center" }}
             onPress={pickImage}
@@ -158,8 +158,8 @@ export default function EditScreen({ navigation }) {
                   ? image !== ""
                     ? { uri: image }
                     : null
-                  : profile.profilePhoto != ""
-                  ? { uri: profile.profilePhoto }
+                  : profile.photo != ""
+                  ? { uri: profile.photo }
                   : null
               }
               style={{
@@ -169,6 +169,7 @@ export default function EditScreen({ navigation }) {
                 backgroundColor: "#ccc",
                 alignItems: "center",
                 justifyContent: "center",
+                marginTop: 64,
               }}
               imageStyle={{ borderRadius: 192 }}
             >
@@ -192,7 +193,7 @@ export default function EditScreen({ navigation }) {
           </TouchableOpacity>
 
           {(image !== null && image !== "") ||
-          (profile.profilePhoto !== "" && image !== "") ? (
+          (profile.photo !== "" && image !== "") ? (
             <TouchableOpacity
               style={{ alignSelf: "center", alignItems: "center" }}
               onPress={() => setImage("")}

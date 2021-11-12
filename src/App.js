@@ -107,9 +107,12 @@ function App() {
           name="MyProfileEdit"
           component={MyProfileEditScreen}
           options={{
-            // presentation: "modal",
-            title: "Редагування",
+            presentation: "fullScreenModal",
+            headerTitle: "",
+            headerTransparent: true,
+            headerShadowVisible: false,
             headerBackTitle: "Мій профіль",
+            // gestureEnabled: false,
           }}
         />
       </Stack.Navigator>
@@ -156,7 +159,7 @@ function NavigationTabs() {
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "settings" : "settings-outline"}
+              name={focused ? "person" : "person-outline"}
               size={24}
               color={color}
             />

@@ -187,9 +187,9 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
                 navigation.navigate("ChatsUserInfo", { userId: item.id })
               }
             >
-              {item.profilePhoto !== "" ? (
+              {item.photo !== "" ? (
                 <Image
-                  source={{ uri: item.profilePhoto }}
+                  source={{ uri: item.photo }}
                   style={{ width: 48, height: 48, borderRadius: 48 }}
                 />
               ) : (

@@ -32,7 +32,7 @@ export default function AuthWelcomeScreen({ navigation, route }) {
         userId: auth.currentUser?.uid,
         phone: auth.currentUser?.phoneNumber,
         name: name,
-        profilePhoto: "",
+        photo: "",
         bio: "",
         verified: false,
       });

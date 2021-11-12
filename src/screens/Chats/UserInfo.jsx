@@ -39,10 +39,10 @@ export default function ProfileScreen({ route, navigation }) {
 
       {!loading ? (
         <ScrollView>
-          {profile.profilePhoto !== "" ? (
+          {profile.photo !== "" ? (
             <Image
               source={{
-                uri: profile.profilePhoto,
+                uri: profile.photo,
               }}
               style={{
                 width: 192,
