@@ -2,12 +2,12 @@ import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
 import {
   Text,
   View,
-  Image,
   TouchableOpacity,
   TextInput,
   FlatList,
   Dimensions,
   Platform,
+  ImageBackground,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -195,7 +195,7 @@ export default function CreateChatScreen({ navigation }) {
       selectedUsersRef.current = newValue;
       selectedUsersCount.current++;
     } else {
-      const newValue = selectedUsers.filter((user) => user != userId);
+      const newValue = selectedUsers.filter((user) => user !== userId);
 
       setSelectedUsers(newValue);
       selectedUsersRef.current = newValue;
@@ -227,8 +227,8 @@ export default function CreateChatScreen({ navigation }) {
       <FlatList
         data={users.filter(
           (item) =>
-            item.name.substr(0, value.length) == value ||
-            item.phone.substr(0, value.length) == value
+            item.name.substr(0, value.length) === value ||
+            item.phone.substr(0, value.length) === value
         )}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
@@ -237,20 +237,21 @@ export default function CreateChatScreen({ navigation }) {
             activeOpacity={0.5}
             onPress={() => selectUser(item.userId)}
           >
-            {item.photo != "" ? (
-              <Image
-                style={styles.chat_photo}
-                source={{
-                  uri: item.photo,
-                }}
-              />
-            ) : (
-              <View style={[styles.chat_photo, { backgroundColor: "#aaa" }]}>
-                <Text style={{ fontSize: 24, color: "#fff" }}>
+            <ImageBackground
+              source={
+                item.photo !== ""
+                  ? { uri: item.photo, cache: "force-cache" }
+                  : null
+              }
+              style={[styles.chat_photo, { backgroundColor: colors.gray }]}
+              imageStyle={{ borderRadius: 56 }}
+            >
+              {item.photo === "" ? (
+                <Text style={{ fontSize: 24, color: colors.gray6 }}>
                   {item.name[0]}
                 </Text>
-              </View>
-            )}
+              ) : null}
+            </ImageBackground>
 
             {item.online === true ? (
               <View style={styles.chat_online}></View>
@@ -260,18 +261,18 @@ export default function CreateChatScreen({ navigation }) {
               <View
                 style={{
                   position: "absolute",
-                  top: 45,
-                  left: 45,
-                  backgroundColor: colors.blue,
-                  width: 20,
-                  height: 20,
-                  borderRadius: 20,
+                  top: 44,
+                  left: 44,
+                  backgroundColor: "#fff",
+                  width: 24,
+                  height: 24,
+                  borderRadius: 24,
                 }}
               >
                 <MaterialCommunityIcons
                   name="checkbox-marked-circle"
-                  size={20}
-                  color="#fff"
+                  size={24}
+                  color={colors.blue}
                 />
               </View>
             ) : null}

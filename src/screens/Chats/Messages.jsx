@@ -6,15 +6,15 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Image,
   Platform,
   Alert,
   AppState,
   Dimensions,
+  ImageBackground,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
 import "moment/locale/uk";
@@ -23,6 +23,7 @@ import { useIsFocused } from "@react-navigation/native";
 
 // Styles
 import styles from "./styles";
+import colors from "../../styles/colors";
 // Firebase
 import { firebase, db, auth } from "../../firebase";
 // Components
@@ -51,7 +52,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
         const fromMeId = auth.currentUser?.uid;
         const toMeId = snapshot
           .data()
-          .members.filter((member) => member != fromMeId)[0];
+          .members.filter((member) => member !== fromMeId)[0];
 
         let chatInfo;
 
@@ -104,11 +105,13 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     </Text>
                   ) : chatInfo.online?.seconds >
                     firebase.firestore.Timestamp.now().seconds + 10 ? (
-                    <Text style={{ fontSize: 12, color: "green" }}>онлайн</Text>
+                    <Text style={{ fontSize: 12, color: "green" }}>
+                      у мережі
+                    </Text>
                   ) : (
                     <View>
                       <Text style={{ fontSize: 12, color: "grey" }}>
-                        в мережі{" "}
+                        у мережі{" "}
                         <Moment element={Text} locale="uk" fromNow unix>
                           {chatInfo.online?.seconds}
                         </Moment>
@@ -132,42 +135,32 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       })
                 }
               >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  {chatInfo.photo != "" ? (
-                    <Image
-                      style={{
-                        width: 42,
-                        height: 42,
-                        borderRadius: 42,
-                        marginRight: 12,
-                      }}
-                      source={{
-                        uri: chatInfo.photo,
-                      }}
-                    />
-                  ) : (
-                    <View
-                      style={{
-                        backgroundColor: "#aaa",
-                        width: 42,
-                        height: 42,
-                        borderRadius: 42,
-                        marginRight: 12,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Text style={{ fontSize: 20, color: "#fff" }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <ImageBackground
+                    source={
+                      chatInfo.photo !== ""
+                        ? { uri: chatInfo.photo, cache: "force-cache" }
+                        : null
+                    }
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 44,
+                      marginRight: 12,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: colors.gray,
+                    }}
+                    imageStyle={{ borderRadius: 44 }}
+                  >
+                    {chatInfo.photo === "" ? (
+                      <Text style={{ fontSize: 20, color: colors.gray6 }}>
                         {chatInfo.name[0]}
                       </Text>
-                    </View>
-                  )}
-                  <View style={{ flexDirection: "column" }}>
+                    ) : null}
+                  </ImageBackground>
+
+                  <View>
                     <Text style={{ fontSize: 16, fontWeight: "bold" }}>
                       {chatInfo.name}
                     </Text>
@@ -183,12 +176,12 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     ) : chatInfo.online?.seconds >
                       firebase.firestore.Timestamp.now().seconds + 10 ? (
                       <Text style={{ fontSize: 12, color: "green" }}>
-                        онлайн
+                        у мережі
                       </Text>
                     ) : (
                       <View>
                         <Text style={{ fontSize: 12, color: "grey" }}>
-                          в мережі{" "}
+                          у мережі{" "}
                           <Moment element={Text} locale="uk" fromNow unix>
                             {chatInfo.online?.seconds}
                           </Moment>
@@ -212,33 +205,28 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       })
                 }
               >
-                {chatInfo.photo != "" ? (
-                  <Image
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 32,
-                    }}
-                    source={{
-                      uri: chatInfo.photo,
-                    }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      backgroundColor: "#aaa",
-                      width: 32,
-                      height: 32,
-                      borderRadius: 32,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text style={{ fontSize: 20, color: "#fff" }}>
+                <ImageBackground
+                  source={
+                    chatInfo.photo !== ""
+                      ? { uri: chatInfo.photo, cache: "force-cache" }
+                      : null
+                  }
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 32,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.gray,
+                  }}
+                  imageStyle={{ borderRadius: 32 }}
+                >
+                  {chatInfo.photo === "" ? (
+                    <Text style={{ fontSize: 20, color: colors.gray6 }}>
                       {chatInfo.name[0]}
                     </Text>
-                  </View>
-                )}
+                  ) : null}
+                </ImageBackground>
               </TouchableOpacity>
             ) : null,
         });
@@ -256,7 +244,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
           let allMessages = snapshot.docs.map((doc) => {
             return {
               id: doc.id,
-              me: doc.data().userId == auth.currentUser?.uid,
+              me: doc.data().userId === auth.currentUser?.uid,
               group: route.params.chatId === route.params.userId,
               ...doc.data(),
             };

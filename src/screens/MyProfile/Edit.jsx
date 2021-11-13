@@ -154,12 +154,10 @@ export default function EditScreen({ navigation }) {
           >
             <ImageBackground
               source={
-                image !== null
-                  ? image !== ""
-                    ? { uri: image }
-                    : null
-                  : profile.photo != ""
-                  ? { uri: profile.photo }
+                image !== null && image !== ""
+                  ? { uri: image, cache: "force-cache" }
+                  : profile.photo !== "" && image !== ""
+                  ? { uri: profile.photo, cache: "force-cache" }
                   : null
               }
               style={{

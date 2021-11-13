@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import {
   Text,
   View,
-  Image,
   TouchableOpacity,
   FlatList,
   AppState,
   Alert,
   Dimensions,
+  ImageBackground,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -51,7 +51,7 @@ export default function ChatsScreen({ navigation }) {
             const fromMeId = auth.currentUser?.uid;
             const toMeId = chat
               .data()
-              .members.filter((member) => member != fromMeId)[0];
+              .members.filter((member) => member !== fromMeId)[0];
 
             if (chat.data().group) {
               // Group
@@ -84,7 +84,7 @@ export default function ChatsScreen({ navigation }) {
 
                 message:
                   chat.data().message[toMeId] || chat.data().message[fromMeId],
-                me: chat.data().message[fromMeId] != "",
+                me: chat.data().message[fromMeId] !== "",
                 online: chat.data().online[toMeId],
 
                 timestamp: chat.data().timestamp,
@@ -142,7 +142,7 @@ export default function ChatsScreen({ navigation }) {
         .doc(auth.currentUser?.uid)
         .update({
           online:
-            state != "background"
+            state !== "background"
               ? firebase.firestore.Timestamp.fromMillis(
                   (firebase.firestore.Timestamp.now().seconds + 60) * 1000
                 )
@@ -163,7 +163,7 @@ export default function ChatsScreen({ navigation }) {
                 .doc(auth.currentUser?.uid)
                 .update({
                   online:
-                    state != "background"
+                    state !== "background"
                       ? firebase.firestore.Timestamp.fromMillis(
                           (firebase.firestore.Timestamp.now().seconds + 60) *
                             1000
@@ -174,7 +174,7 @@ export default function ChatsScreen({ navigation }) {
               // Dialog
               await chat.ref.update({
                 [`online.${auth.currentUser?.uid}`]:
-                  state != "background"
+                  state !== "background"
                     ? firebase.firestore.Timestamp.fromMillis(
                         (firebase.firestore.Timestamp.now().seconds + 60) * 1000
                       )
@@ -293,20 +293,21 @@ export default function ChatsScreen({ navigation }) {
               }
               onLongPress={() => deleteChat(item.id)}
             >
-              {item.photo != "" ? (
-                <Image
-                  style={styles.chat_photo}
-                  source={{
-                    uri: item.photo,
-                  }}
-                />
-              ) : (
-                <View style={[styles.chat_photo, { backgroundColor: "#aaa" }]}>
-                  <Text style={{ fontSize: 24, color: "#fff" }}>
+              <ImageBackground
+                source={
+                  item.photo !== ""
+                    ? { uri: item.photo, cache: "force-cache" }
+                    : null
+                }
+                style={[styles.chat_photo, { backgroundColor: colors.gray }]}
+                imageStyle={{ borderRadius: 56 }}
+              >
+                {item.photo === "" ? (
+                  <Text style={{ fontSize: 24, color: colors.gray6 }}>
                     {item.name[0]}
                   </Text>
-                </View>
-              )}
+                ) : null}
+              </ImageBackground>
 
               {!item.group &&
               item.online?.seconds >
