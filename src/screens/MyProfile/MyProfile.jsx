@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   ImageBackground,
-  Button,
   Platform,
 } from "react-native";
 
@@ -14,7 +13,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import "moment/locale/uk";
 import Moment from "react-moment";
-import Modal from "react-native-modal";
 
 // Styles
 import colors from "../../styles/colors";
@@ -25,13 +23,13 @@ import LoadingScreen from "../../components/LoadingScreen";
 
 export default function SettingsScreen({ navigation }) {
   const [profile, setProfile] = useState([]);
+  const [rating, setRating] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(false);
 
-  // Get data from storage
+  // Init
   useEffect(() => {
-    // Get user profile
-    const unsubscribeSnaphot = db
+    // Get my profile
+    const userSnapshotUnsubscribe = db
       .collection("users")
       .doc(auth.currentUser?.uid)
       .onSnapshot((snapshot) => {
@@ -39,49 +37,32 @@ export default function SettingsScreen({ navigation }) {
         setLoading(false);
       });
 
+    // Get my rating
+    const ratingSnapshotUnsubscribe = db
+      .collection("users")
+      .doc(auth.currentUser?.uid)
+      .collection("rating")
+      .onSnapshot((snapshot) => {
+        // Get likes and dislikes
+        const likes = snapshot.docs.filter(
+          (doc) => doc.data().type === "like"
+        ).length;
+        const dislikes = snapshot.docs.filter(
+          (doc) => doc.data().type === "dislike"
+        ).length;
+
+        setRating({ likes: likes, dislikes: dislikes });
+      });
+
     return () => {
-      unsubscribeSnaphot();
+      userSnapshotUnsubscribe();
+      ratingSnapshotUnsubscribe();
     };
   }, []);
-
-  // Logout
-  const logout = async () => {
-    // Change online status
-    db.collection("users").doc(auth.currentUser?.uid).update({
-      online: firebase.firestore.Timestamp.now(),
-    });
-
-    auth.signOut();
-    navigation.replace("AuthPhone");
-  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.gray6 }}>
       <StatusBar style="auto" />
-
-      <Modal
-        isVisible={modal}
-        useNativeDriverForBackdrop={true}
-        onBackdropPress={() => setModal(false)}
-      >
-        <View
-          style={{
-            width: "100%",
-            backgroundColor: "#fff",
-            padding: 16,
-            borderRadius: 16,
-          }}
-        >
-          <Text style={{ fontSize: 28, fontWeight: "300" }}>
-            Що таке рейтинг?
-          </Text>
-          <Text style={{ marginVertical: 16 }}>
-            Ваш рейтинг - це середнє значення всіх оцінок, які Ви отримали від
-            інших людей.
-          </Text>
-          <Button onPress={() => setModal(false)} title="Закрити" />
-        </View>
-      </Modal>
 
       {!loading ? (
         <ScrollView>
@@ -92,21 +73,34 @@ export default function SettingsScreen({ navigation }) {
             }}
           >
             <ImageBackground
-              source={profile.photo != "" ? { uri: profile.photo } : null}
+              source={
+                profile.photo !== ""
+                  ? { uri: profile.photo, cache: "force-cache" }
+                  : null
+              }
               style={{
                 width: 192,
                 height: 192,
                 borderRadius: 192,
-                backgroundColor: colors.gray6,
+                backgroundColor: colors.gray,
                 alignSelf: "center",
-                alignItems: "center",
+                // alignItems: "center", // TODO center text iOS
                 justifyContent: "center",
                 marginTop: 64,
               }}
               imageStyle={{ borderRadius: 192 }}
             >
               {profile.photo === "" ? (
-                <Text style={{ fontSize: 48 }}>{profile.name[0]}</Text>
+                <Text
+                  style={{
+                    fontSize: 48,
+                    color: colors.gray6,
+                    textAlign: "center",
+                    textAlignVertical: "center",
+                  }}
+                >
+                  {profile.name[0]}
+                </Text>
               ) : null}
             </ImageBackground>
 
@@ -117,10 +111,12 @@ export default function SettingsScreen({ navigation }) {
 
               {profile.online?.seconds >
               firebase.firestore.Timestamp.now().seconds + 10 ? (
-                <Text style={{ color: colors.green }}>онлайн</Text>
+                <Text style={{ color: "green", textAlign: "center" }}>
+                  у мережі
+                </Text>
               ) : (
                 <Text style={{ color: colors.gray }}>
-                  В мережі{" "}
+                  у мережі{" "}
                   <Moment element={Text} locale="uk" fromNow unix>
                     {profile.online?.seconds}
                   </Moment>
@@ -170,50 +166,61 @@ export default function SettingsScreen({ navigation }) {
               backgroundColor: "#fff",
             }}
           >
-            <TouchableOpacity
+            <View
               style={{
-                paddingVertical: 16,
                 backgroundColor: "#fff",
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                borderBottomWidth: 1,
-                borderBottomColor: colors.gray6,
               }}
               onPress={() => setModal(true)}
             >
-              <View>
+              <View style={{ paddingVertical: 16 }}>
                 <Text style={{ fontSize: 16 }}>Соціальний рейтинг</Text>
                 <Text style={{ fontSize: 12, color: colors.gray }}>
-                  Натисніть для детальнішої інформації
+                  Загальна кількість оцінок
                 </Text>
               </View>
 
-              <View
-                style={{
-                  borderWidth: 1,
-                  borderColor: "red",
-                  borderRadius: 16,
-                  paddingHorizontal: 8,
-                }}
-              >
-                <Text
+              <View>
+                <View style={{ flexDirection: "row" }}>
+                  <View style={{ alignItems: "center", width: 64 }}>
+                    <MaterialCommunityIcons
+                      name="thumb-up-outline"
+                      size={24}
+                      color={colors.green}
+                    />
+                    <Text style={{ fontSize: 12, fontWeight: "bold" }}>
+                      {rating.likes}
+                    </Text>
+                  </View>
+
+                  <View style={{ alignItems: "center", width: 64 }}>
+                    <MaterialCommunityIcons
+                      name="thumb-down-outline"
+                      size={24}
+                      color={colors.red}
+                    />
+                    <Text style={{ fontSize: 12, fontWeight: "bold" }}>
+                      {rating.dislikes}
+                    </Text>
+                  </View>
+                </View>
+                {/* <View
                   style={{
-                    fontSize: 20,
-                    fontWeight: "300",
-                    color: "red",
+                    width: "100%",
+                    height: 2,
+                    backgroundColor: colors.gray,
                   }}
-                >
-                  2.4★
-                </Text>
+                ></View> */}
               </View>
-            </TouchableOpacity>
+            </View>
 
             <View
               style={{
                 paddingVertical: 16,
-                borderBottomColor: colors.gray6,
-                borderBottomWidth: 1,
+                borderTopWidth: 1,
+                borderTopColor: colors.gray6,
               }}
             >
               <Text style={{ fontSize: 16 }}>
@@ -224,9 +231,15 @@ export default function SettingsScreen({ navigation }) {
               </Text>
             </View>
 
-            <View style={{ paddingVertical: 16 }}>
+            <View
+              style={{
+                paddingVertical: 16,
+                borderTopWidth: 1,
+                borderTopColor: colors.gray6,
+              }}
+            >
               <Text style={{ fontSize: 16 }}>
-                {profile.bio != "" ? profile.bio : "Розкажіть про себе"}
+                {profile.bio !== "" ? profile.bio : "Розкажіть про себе"}
               </Text>
               <Text style={{ fontSize: 12, color: colors.gray }}>Про себе</Text>
             </View>
@@ -245,7 +258,10 @@ export default function SettingsScreen({ navigation }) {
                 flexDirection: "row",
                 alignItems: "center",
               }}
-              onPress={logout}
+              onPress={async () => {
+                await auth.signOut();
+                navigation.replace("AuthPhone");
+              }}
             >
               <MaterialCommunityIcons
                 name="logout"
