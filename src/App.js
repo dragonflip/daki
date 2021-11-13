@@ -6,6 +6,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
+// Styles
+import colors from "./styles/colors";
+
 // Screens
 import {
   AuthPhoneScreen,
@@ -128,14 +131,14 @@ function NavigationTabs() {
     <Tab.Navigator
       screenOptions={{
         tabBarItemStyle: {
-          paddingVertical: 4,
+          paddingVertical: 2,
         },
         tabBarLabelStyle: {
           fontSize: 12,
         },
 
         tabBarActiveTintColor: "#000",
-        tabBarInactiveTintColor: "grey",
+        tabBarInactiveTintColor: colors.gray,
         tabBarHideOnKeyboard: true,
       }}
     >

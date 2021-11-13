@@ -202,7 +202,15 @@ export default function ChatHistoryScreen({ navigation, route }) {
           headerRight: () =>
             Platform.OS === "ios" ? (
               <TouchableOpacity
-                onPress={() => navigation.navigate("MyProfile")}
+                onPress={() =>
+                  chatInfo.group
+                    ? navigation.navigate("ChatsGroupInfo", {
+                        chatId: route.params.chatId,
+                      })
+                    : navigation.navigate("ChatsUserInfo", {
+                        userId: route.params.userId,
+                      })
+                }
               >
                 {chatInfo.photo != "" ? (
                   <Image

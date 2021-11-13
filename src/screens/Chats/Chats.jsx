@@ -241,7 +241,7 @@ export default function ChatsScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, backgroundColor: colors.gray6 }}>
       <StatusBar style="auto" />
 
       {chats.length > 0 ? (
@@ -283,7 +283,7 @@ export default function ChatsScreen({ navigation }) {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={styles.chat}
+              style={[styles.chat, { backgroundColor: "#fff" }]}
               activeOpacity={0.5}
               onPress={() =>
                 navigation.navigate("ChatsMessages", {
