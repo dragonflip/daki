@@ -39,6 +39,7 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
         setLoading(false);
       });
 
+    // Get members
     const membersSnapshotUnsubscribe = db
       .collection("chats")
       .doc(route.params.chatId)
@@ -69,7 +70,7 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
         <FlatList
           data={members}
           keyExtractor={(item) => item.id}
-          ListHeaderComponent={() => (
+          ListHeaderComponent={
             <View>
               {groupInfo.groupPhoto !== "" ? (
                 <Image
@@ -155,7 +156,7 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
                 </Text>
               </View>
             </View>
-          )}
+          }
           contentContainerStyle={{ padding: 16 }}
           renderItem={({ item }) => (
             <TouchableOpacity
