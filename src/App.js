@@ -1,6 +1,6 @@
 import React from "react";
 import * as expo from "expo";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -146,7 +146,7 @@ function NavigationTabs() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "chatbubbles" : "chatbubbles-outline"}
-              size={24}
+              size={28}
               color={color}
             />
           ),
@@ -158,9 +158,9 @@ function NavigationTabs() {
         component={MyProfileScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "person" : "person-outline"}
-              size={24}
+            <MaterialCommunityIcons
+              name={focused ? "account-circle" : "account-circle-outline"}
+              size={28}
               color={color}
             />
           ),

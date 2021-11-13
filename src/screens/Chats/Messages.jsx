@@ -607,15 +607,15 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     </Text>
 
                     {item.me && item.seen ? (
-                      <Ionicons
-                        name="checkmark-done"
+                      <MaterialCommunityIcons
+                        name="check-all"
                         size={16}
                         color="#999"
                         style={{ alignSelf: "flex-end", height: 15 }}
                       />
                     ) : item.me ? (
-                      <Ionicons
-                        name="checkmark"
+                      <MaterialCommunityIcons
+                        name="check"
                         size={16}
                         color="#999"
                         style={{ alignSelf: "flex-end", height: 15 }}
@@ -677,7 +677,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 style={{ marginRight: 16 }}
                 onPress={sendMessage}
               >
-                <Ionicons name="send" size={24} color="#000" />
+                <MaterialCommunityIcons name="send" size={28} color="#000" />
               </TouchableOpacity>
             </View>
           ) : (

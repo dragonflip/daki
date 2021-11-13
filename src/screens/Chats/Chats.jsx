@@ -6,18 +6,18 @@ import {
   TouchableOpacity,
   FlatList,
   AppState,
-  Platform,
   Alert,
   Dimensions,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
 
 // Styles
 import styles from "./styles";
+import colors from "../../styles/colors";
 // Firebase
 import { db, firebase, auth } from "../../firebase";
 // Components
@@ -257,11 +257,21 @@ export default function ChatsScreen({ navigation }) {
             bottom: 16,
             right: 16,
             zIndex: 1000,
+            shadowRadius: 8,
+            shadowColor: colors.gray,
+            shadowOpacity: 1,
+            shadowOffset: { width: 0, height: 0 },
+            elevation: 8,
           }}
           activeOpacity={0.5}
           onPress={() => navigation.navigate("ChatsCreate")}
         >
-          <MaterialCommunityIcons name="chat-plus" size={32} color="#fff" />
+          <MaterialCommunityIcons
+            name="plus"
+            size={32}
+            color="#fff"
+            style={{ textAlign: "center" }}
+          />
         </TouchableOpacity>
       ) : null}
 
@@ -310,9 +320,17 @@ export default function ChatsScreen({ navigation }) {
 
                   <View style={styles.chat_date_status}>
                     {item.me && item.seen ? (
-                      <Ionicons name="checkmark-done" size={20} color="green" />
+                      <MaterialCommunityIcons
+                        name="check-all"
+                        size={20}
+                        color="green"
+                      />
                     ) : item.me ? (
-                      <Ionicons name="checkmark" size={20} color="green" />
+                      <MaterialCommunityIcons
+                        name="check"
+                        size={20}
+                        color="green"
+                      />
                     ) : null}
 
                     <Text style={styles.chat_date}>
@@ -360,7 +378,11 @@ export default function ChatsScreen({ navigation }) {
             justifyContent: "center",
           }}
         >
-          <MaterialCommunityIcons name="chat-outline" size={128} color="grey" />
+          <MaterialCommunityIcons
+            name="chat-outline"
+            size={128}
+            color={colors.gray}
+          />
           <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>
             Немає чатів
           </Text>

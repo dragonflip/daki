@@ -6,6 +6,7 @@ import {
   ScrollView,
   ImageBackground,
   Button,
+  Platform,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -257,14 +258,13 @@ export default function SettingsScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          <View>
-            <Text
-              style={{
-                textAlign: "center",
-                color: colors.gray,
-                marginVertical: 32,
-              }}
-            >
+          <View style={{ alignItems: "center", marginVertical: 32 }}>
+            <MaterialCommunityIcons
+              name={Platform.OS === "ios" ? "apple-ios" : "android"}
+              size={24}
+              color={colors.gray}
+            />
+            <Text style={{ color: colors.gray }}>
               Версія: {Constants.manifest.version}
             </Text>
           </View>

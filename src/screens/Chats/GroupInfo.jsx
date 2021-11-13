@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import "moment/locale/uk";
 import Moment from "react-moment";
 
@@ -84,23 +84,7 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
                     marginTop: 64,
                   }}
                 />
-              ) : (
-                <View
-                  style={{
-                    width: Dimensions.get("window").width,
-                    height: Dimensions.get("window").width,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "#eee",
-                  }}
-                >
-                  <Ionicons
-                    name="camera"
-                    size={Dimensions.get("window").width * 0.4}
-                    color="#aaa"
-                  />
-                </View>
-              )}
+              ) : null}
 
               <View>
                 <View

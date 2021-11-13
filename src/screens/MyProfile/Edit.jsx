@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import uuid from "uuid";
@@ -184,7 +184,11 @@ export default function EditScreen({ navigation }) {
                     justifyContent: "center",
                   }}
                 >
-                  <MaterialIcons name="add-a-photo" size={48} color="#fff" />
+                  <MaterialCommunityIcons
+                    name="camera-plus"
+                    size={48}
+                    color="#fff"
+                  />
                 </View>
               ) : (
                 <ActivityIndicator color="#fff" />

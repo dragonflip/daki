@@ -11,10 +11,11 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { Entypo, AntDesign } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // Styles
 import styles from "./styles";
+import colors from "../../styles/colors";
 // Firebase
 import { db, firebase, auth } from "../../firebase";
 
@@ -205,7 +206,11 @@ export default function CreateChatScreen({ navigation }) {
       navigation.setOptions({
         headerRight: () => (
           <TouchableOpacity onPress={() => createChat(userId)}>
-            <AntDesign name="check" size={24} color="#000" />
+            <Text
+              style={{ fontSize: 16, fontWeight: "bold", color: colors.blue }}
+            >
+              Створити
+            </Text>
           </TouchableOpacity>
         ),
       });
@@ -257,13 +262,17 @@ export default function CreateChatScreen({ navigation }) {
                   position: "absolute",
                   top: 45,
                   left: 45,
-                  backgroundColor: "green",
+                  backgroundColor: colors.blue,
                   width: 20,
                   height: 20,
                   borderRadius: 20,
                 }}
               >
-                <Entypo name="check" size={20} color="#fff" />
+                <MaterialCommunityIcons
+                  name="checkbox-marked-circle"
+                  size={20}
+                  color="#fff"
+                />
               </View>
             ) : null}
 
