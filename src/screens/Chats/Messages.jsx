@@ -63,6 +63,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
             name: snapshot.data().groupName,
             photo: snapshot.data().groupPhoto,
             membersCount: snapshot.data().members.length,
+            groupTyping: Object.entries(snapshot.data().typing),
           };
         } else {
           // Dialog
@@ -166,9 +167,23 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     </Text>
 
                     {chatInfo.group ? (
-                      <Text style={{ fontSize: 12, color: "grey" }}>
-                        учасників: {chatInfo.membersCount}
-                      </Text>
+                      chatInfo.groupTyping.filter(
+                        ([key, value]) =>
+                          value.typing == true && key != auth.currentUser.uid
+                      ).length > 0 ? (
+                        <Text style={{ fontSize: 12, color: "grey" }}>
+                          {chatInfo.groupTyping
+                            .filter(
+                              ([key, value]) => value.typing == true
+                            )[0][1]
+                            .name.toString()}{" "}
+                          набирає...
+                        </Text>
+                      ) : (
+                        <Text style={{ fontSize: 12, color: "grey" }}>
+                          учасників: {chatInfo.membersCount}
+                        </Text>
+                      )
                     ) : chatInfo.typing ? (
                       <Text style={{ fontSize: 12, color: "grey" }}>
                         набирає...
@@ -502,15 +517,28 @@ export default function ChatHistoryScreen({ navigation, route }) {
   };
 
   // Typing
-  const typing = () => {
+  const typing = async () => {
     // Start typing
+
     if (!typingTimeout.current.typing) {
       typingTimeout.current.typing = true;
+
+      if (chatInfo.group) {
+        var query = {
+          name: (
+            await db.collection("users").doc(auth.currentUser?.uid).get()
+          ).data().name,
+          typing: true,
+        };
+      } else {
+        var query = true;
+      }
 
       db.collection("chats")
         .doc(route.params.chatId)
         .update({
-          [`typing.${auth.currentUser?.uid}`]: true,
+          //[`typing.${auth.currentUser?.uid}`]: true,
+          [`typing.${auth.currentUser?.uid}`]: query,
         });
     }
 
@@ -521,13 +549,24 @@ export default function ChatHistoryScreen({ navigation, route }) {
     }
 
     // Stop typing
-    typingTimeout.current.timer = setTimeout(() => {
+    typingTimeout.current.timer = setTimeout(async () => {
       typingTimeout.current.typing = false;
+
+      if (chatInfo.group) {
+        var query = {
+          name: (
+            await db.collection("users").doc(auth.currentUser?.uid).get()
+          ).data().name,
+          typing: false,
+        };
+      } else {
+        var query = false;
+      }
 
       db.collection("chats")
         .doc(route.params.chatId)
         .update({
-          [`typing.${auth.currentUser?.uid}`]: false,
+          [`typing.${auth.currentUser?.uid}`]: query,
         });
     }, 2000);
   };
