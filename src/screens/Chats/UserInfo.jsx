@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ImageBackground,
+  Alert,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -21,8 +22,14 @@ import LoadingScreen from "../../components/LoadingScreen";
 
 export default function ChatsUserInfoScreen({ navigation, route }) {
   const [profile, setProfile] = useState([]);
-  const [rating, setRating] = useState([]);
+  const [rating, setRating] = useState({
+    likes: 0,
+    dislikes: 0,
+    rateType: null,
+  });
   const [loading, setLoading] = useState(true);
+
+  const chatId = [auth.currentUser?.uid, route.params.userId].sort().join("_");
 
   // Init
   useEffect(() => {
@@ -30,10 +37,18 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
     const userSnapshotUnsubscribe = db
       .collection("users")
       .doc(route.params.userId)
-      .onSnapshot((snapshot) => {
+      .onSnapshot(async (snapshot) => {
         if (snapshot.exists) {
-          setProfile(snapshot.data());
+          // Check if we already have chat
+          const chat = await db.collection("chats").doc(chatId).get();
+
+          setProfile({
+            ...snapshot.data(),
+            weHaveChat: chat.exists,
+          });
         }
+
+        setLoading(false);
       });
 
     // Get user rating
@@ -58,7 +73,6 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
           const rateType = ratedByMe?.[0]?.data().type ?? null;
 
           setRating({ likes: likes, dislikes: dislikes, rateType: rateType });
-          setLoading(false);
         }
       });
 
@@ -91,6 +105,38 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
         .doc(auth.currentUser?.uid)
         .delete();
     }
+  };
+
+  const deleteDialog = async () => {
+    Alert.alert("Видалити чат?", "Чат буде видалено для всіх", [
+      {
+        text: "Скасувати",
+        style: "cancel",
+      },
+      {
+        text: "Видалити",
+        style: "destructive",
+        onPress: async () => {
+          setLoading(true);
+
+          // Delete messages
+          const messages = await db
+            .collection("chats")
+            .doc(chatId)
+            .collection("messages")
+            .get();
+
+          for (const message of messages.docs) {
+            await message.ref.delete();
+          }
+
+          // Delete chat
+          await db.collection("chats").doc(chatId).delete();
+
+          navigation.navigate("Chats");
+        },
+      },
+    ]);
   };
 
   return (
@@ -173,7 +219,12 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
             }}
           >
             <TouchableOpacity
-              onPress={() => navigation.goBack()} // TODO navigation to chat history
+              onPress={() => {
+                navigation.popToTop();
+                navigation.navigate("ChatsMessages", {
+                  userId: profile.userId,
+                });
+              }}
               style={{
                 paddingVertical: 12,
                 flexDirection: "row",
@@ -287,31 +338,35 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
             ) : null}
           </View>
 
-          <View
-            style={{
-              marginTop: 16,
-              paddingHorizontal: 16,
-              backgroundColor: "#fff",
-            }}
-          >
-            {/* TODO delete chat */}
-            <TouchableOpacity
+          {profile.weHaveChat ? (
+            <View
               style={{
-                paddingVertical: 12,
-                flexDirection: "row",
-                alignItems: "center",
+                marginTop: 16,
+                paddingHorizontal: 16,
+                backgroundColor: "#fff",
               }}
             >
-              <MaterialCommunityIcons
-                name="delete"
-                size={18}
-                color={colors.red}
-              />
-              <Text style={{ color: colors.red, fontSize: 16, marginLeft: 12 }}>
-                Видалити чат
-              </Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                style={{
+                  paddingVertical: 12,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+                onPress={deleteDialog}
+              >
+                <MaterialCommunityIcons
+                  name="delete"
+                  size={18}
+                  color={colors.red}
+                />
+                <Text
+                  style={{ color: colors.red, fontSize: 16, marginLeft: 12 }}
+                >
+                  Видалити чат
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
         </ScrollView>
       ) : (
         <LoadingScreen />
