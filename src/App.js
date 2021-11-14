@@ -21,6 +21,7 @@ import {
   ChatsMessagesScreen,
   ChatsUserInfoScreen,
   ChatsGroupInfoScreen,
+  ChatsGroupEditScreen,
 } from "./screens/Chats";
 import { MyProfileScreen, MyProfileEditScreen } from "./screens/MyProfile";
 
@@ -99,6 +100,17 @@ function App() {
           name="ChatsGroupInfo"
           component={ChatsGroupInfoScreen}
           options={{
+            headerTitle: "",
+            headerTransparent: true,
+            headerShadowVisible: false,
+            headerBackTitle: "Назад",
+          }}
+        />
+        <Stack.Screen
+          name="ChatsGroupEdit"
+          component={ChatsGroupEditScreen}
+          options={{
+            presentation: "fullScreenModal",
             headerTitle: "",
             headerTransparent: true,
             headerShadowVisible: false,

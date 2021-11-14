@@ -19,7 +19,7 @@ import { firebase, db, auth } from "../../firebase";
 // Components
 import LoadingScreen from "../../components/LoadingScreen";
 
-export default function ChatsUserInfoScreen({ route, navigation }) {
+export default function ChatsUserInfoScreen({ navigation, route }) {
   const [profile, setProfile] = useState([]);
   const [rating, setRating] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,9 @@ export default function ChatsUserInfoScreen({ route, navigation }) {
       .collection("users")
       .doc(route.params.userId)
       .onSnapshot((snapshot) => {
-        setProfile(snapshot.data());
+        if (snapshot.exists) {
+          setProfile(snapshot.data());
+        }
       });
 
     // Get user rating
@@ -40,22 +42,24 @@ export default function ChatsUserInfoScreen({ route, navigation }) {
       .doc(route.params.userId)
       .collection("rating")
       .onSnapshot((snapshot) => {
-        // Get likes and dislikes
-        const likes = snapshot.docs.filter(
-          (doc) => doc.data().type === "like"
-        ).length;
-        const dislikes = snapshot.docs.filter(
-          (doc) => doc.data().type === "dislike"
-        ).length;
+        if (!snapshot.empty) {
+          // Get likes and dislikes
+          const likes = snapshot.docs.filter(
+            (doc) => doc.data().type === "like"
+          ).length;
+          const dislikes = snapshot.docs.filter(
+            (doc) => doc.data().type === "dislike"
+          ).length;
 
-        // If rated get mark type
-        const ratedByMe = snapshot.docs.filter(
-          (doc) => doc.id === auth.currentUser?.uid
-        );
-        const rateType = ratedByMe?.[0]?.data().type ?? null;
+          // If rated get mark type
+          const ratedByMe = snapshot.docs.filter(
+            (doc) => doc.id === auth.currentUser?.uid
+          );
+          const rateType = ratedByMe?.[0]?.data().type ?? null;
 
-        setRating({ likes: likes, dislikes: dislikes, rateType: rateType });
-        setLoading(false);
+          setRating({ likes: likes, dislikes: dislikes, rateType: rateType });
+          setLoading(false);
+        }
       });
 
     return () => {

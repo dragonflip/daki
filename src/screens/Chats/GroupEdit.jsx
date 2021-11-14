@@ -22,9 +22,9 @@ import { firebase, db, auth } from "../../firebase";
 // Components
 import KeyboardAvoider from "../../components/KeyboardAvoider";
 
-export default function MyProfileEditScreen({ navigation }) {
+export default function ChatsGroupEditScreen({ navigation, route }) {
   const [image, setImage] = useState(null);
-  const [profile, setProfile] = useState([]);
+  const [group, setGroup] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Navigation
@@ -37,7 +37,7 @@ export default function MyProfileEditScreen({ navigation }) {
           </TouchableOpacity>
         ) : null,
       headerRight: () => (
-        <TouchableOpacity onPress={updateProfile}>
+        <TouchableOpacity onPress={updateGroup}>
           <Text
             style={{ color: colors.blue, fontSize: 16, fontWeight: "bold" }}
           >
@@ -50,16 +50,16 @@ export default function MyProfileEditScreen({ navigation }) {
 
   // Init
   useEffect(() => {
-    const userSnapshotUnsubscribe = db
-      .collection("users")
-      .doc(auth.currentUser?.uid)
+    const groupSnapshotUnsubscribe = db
+      .collection("chats")
+      .doc(route.params.chatId)
       .onSnapshot((snapshot) => {
         if (snapshot.exists) {
-          setProfile(snapshot.data());
+          setGroup(snapshot.data());
         }
       });
 
-    return userSnapshotUnsubscribe;
+    return groupSnapshotUnsubscribe;
   }, []);
 
   const pickImage = async () => {
@@ -83,7 +83,7 @@ export default function MyProfileEditScreen({ navigation }) {
     }
   };
 
-  const updateProfile = async () => {
+  const updateGroup = async () => {
     let url = null;
     setLoading(true);
 
@@ -103,42 +103,14 @@ export default function MyProfileEditScreen({ navigation }) {
       console.log(url);
     }
 
-    // Update profile in users
+    // Update group
     await db
-      .collection("users")
-      .doc(auth.currentUser?.uid)
-      .update({
-        name: profile.name,
-        bio: profile.bio,
-        photo: url ?? profile.photo,
-      });
-
-    // Update profile in chats
-    const chats = await db
       .collection("chats")
-      .where("members", "array-contains", auth.currentUser?.uid)
-      .orderBy("timestamp", "desc")
-      .get();
-
-    for (const chat of chats.docs) {
-      if (chat.data().group) {
-        // Group
-        await chat.ref
-          .collection("members")
-          .doc(auth.currentUser?.uid)
-          .update({
-            name: profile.name,
-            bio: profile.bio,
-            photo: url ?? profile.photo,
-          });
-      } else {
-        // Dialog
-        chat.ref.update({
-          [`name.${auth.currentUser?.uid}`]: profile.name,
-          [`photo.${auth.currentUser?.uid}`]: url ?? profile.photo,
-        });
-      }
-    }
+      .doc(route.params.chatId)
+      .update({
+        groupName: group.groupName,
+        groupPhoto: url ?? group.groupPhoto,
+      });
 
     setLoading(false);
     navigation.goBack();
@@ -158,8 +130,8 @@ export default function MyProfileEditScreen({ navigation }) {
               source={
                 image !== null && image !== ""
                   ? { uri: image, cache: "force-cache" }
-                  : profile.photo !== "" && image !== ""
-                  ? { uri: profile.photo, cache: "force-cache" }
+                  : group.groupPhoto !== "" && image !== ""
+                  ? { uri: group.groupPhoto, cache: "force-cache" }
                   : null
               }
               style={{
@@ -197,7 +169,7 @@ export default function MyProfileEditScreen({ navigation }) {
           </TouchableOpacity>
 
           {(image !== null && image !== "") ||
-          (profile.photo !== "" && image !== "") ? (
+          (group.groupPhoto !== "" && image !== "") ? (
             <TouchableOpacity
               style={{ alignSelf: "center", alignItems: "center" }}
               onPress={() => setImage("")}
@@ -230,53 +202,12 @@ export default function MyProfileEditScreen({ navigation }) {
                 borderRadius: 16,
                 backgroundColor: "#fff",
               }}
-              defaultValue={profile.name}
+              defaultValue={group.groupName}
               placeholder="Ім'я"
-              onChangeText={(value) => (profile.name = value)}
+              onChangeText={(value) => (group.groupName = value)}
             />
             <Text style={{ marginLeft: 8, color: colors.gray, fontSize: 12 }}>
-              Ваше ім'я та/або прізвище
-            </Text>
-
-            <TextInput
-              style={{
-                width: "100%",
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                marginTop: 16,
-                fontSize: 16,
-                borderWidth: 2,
-                borderColor: colors.gray5,
-                borderRadius: 16,
-                backgroundColor: colors.gray5,
-              }}
-              defaultValue={profile.phone}
-              placeholder="Номер телефону"
-              editable={false}
-              onChangeText={(value) => (profile.phone = value)}
-            />
-            <Text style={{ marginLeft: 8, color: colors.gray, fontSize: 12 }}>
-              На даний момент Ви не можете змінити номер телефону
-            </Text>
-
-            <TextInput
-              style={{
-                width: "100%",
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                marginTop: 16,
-                fontSize: 16,
-                borderWidth: 2,
-                borderColor: colors.gray5,
-                borderRadius: 16,
-                backgroundColor: "#fff",
-              }}
-              defaultValue={profile.bio}
-              placeholder="Про себе"
-              onChangeText={(value) => (profile.bio = value)}
-            />
-            <Text style={{ marginLeft: 8, color: colors.gray, fontSize: 12 }}>
-              Ваш опис про себе
+              Назва групи
             </Text>
           </View>
         </KeyboardAvoider>

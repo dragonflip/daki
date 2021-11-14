@@ -2,26 +2,26 @@ import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
-  Dimensions,
   TouchableOpacity,
-  Image,
+  ImageBackground,
   FlatList,
+  Alert,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import "moment/locale/uk";
+import moment from "moment";
 import Moment from "react-moment";
 
 // Styles
-import styles from "./styles";
+import colors from "../../styles/colors";
 // Firebase
 import { firebase, db, auth } from "../../firebase";
 // Components
 import LoadingScreen from "../../components/LoadingScreen";
 
-export default function ChatGroupInfoScreen({ route, navigation }) {
-  const [groupInfo, setGroupInfo] = useState([]);
+export default function ChatsGroupInfoScreen({ navigation, route }) {
+  const [group, setGroup] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,11 +32,13 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
       .collection("chats")
       .doc(route.params.chatId)
       .onSnapshot((snapshot) => {
-        setGroupInfo({
-          ...snapshot.data(),
-          membersCount: snapshot.data().members.length,
-        });
-        setLoading(false);
+        if (snapshot.exists) {
+          setGroup({
+            ...snapshot.data(),
+            membersCount: snapshot.data().members.length,
+            admin: snapshot.data().adminId === auth.currentUser?.uid,
+          });
+        }
       });
 
     // Get members
@@ -44,16 +46,19 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
       .collection("chats")
       .doc(route.params.chatId)
       .collection("members")
-      .orderBy("admin", "desc")
+      .orderBy("online", "desc")
       .onSnapshot((snapshot) => {
-        setMembers(
-          snapshot.docs.map((doc) => {
-            return {
-              ...doc.data(),
-              id: doc.id,
-            };
-          })
-        );
+        if (!snapshot.empty) {
+          setMembers(
+            snapshot.docs.map((doc) => {
+              return {
+                ...doc.data(),
+                id: doc.id,
+              };
+            })
+          );
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -62,8 +67,51 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
     };
   }, []);
 
+  const deleteGroup = async () => {
+    Alert.alert("Видалити групу?", "Групу буде видалено для всіх", [
+      {
+        text: "Скасувати",
+        style: "cancel",
+      },
+      {
+        text: "Видалити",
+        style: "destructive",
+        onPress: async () => {
+          setLoading(true);
+
+          // Delete messages
+          const messages = await db
+            .collection("chats")
+            .doc(route.params.chatId)
+            .collection("messages")
+            .get();
+
+          for (const message of messages.docs) {
+            await message.ref.delete();
+          }
+
+          // Delete members
+          const members = await db
+            .collection("chats")
+            .doc(route.params.chatId)
+            .collection("members")
+            .get();
+
+          for (const member of members.docs) {
+            await member.ref.delete();
+          }
+
+          // Delete chat
+          await db.collection("chats").doc(route.params.chatId).delete();
+
+          navigation.goBack();
+        },
+      },
+    ]);
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, backgroundColor: colors.gray6 }}>
       <StatusBar style="auto" />
 
       {!loading ? (
@@ -72,127 +120,223 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
           keyExtractor={(item) => item.id}
           ListHeaderComponent={
             <View>
-              {groupInfo.groupPhoto !== "" ? (
-                <Image
-                  source={{
-                    uri: groupInfo.groupPhoto,
-                  }}
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  paddingBottom: 16,
+                }}
+              >
+                <ImageBackground
+                  source={
+                    group.groupPhoto !== ""
+                      ? { uri: group.groupPhoto, cache: "force-cache" }
+                      : null
+                  }
                   style={{
                     width: 192,
                     height: 192,
                     borderRadius: 192,
+                    backgroundColor: colors.gray,
                     alignSelf: "center",
+                    alignItems: "center",
+                    justifyContent: "center",
                     marginTop: 64,
                   }}
-                />
-              ) : null}
-
-              <View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingTop: 16,
-                  }}
+                  imageStyle={{ borderRadius: 192 }}
                 >
-                  <View style={{ flex: 1, paddingBottom: 16 }}>
-                    <View
+                  {group.groupPhoto === "" ? (
+                    <Text
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        fontSize: 48,
+                        color: "#fff",
+                        includeFontPadding: false,
                       }}
                     >
-                      <Text style={{ fontSize: 24 }}>
-                        {groupInfo.groupName}
-                      </Text>
-                    </View>
-
-                    <Text style={{ color: "grey", textAlign: "center" }}>
-                      Учасників: {groupInfo.membersCount}
+                      {group.groupName[0]}
                     </Text>
-                  </View>
+                  ) : null}
+                </ImageBackground>
+
+                <View style={{ alignItems: "center", marginTop: 8 }}>
+                  <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+                    {group.groupName}
+                  </Text>
+
+                  <Text style={{ color: colors.gray }}>
+                    учасників: {group.membersCount}
+                  </Text>
                 </View>
+              </View>
 
-                <TouchableOpacity
-                  onPress={() => navigation.goBack()}
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#eee",
-                    borderRadius: 16,
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <MaterialCommunityIcons name="send" size={14} color="blue" />
-                  <Text style={{ color: "blue", fontSize: 14, marginLeft: 4 }}>
-                    Написати повідомлення
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#eee",
-                    borderRadius: 16,
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
-                    marginTop: 8,
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <MaterialCommunityIcons name="logout" size={14} color="red" />
-                  <Text style={{ color: "red", fontSize: 14, marginLeft: 4 }}>
-                    Вийти з групи
-                  </Text>
-                </TouchableOpacity>
+              <View
+                style={{
+                  marginTop: 16,
+                  paddingHorizontal: 16,
+                  backgroundColor: "#fff",
+                }}
+              >
+                {group.admin ? (
+                  <View>
+                    <TouchableOpacity
+                      style={{
+                        paddingVertical: 12,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        borderBottomWidth: 1,
+                        borderBottomColor: colors.gray6,
+                      }}
+                      onPress={() =>
+                        navigation.navigate("ChatsGroupEdit", {
+                          ...route.params,
+                        })
+                      }
+                    >
+                      <MaterialCommunityIcons
+                        name="pencil"
+                        size={18}
+                        color={colors.blue}
+                      />
+                      <Text
+                        style={{
+                          color: colors.blue,
+                          fontSize: 16,
+                          marginLeft: 12,
+                        }}
+                      >
+                        Редагувати назву та фото
+                      </Text>
+                    </TouchableOpacity>
 
-                <Text
-                  style={{ fontSize: 20, fontWeight: "300", marginTop: 16 }}
-                >
+                    <TouchableOpacity
+                      style={{
+                        paddingVertical: 12,
+                        flexDirection: "row",
+                        alignItems: "center",
+                      }}
+                      onPress={deleteGroup}
+                    >
+                      <MaterialCommunityIcons
+                        name="delete"
+                        size={18}
+                        color={colors.red}
+                      />
+                      <Text
+                        style={{
+                          color: colors.red,
+                          fontSize: 16,
+                          marginLeft: 12,
+                        }}
+                      >
+                        Видалити групу
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    style={{
+                      paddingVertical: 12,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="logout"
+                      size={18}
+                      color={colors.red}
+                    />
+                    <Text
+                      style={{
+                        color: colors.red,
+                        fontSize: 16,
+                        marginLeft: 12,
+                      }}
+                    >
+                      Вийти з групи
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <View
+                style={{
+                  marginTop: 16,
+                  paddingHorizontal: 16,
+                  backgroundColor: "#fff",
+                }}
+              >
+                <Text style={{ fontSize: 20, marginVertical: 12 }}>
                   Учасники
                 </Text>
+                <TouchableOpacity
+                  style={{
+                    paddingVertical: 12,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    borderBottomWidth: 1,
+                    borderBottomColor: colors.gray6,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="account-plus"
+                    size={18}
+                    color={colors.blue}
+                  />
+                  <Text
+                    style={{ color: colors.blue, fontSize: 16, marginLeft: 12 }}
+                  >
+                    Додати учасника
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           }
-          contentContainerStyle={{ padding: 16 }}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={{
                 flexDirection: "row",
                 borderBottomWidth: 1,
-                borderColor: "#eee",
-                padding: 8,
+                borderColor: colors.gray6,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
                 alignItems: "center",
+                backgroundColor: "#fff",
               }}
               activeOpacity={0.5}
               onPress={() =>
-                navigation.navigate("ChatsUserInfo", { userId: item.id })
+                item.userId !== auth.currentUser?.uid
+                  ? navigation.navigate("ChatsUserInfo", { userId: item.id })
+                  : navigation.navigate("MyProfile")
               }
             >
-              {item.photo !== "" ? (
-                <Image
-                  source={{ uri: item.photo }}
-                  style={{ width: 48, height: 48, borderRadius: 48 }}
-                />
-              ) : (
-                <View
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 48,
-                    backgroundColor: "#aaa",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text style={{ fontSize: 18, color: "#fff" }}>
+              <ImageBackground
+                source={
+                  item.photo !== ""
+                    ? { uri: item.photo, cache: "force-cache" }
+                    : null
+                }
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 48,
+                  backgroundColor: colors.gray,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                imageStyle={{ borderRadius: 48 }}
+              >
+                {item.photo === "" ? (
+                  <Text
+                    style={{
+                      fontSize: 24,
+                      color: "#fff",
+                      includeFontPadding: false,
+                    }}
+                  >
                     {item.name[0]}
                   </Text>
-                </View>
-              )}
+                ) : null}
+              </ImageBackground>
+
               <View style={{ marginLeft: 8, flex: 1 }}>
                 <View
                   style={{
@@ -200,19 +344,39 @@ export default function ChatGroupInfoScreen({ route, navigation }) {
                     justifyContent: "space-between",
                   }}
                 >
-                  <Text style={{ fontWeight: "bold" }}>{item.name}</Text>
+                  <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                    {item.name}
+                  </Text>
                   {item.admin ? (
-                    <Text style={{ color: "blue", fontSize: 12 }}>адмін</Text>
+                    <Text
+                      style={{
+                        color: "#000",
+                        fontSize: 12,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      адмін
+                    </Text>
                   ) : null}
                 </View>
 
                 {item.online.seconds >
                 firebase.firestore.Timestamp.now().seconds + 10 ? (
-                  <Text style={{ color: "green", fontSize: 12 }}>онлайн</Text>
+                  <Text style={{ color: "green", fontSize: 12 }}>у мережі</Text>
                 ) : (
-                  <Text style={{ color: "grey", fontSize: 12 }}>
-                    в мережі{" "}
-                    <Moment element={Text} locale="uk" fromNow unix>
+                  <Text style={{ color: colors.gray, fontSize: 12 }}>
+                    у мережі{" — "}
+                    <Moment
+                      element={Text}
+                      format={
+                        moment
+                          .unix(moment().unix())
+                          .isSame(moment.unix(item.online?.seconds), "date")
+                          ? "HH:mm"
+                          : "DD.MM.YYYY"
+                      }
+                      unix
+                    >
                       {item.online?.seconds}
                     </Moment>
                   </Text>

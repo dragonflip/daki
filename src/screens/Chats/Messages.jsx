@@ -48,93 +48,38 @@ export default function ChatsMessagesScreen({ navigation, route }) {
       .collection("chats")
       .doc(route.params.chatId)
       .onSnapshot((snapshot) => {
-        const fromMeId = auth.currentUser?.uid;
-        const toMeId = snapshot
-          .data()
-          .members.filter((member) => member !== fromMeId)[0];
+        if (snapshot.exists) {
+          const fromMeId = auth.currentUser?.uid;
+          const toMeId = snapshot
+            .data()
+            .members.filter((member) => member !== fromMeId)[0];
 
-        let chatInfo;
+          let chatInfo;
 
-        if (snapshot.data().group) {
-          // Group
-          chatInfo = {
-            group: true,
-            name: snapshot.data().groupName,
-            photo: snapshot.data().groupPhoto,
-            membersCount: snapshot.data().members.length,
-            groupTyping: Object.entries(snapshot.data().typing),
-          };
-        } else {
-          // Dialog
-          chatInfo = {
-            name: snapshot.data().name[toMeId],
-            photo: snapshot.data().photo[toMeId],
-            online: snapshot.data().online[toMeId],
-            typing: snapshot.data().typing[toMeId],
-          };
-        }
+          if (snapshot.data().group) {
+            // Group
+            chatInfo = {
+              group: true,
+              name: snapshot.data().groupName,
+              photo: snapshot.data().groupPhoto,
+              membersCount: snapshot.data().members.length,
+              groupTyping: Object.entries(snapshot.data().typing ?? []),
+            };
+          } else {
+            // Dialog
+            chatInfo = {
+              name: snapshot.data().name[toMeId],
+              photo: snapshot.data().photo[toMeId],
+              online: snapshot.data().online[toMeId],
+              typing: snapshot.data().typing[toMeId],
+            };
+          }
 
-        setChatInfo(chatInfo);
+          setChatInfo(chatInfo);
 
-        // Change header
-        navigation.setOptions({
-          headerTitle: () => (
-            <TouchableOpacity
-              onPress={() =>
-                chatInfo.group
-                  ? navigation.navigate("ChatsGroupInfo", {
-                      chatId: route.params.chatId,
-                    })
-                  : navigation.navigate("ChatsUserInfo", {
-                      userId: route.params.userId,
-                    })
-              }
-            >
-              {Platform.OS === "ios" ? (
-                <View style={{ alignItems: "center" }}>
-                  <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                    {chatInfo.name}
-                  </Text>
-                  {chatInfo.group ? (
-                    <Text style={{ fontSize: 12, color: colors.gray }}>
-                      учасників: {chatInfo.membersCount}
-                    </Text>
-                  ) : chatInfo.typing ? (
-                    <Text style={{ fontSize: 12, color: colors.gray }}>
-                      набирає...
-                    </Text>
-                  ) : chatInfo.online?.seconds >
-                    firebase.firestore.Timestamp.now().seconds + 10 ? (
-                    <Text style={{ fontSize: 12, color: "green" }}>
-                      у мережі
-                    </Text>
-                  ) : (
-                    <Text style={{ fontSize: 12, color: colors.gray }}>
-                      у мережі{" — "}
-                      <Moment
-                        element={Text}
-                        format={
-                          moment
-                            .unix(moment().unix())
-                            .isSame(
-                              moment.unix(chatInfo.online?.seconds),
-                              "date"
-                            )
-                            ? "HH:mm"
-                            : "DD.MM.YYYY"
-                        }
-                        unix
-                      >
-                        {chatInfo.online?.seconds}
-                      </Moment>
-                    </Text>
-                  )}
-                </View>
-              ) : null}
-            </TouchableOpacity>
-          ),
-          headerLeft: () =>
-            Platform.OS === "android" ? (
+          // Change header
+          navigation.setOptions({
+            headerTitle: () => (
               <TouchableOpacity
                 onPress={() =>
                   chatInfo.group
@@ -146,60 +91,15 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                       })
                 }
               >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <ImageBackground
-                    source={
-                      chatInfo.photo !== ""
-                        ? { uri: chatInfo.photo, cache: "force-cache" }
-                        : null
-                    }
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 44,
-                      marginRight: 12,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: colors.gray,
-                    }}
-                    imageStyle={{ borderRadius: 44 }}
-                  >
-                    {chatInfo.photo === "" ? (
-                      <Text
-                        style={{
-                          fontSize: 22,
-                          color: "#fff",
-                          includeFontPadding: false,
-                        }}
-                      >
-                        {chatInfo.name[0]}
-                      </Text>
-                    ) : null}
-                  </ImageBackground>
-
-                  <View>
+                {Platform.OS === "ios" ? (
+                  <View style={{ alignItems: "center" }}>
                     <Text style={{ fontSize: 16, fontWeight: "bold" }}>
                       {chatInfo.name}
                     </Text>
-
                     {chatInfo.group ? (
-                      chatInfo.groupTyping.filter(
-                        ([key, value]) =>
-                          value.typing == true && key != auth.currentUser.uid
-                      ).length > 0 ? (
-                        <Text style={{ fontSize: 12, color: colors.gray }}>
-                          {chatInfo.groupTyping
-                            .filter(
-                              ([key, value]) => value.typing == true
-                            )[0][1]
-                            .name.toString()}{" "}
-                          набирає...
-                        </Text>
-                      ) : (
-                        <Text style={{ fontSize: 12, color: colors.gray }}>
-                          учасників: {chatInfo.membersCount}
-                        </Text>
-                      )
+                      <Text style={{ fontSize: 12, color: colors.gray }}>
+                        учасників: {chatInfo.membersCount}
+                      </Text>
                     ) : chatInfo.typing ? (
                       <Text style={{ fontSize: 12, color: colors.gray }}>
                         набирає...
@@ -231,53 +131,155 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                       </Text>
                     )}
                   </View>
-                </View>
+                ) : null}
               </TouchableOpacity>
-            ) : null,
-          headerRight: () =>
-            Platform.OS === "ios" ? (
-              <TouchableOpacity
-                onPress={() =>
-                  chatInfo.group
-                    ? navigation.navigate("ChatsGroupInfo", {
-                        chatId: route.params.chatId,
-                      })
-                    : navigation.navigate("ChatsUserInfo", {
-                        userId: route.params.userId,
-                      })
-                }
-              >
-                <ImageBackground
-                  source={
-                    chatInfo.photo !== ""
-                      ? { uri: chatInfo.photo, cache: "force-cache" }
-                      : null
+            ),
+            headerLeft: () =>
+              Platform.OS === "android" ? (
+                <TouchableOpacity
+                  onPress={() =>
+                    chatInfo.group
+                      ? navigation.navigate("ChatsGroupInfo", {
+                          chatId: route.params.chatId,
+                        })
+                      : navigation.navigate("ChatsUserInfo", {
+                          userId: route.params.userId,
+                        })
                   }
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 32,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: colors.gray,
-                  }}
-                  imageStyle={{ borderRadius: 32 }}
                 >
-                  {chatInfo.photo === "" ? (
-                    <Text
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <ImageBackground
+                      source={
+                        chatInfo.photo !== ""
+                          ? { uri: chatInfo.photo, cache: "force-cache" }
+                          : null
+                      }
                       style={{
-                        fontSize: 16,
-                        color: "#fff",
-                        includeFontPadding: false,
+                        width: 44,
+                        height: 44,
+                        borderRadius: 44,
+                        marginRight: 12,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: colors.gray,
                       }}
+                      imageStyle={{ borderRadius: 44 }}
                     >
-                      {chatInfo.name[0]}
-                    </Text>
-                  ) : null}
-                </ImageBackground>
-              </TouchableOpacity>
-            ) : null,
-        });
+                      {chatInfo.photo === "" ? (
+                        <Text
+                          style={{
+                            fontSize: 22,
+                            color: "#fff",
+                            includeFontPadding: false,
+                          }}
+                        >
+                          {chatInfo.name[0]}
+                        </Text>
+                      ) : null}
+                    </ImageBackground>
+
+                    <View>
+                      <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                        {chatInfo.name}
+                      </Text>
+
+                      {chatInfo.group ? (
+                        chatInfo.groupTyping.filter(
+                          ([key, value]) =>
+                            value.typing == true && key != auth.currentUser.uid
+                        ).length > 0 ? (
+                          <Text style={{ fontSize: 12, color: colors.gray }}>
+                            {chatInfo.groupTyping
+                              .filter(
+                                ([key, value]) => value.typing == true
+                              )[0][1]
+                              .name.toString()}{" "}
+                            набирає...
+                          </Text>
+                        ) : (
+                          <Text style={{ fontSize: 12, color: colors.gray }}>
+                            учасників: {chatInfo.membersCount}
+                          </Text>
+                        )
+                      ) : chatInfo.typing ? (
+                        <Text style={{ fontSize: 12, color: colors.gray }}>
+                          набирає...
+                        </Text>
+                      ) : chatInfo.online?.seconds >
+                        firebase.firestore.Timestamp.now().seconds + 10 ? (
+                        <Text style={{ fontSize: 12, color: "green" }}>
+                          у мережі
+                        </Text>
+                      ) : (
+                        <Text style={{ fontSize: 12, color: colors.gray }}>
+                          у мережі{" — "}
+                          <Moment
+                            element={Text}
+                            format={
+                              moment
+                                .unix(moment().unix())
+                                .isSame(
+                                  moment.unix(chatInfo.online?.seconds),
+                                  "date"
+                                )
+                                ? "HH:mm"
+                                : "DD.MM.YYYY"
+                            }
+                            unix
+                          >
+                            {chatInfo.online?.seconds}
+                          </Moment>
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ) : null,
+            headerRight: () =>
+              Platform.OS === "ios" ? (
+                <TouchableOpacity
+                  onPress={() =>
+                    chatInfo.group
+                      ? navigation.navigate("ChatsGroupInfo", {
+                          chatId: route.params.chatId,
+                        })
+                      : navigation.navigate("ChatsUserInfo", {
+                          userId: route.params.userId,
+                        })
+                  }
+                >
+                  <ImageBackground
+                    source={
+                      chatInfo.photo !== ""
+                        ? { uri: chatInfo.photo, cache: "force-cache" }
+                        : null
+                    }
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 32,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: colors.gray,
+                    }}
+                    imageStyle={{ borderRadius: 32 }}
+                  >
+                    {chatInfo.photo === "" ? (
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          color: "#fff",
+                          includeFontPadding: false,
+                        }}
+                      >
+                        {chatInfo.name[0]}
+                      </Text>
+                    ) : null}
+                  </ImageBackground>
+                </TouchableOpacity>
+              ) : null,
+          });
+        }
       });
 
     // Get messages
@@ -321,6 +323,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           setMessages(allMessages);
           setLoading(false);
         } else {
+          setLoading(true);
           navigation.goBack();
         }
       });

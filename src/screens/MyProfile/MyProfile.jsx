@@ -33,8 +33,10 @@ export default function MyProfileScreen({ navigation }) {
       .collection("users")
       .doc(auth.currentUser?.uid)
       .onSnapshot((snapshot) => {
-        setProfile(snapshot.data());
-        setLoading(false);
+        if (snapshot.exists) {
+          setProfile(snapshot.data());
+          setLoading(false);
+        }
       });
 
     // Get my rating
@@ -43,15 +45,17 @@ export default function MyProfileScreen({ navigation }) {
       .doc(auth.currentUser?.uid)
       .collection("rating")
       .onSnapshot((snapshot) => {
-        // Get likes and dislikes
-        const likes = snapshot.docs.filter(
-          (doc) => doc.data().type === "like"
-        ).length;
-        const dislikes = snapshot.docs.filter(
-          (doc) => doc.data().type === "dislike"
-        ).length;
+        if (!snapshot.empty) {
+          // Get likes and dislikes
+          const likes = snapshot.docs.filter(
+            (doc) => doc.data().type === "like"
+          ).length;
+          const dislikes = snapshot.docs.filter(
+            (doc) => doc.data().type === "dislike"
+          ).length;
 
-        setRating({ likes: likes, dislikes: dislikes });
+          setRating({ likes: likes, dislikes: dislikes });
+        }
       });
 
     return () => {
