@@ -651,7 +651,14 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   >
                     <View>
                       {item.group && !item.me ? (
-                        <TouchableOpacity style={{ alignSelf: "baseline" }}>
+                        <TouchableOpacity
+                          style={{ alignSelf: "baseline" }}
+                          onPress={() =>
+                            navigation.navigate("ChatsUserInfo", {
+                              userId: item.userId,
+                            })
+                          }
+                        >
                           <Text style={{ fontWeight: "bold" }}>
                             {item.userName}
                           </Text>
