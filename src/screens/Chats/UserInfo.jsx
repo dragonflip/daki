@@ -19,7 +19,7 @@ import { firebase, db, auth } from "../../firebase";
 // Components
 import LoadingScreen from "../../components/LoadingScreen";
 
-export default function ProfileScreen({ route, navigation }) {
+export default function ChatsUserInfoScreen({ route, navigation }) {
   const [profile, setProfile] = useState([]);
   const [rating, setRating] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -197,7 +197,6 @@ export default function ProfileScreen({ route, navigation }) {
                 alignItems: "center",
                 justifyContent: "space-between",
               }}
-              onPress={() => setModal(true)}
             >
               <View style={{ paddingVertical: 16 }}>
                 <Text style={{ fontSize: 16 }}>Соціальний рейтинг</Text>

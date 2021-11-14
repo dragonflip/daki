@@ -29,7 +29,7 @@ import { firebase, db, auth } from "../../firebase";
 import KeyboardAvoider from "../../components/KeyboardAvoider";
 import LoadingScreen from "../../components/LoadingScreen";
 
-export default function ChatHistoryScreen({ navigation, route }) {
+export default function ChatsMessagesScreen({ navigation, route }) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const input = useRef();
@@ -96,11 +96,11 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     {chatInfo.name}
                   </Text>
                   {chatInfo.group ? (
-                    <Text style={{ fontSize: 12, color: "grey" }}>
+                    <Text style={{ fontSize: 12, color: colors.gray }}>
                       учасників: {chatInfo.membersCount}
                     </Text>
                   ) : chatInfo.typing ? (
-                    <Text style={{ fontSize: 12, color: "grey" }}>
+                    <Text style={{ fontSize: 12, color: colors.gray }}>
                       набирає...
                     </Text>
                   ) : chatInfo.online?.seconds >
@@ -109,7 +109,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       у мережі
                     </Text>
                   ) : (
-                    <Text style={{ color: colors.gray }}>
+                    <Text style={{ fontSize: 12, color: colors.gray }}>
                       у мережі{" — "}
                       <Moment
                         element={Text}
@@ -117,7 +117,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                           moment
                             .unix(moment().unix())
                             .isSame(
-                              moment.unix(profile.online?.seconds),
+                              moment.unix(chatInfo.online?.seconds),
                               "date"
                             )
                             ? "HH:mm"
@@ -125,7 +125,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                         }
                         unix
                       >
-                        {profile.online?.seconds}
+                        {chatInfo.online?.seconds}
                       </Moment>
                     </Text>
                   )}
@@ -181,7 +181,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                         ([key, value]) =>
                           value.typing == true && key != auth.currentUser.uid
                       ).length > 0 ? (
-                        <Text style={{ fontSize: 12, color: "grey" }}>
+                        <Text style={{ fontSize: 12, color: colors.gray }}>
                           {chatInfo.groupTyping
                             .filter(
                               ([key, value]) => value.typing == true
@@ -190,12 +190,12 @@ export default function ChatHistoryScreen({ navigation, route }) {
                           набирає...
                         </Text>
                       ) : (
-                        <Text style={{ fontSize: 12, color: "grey" }}>
+                        <Text style={{ fontSize: 12, color: colors.gray }}>
                           учасників: {chatInfo.membersCount}
                         </Text>
                       )
                     ) : chatInfo.typing ? (
-                      <Text style={{ fontSize: 12, color: "grey" }}>
+                      <Text style={{ fontSize: 12, color: colors.gray }}>
                         набирає...
                       </Text>
                     ) : chatInfo.online?.seconds >
@@ -204,7 +204,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                         у мережі
                       </Text>
                     ) : (
-                      <Text style={{ color: colors.gray }}>
+                      <Text style={{ fontSize: 12, color: colors.gray }}>
                         у мережі{" — "}
                         <Moment
                           element={Text}
@@ -713,10 +713,10 @@ export default function ChatHistoryScreen({ navigation, route }) {
             >
               <TextInput
                 style={{
-                  borderColor: "#eee",
+                  borderColor: colors.gray6,
                   borderWidth: 2,
-                  borderRadius: 44,
-                  height: 44,
+                  borderRadius: 16,
+                  paddingVertical: 4,
                   paddingHorizontal: 16,
                   marginHorizontal: 16,
                   flex: 1,
@@ -728,6 +728,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                 }}
                 ref={input}
                 selectionColor="#000"
+                multiline={true}
               />
               <TouchableOpacity
                 style={{ marginRight: 16 }}

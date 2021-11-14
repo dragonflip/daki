@@ -21,7 +21,7 @@ import { firebase, db, auth } from "../../firebase";
 // Components
 import LoadingScreen from "../../components/LoadingScreen";
 
-export default function SettingsScreen({ navigation }) {
+export default function MyProfileScreen({ navigation }) {
   const [profile, setProfile] = useState([]);
   const [rating, setRating] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,13 +143,7 @@ export default function SettingsScreen({ navigation }) {
             }}
           >
             <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("MyProfileEdit", {
-                  userName: profile.name,
-                  userBio: profile.bio,
-                  userPhoto: profile.photo,
-                })
-              }
+              onPress={() => navigation.navigate("MyProfileEdit")}
               style={{
                 paddingVertical: 12,
                 flexDirection: "row",
@@ -183,7 +177,6 @@ export default function SettingsScreen({ navigation }) {
                 alignItems: "center",
                 justifyContent: "space-between",
               }}
-              onPress={() => setModal(true)}
             >
               <View style={{ paddingVertical: 16 }}>
                 <Text style={{ fontSize: 16 }}>Соціальний рейтинг</Text>
@@ -216,13 +209,6 @@ export default function SettingsScreen({ navigation }) {
                     </Text>
                   </View>
                 </View>
-                {/* <View
-                  style={{
-                    width: "100%",
-                    height: 2,
-                    backgroundColor: colors.gray,
-                  }}
-                ></View> */}
               </View>
             </View>
 

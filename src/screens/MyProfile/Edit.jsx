@@ -22,7 +22,7 @@ import { firebase, db, auth } from "../../firebase";
 // Components
 import KeyboardAvoider from "../../components/KeyboardAvoider";
 
-export default function EditScreen({ navigation }) {
+export default function MyProfileEditScreen({ navigation }) {
   const [image, setImage] = useState(null);
   const [profile, setProfile] = useState([]);
   const [loading, setLoading] = useState(false);
