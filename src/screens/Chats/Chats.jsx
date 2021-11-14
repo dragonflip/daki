@@ -295,7 +295,13 @@ export default function ChatsScreen({ navigation }) {
                 imageStyle={{ borderRadius: 56 }}
               >
                 {item.photo === "" ? (
-                  <Text style={{ fontSize: 24, color: "#fff" }}>
+                  <Text
+                    style={{
+                      fontSize: 28,
+                      color: "#fff",
+                      includeFontPadding: false,
+                    }}
+                  >
                     {item.name[0]}
                   </Text>
                 ) : null}

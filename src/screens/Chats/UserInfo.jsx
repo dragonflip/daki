@@ -120,7 +120,13 @@ export default function ChatsUserInfoScreen({ route, navigation }) {
               imageStyle={{ borderRadius: 192 }}
             >
               {profile.photo === "" ? (
-                <Text style={{ fontSize: 72, color: "#fff" }}>
+                <Text
+                  style={{
+                    fontSize: 64,
+                    color: "#fff",
+                    includeFontPadding: false,
+                  }}
+                >
                   {profile.name[0]}
                 </Text>
               ) : null}
@@ -284,6 +290,7 @@ export default function ChatsUserInfoScreen({ route, navigation }) {
               backgroundColor: "#fff",
             }}
           >
+            {/* TODO delete chat */}
             <TouchableOpacity
               style={{
                 paddingVertical: 12,
@@ -292,12 +299,12 @@ export default function ChatsUserInfoScreen({ route, navigation }) {
               }}
             >
               <MaterialCommunityIcons
-                name="block-helper"
+                name="delete"
                 size={18}
                 color={colors.red}
               />
               <Text style={{ color: colors.red, fontSize: 16, marginLeft: 12 }}>
-                Заблокувати
+                Видалити чат
               </Text>
             </TouchableOpacity>
           </View>

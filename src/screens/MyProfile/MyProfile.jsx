@@ -84,7 +84,7 @@ export default function MyProfileScreen({ navigation }) {
                 borderRadius: 192,
                 backgroundColor: colors.gray,
                 alignSelf: "center",
-                // alignItems: "center", // TODO center text iOS
+                alignItems: "center", // TODO center text iOS
                 justifyContent: "center",
                 marginTop: 64,
               }}
@@ -93,10 +93,10 @@ export default function MyProfileScreen({ navigation }) {
               {profile.photo === "" ? (
                 <Text
                   style={{
-                    fontSize: 48,
+                    fontSize: 64,
                     color: "#fff",
+                    includeFontPadding: false,
                     textAlign: "center",
-                    textAlignVertical: "center",
                   }}
                 >
                   {profile.name[0]}
@@ -104,8 +104,14 @@ export default function MyProfileScreen({ navigation }) {
               ) : null}
             </ImageBackground>
 
-            <View style={{ alignItems: "center", marginTop: 8 }}>
-              <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+            <View style={{ marginTop: 8 }}>
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
                 {profile.name}
               </Text>
 
@@ -115,7 +121,7 @@ export default function MyProfileScreen({ navigation }) {
                   у мережі
                 </Text>
               ) : (
-                <Text style={{ color: colors.gray }}>
+                <Text style={{ color: colors.gray, textAlign: "center" }}>
                   у мережі{" — "}
                   <Moment
                     element={Text}
