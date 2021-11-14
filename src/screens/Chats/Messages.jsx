@@ -17,7 +17,6 @@ import { StatusBar } from "expo-status-bar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
-import "moment/locale/uk";
 import Moment from "react-moment";
 import { useIsFocused } from "@react-navigation/native";
 
@@ -110,14 +109,25 @@ export default function ChatHistoryScreen({ navigation, route }) {
                       у мережі
                     </Text>
                   ) : (
-                    <View>
-                      <Text style={{ fontSize: 12, color: "grey" }}>
-                        у мережі{" "}
-                        <Moment element={Text} locale="uk" fromNow unix>
-                          {chatInfo.online?.seconds}
-                        </Moment>
-                      </Text>
-                    </View>
+                    <Text style={{ color: colors.gray }}>
+                      у мережі{" — "}
+                      <Moment
+                        element={Text}
+                        format={
+                          moment
+                            .unix(moment().unix())
+                            .isSame(
+                              moment.unix(profile.online?.seconds),
+                              "date"
+                            )
+                            ? "HH:mm"
+                            : "DD.MM.YYYY"
+                        }
+                        unix
+                      >
+                        {profile.online?.seconds}
+                      </Moment>
+                    </Text>
                   )}
                 </View>
               ) : null}
@@ -155,7 +165,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                     imageStyle={{ borderRadius: 44 }}
                   >
                     {chatInfo.photo === "" ? (
-                      <Text style={{ fontSize: 20, color: colors.gray6 }}>
+                      <Text style={{ fontSize: 20, color: "#fff" }}>
                         {chatInfo.name[0]}
                       </Text>
                     ) : null}
@@ -194,14 +204,25 @@ export default function ChatHistoryScreen({ navigation, route }) {
                         у мережі
                       </Text>
                     ) : (
-                      <View>
-                        <Text style={{ fontSize: 12, color: "grey" }}>
-                          у мережі{" "}
-                          <Moment element={Text} locale="uk" fromNow unix>
-                            {chatInfo.online?.seconds}
-                          </Moment>
-                        </Text>
-                      </View>
+                      <Text style={{ color: colors.gray }}>
+                        у мережі{" — "}
+                        <Moment
+                          element={Text}
+                          format={
+                            moment
+                              .unix(moment().unix())
+                              .isSame(
+                                moment.unix(chatInfo.online?.seconds),
+                                "date"
+                              )
+                              ? "HH:mm"
+                              : "DD.MM.YYYY"
+                          }
+                          unix
+                        >
+                          {chatInfo.online?.seconds}
+                        </Moment>
+                      </Text>
                     )}
                   </View>
                 </View>
@@ -237,7 +258,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
                   imageStyle={{ borderRadius: 32 }}
                 >
                   {chatInfo.photo === "" ? (
-                    <Text style={{ fontSize: 20, color: colors.gray6 }}>
+                    <Text style={{ fontSize: 20, color: "#fff" }}>
                       {chatInfo.name[0]}
                     </Text>
                   ) : null}
@@ -458,7 +479,7 @@ export default function ChatHistoryScreen({ navigation, route }) {
               .limit(1)
               .get();
 
-            // If chat has 0 messages then delete it
+            // If chat has 0 messages delete it
             if (lastMessageRef.empty) {
               await db.collection("chats").doc(route.params.chatId).delete();
 

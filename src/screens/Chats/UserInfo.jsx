@@ -9,7 +9,7 @@ import {
 
 import { StatusBar } from "expo-status-bar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import "moment/locale/uk";
+import moment from "moment";
 import Moment from "react-moment";
 
 // Styles
@@ -111,7 +111,7 @@ export default function ProfileScreen({ route, navigation }) {
                 width: 192,
                 height: 192,
                 borderRadius: 192,
-                backgroundColor: colors.gray6,
+                backgroundColor: colors.gray,
                 alignSelf: "center",
                 alignItems: "center",
                 justifyContent: "center",
@@ -120,7 +120,9 @@ export default function ProfileScreen({ route, navigation }) {
               imageStyle={{ borderRadius: 192 }}
             >
               {profile.photo === "" ? (
-                <Text style={{ fontSize: 48 }}>{profile.name[0]}</Text>
+                <Text style={{ fontSize: 72, color: "#fff" }}>
+                  {profile.name[0]}
+                </Text>
               ) : null}
             </ImageBackground>
 
@@ -134,8 +136,18 @@ export default function ProfileScreen({ route, navigation }) {
                 <Text style={{ color: "green" }}>у мережі</Text>
               ) : (
                 <Text style={{ color: colors.gray }}>
-                  у мережі{" "}
-                  <Moment element={Text} locale="uk" fromNow unix>
+                  у мережі{" — "}
+                  <Moment
+                    element={Text}
+                    format={
+                      moment
+                        .unix(moment().unix())
+                        .isSame(moment.unix(profile.online?.seconds), "date")
+                        ? "HH:mm"
+                        : "DD.MM.YYYY"
+                    }
+                    unix
+                  >
                     {profile.online?.seconds}
                   </Moment>
                 </Text>

@@ -11,7 +11,7 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
-import "moment/locale/uk";
+import moment from "moment";
 import Moment from "react-moment";
 
 // Styles
@@ -94,7 +94,7 @@ export default function SettingsScreen({ navigation }) {
                 <Text
                   style={{
                     fontSize: 48,
-                    color: colors.gray6,
+                    color: "#fff",
                     textAlign: "center",
                     textAlignVertical: "center",
                   }}
@@ -116,8 +116,18 @@ export default function SettingsScreen({ navigation }) {
                 </Text>
               ) : (
                 <Text style={{ color: colors.gray }}>
-                  у мережі{" "}
-                  <Moment element={Text} locale="uk" fromNow unix>
+                  у мережі{" — "}
+                  <Moment
+                    element={Text}
+                    format={
+                      moment
+                        .unix(moment().unix())
+                        .isSame(moment.unix(profile.online?.seconds), "date")
+                        ? "HH:mm"
+                        : "DD.MM.YYYY"
+                    }
+                    unix
+                  >
                     {profile.online?.seconds}
                   </Moment>
                 </Text>

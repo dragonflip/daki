@@ -14,6 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
+import Moment from "react-moment";
 
 // Styles
 import styles from "./styles";
@@ -150,39 +151,38 @@ export default function ChatsScreen({ navigation }) {
         });
 
       // Update online status in chats
-      db.collection("chats")
+      const chats = await db
+        .collection("chats")
         .where("members", "array-contains", auth.currentUser?.uid)
         .orderBy("timestamp", "desc")
-        .get()
-        .then(async (chats) => {
-          for (const chat of chats.docs) {
-            if (chat.data().group) {
-              // Group
-              await chat.ref
-                .collection("members")
-                .doc(auth.currentUser?.uid)
-                .update({
-                  online:
-                    state !== "background"
-                      ? firebase.firestore.Timestamp.fromMillis(
-                          (firebase.firestore.Timestamp.now().seconds + 60) *
-                            1000
-                        )
-                      : firebase.firestore.Timestamp.now(),
-                });
-            } else {
-              // Dialog
-              await chat.ref.update({
-                [`online.${auth.currentUser?.uid}`]:
-                  state !== "background"
-                    ? firebase.firestore.Timestamp.fromMillis(
-                        (firebase.firestore.Timestamp.now().seconds + 60) * 1000
-                      )
-                    : firebase.firestore.Timestamp.now(),
-              });
-            }
-          }
-        });
+        .get();
+
+      for (const chat of chats.docs) {
+        if (chat.data().group) {
+          // Group
+          await chat.ref
+            .collection("members")
+            .doc(auth.currentUser?.uid)
+            .update({
+              online:
+                state !== "background"
+                  ? firebase.firestore.Timestamp.fromMillis(
+                      (firebase.firestore.Timestamp.now().seconds + 60) * 1000
+                    )
+                  : firebase.firestore.Timestamp.now(),
+            });
+        } else {
+          // Dialog
+          await chat.ref.update({
+            [`online.${auth.currentUser?.uid}`]:
+              state !== "background"
+                ? firebase.firestore.Timestamp.fromMillis(
+                    (firebase.firestore.Timestamp.now().seconds + 60) * 1000
+                  )
+                : firebase.firestore.Timestamp.now(),
+          });
+        }
+      }
     }
   };
 
@@ -303,7 +303,7 @@ export default function ChatsScreen({ navigation }) {
                 imageStyle={{ borderRadius: 56 }}
               >
                 {item.photo === "" ? (
-                  <Text style={{ fontSize: 24, color: colors.gray6 }}>
+                  <Text style={{ fontSize: 24, color: "#fff" }}>
                     {item.name[0]}
                   </Text>
                 ) : null}
@@ -334,8 +334,27 @@ export default function ChatsScreen({ navigation }) {
                       />
                     ) : null}
 
-                    <Text style={styles.chat_date}>
+                    {/* <Text style={styles.chat_date}>
                       {dateFormat(item.timestamp?.seconds)}
+                    </Text> */}
+                    <Text style={styles.chat_date}>
+                      <Moment
+                        element={Text}
+                        locale="uk"
+                        format={
+                          moment
+                            .unix(moment().unix())
+                            .isSame(
+                              moment.unix(item.timestamp?.seconds),
+                              "date"
+                            )
+                            ? "HH:mm"
+                            : "DD.MM.YYYY"
+                        }
+                        unix
+                      >
+                        {item.timestamp?.seconds}
+                      </Moment>
                     </Text>
                   </View>
                 </View>
