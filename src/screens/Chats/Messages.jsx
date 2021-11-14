@@ -165,7 +165,13 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                     imageStyle={{ borderRadius: 44 }}
                   >
                     {chatInfo.photo === "" ? (
-                      <Text style={{ fontSize: 20, color: "#fff" }}>
+                      <Text
+                        style={{
+                          fontSize: 22,
+                          color: "#fff",
+                          includeFontPadding: false,
+                        }}
+                      >
                         {chatInfo.name[0]}
                       </Text>
                     ) : null}
@@ -258,7 +264,13 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   imageStyle={{ borderRadius: 32 }}
                 >
                   {chatInfo.photo === "" ? (
-                    <Text style={{ fontSize: 20, color: "#fff" }}>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: "#fff",
+                        includeFontPadding: false,
+                      }}
+                    >
                       {chatInfo.name[0]}
                     </Text>
                   ) : null}
@@ -716,10 +728,12 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   borderColor: colors.gray6,
                   borderWidth: 2,
                   borderRadius: 16,
-                  paddingVertical: 4,
+                  paddingTop: Platform.OS === "ios" ? 10 : 4,
+                  paddingBottom: Platform.OS === "ios" ? 10 : 4,
                   paddingHorizontal: 16,
-                  marginHorizontal: 16,
+                  marginLeft: 16,
                   flex: 1,
+                  minHeight: 40,
                 }}
                 placeholder="Повідомлення..."
                 onChangeText={(message) => {
@@ -731,7 +745,10 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 multiline={true}
               />
               <TouchableOpacity
-                style={{ marginRight: 16 }}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                }}
                 onPress={sendMessage}
               >
                 <MaterialCommunityIcons name="send" size={28} color="#000" />
