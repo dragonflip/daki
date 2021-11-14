@@ -18,13 +18,16 @@ import styles from "./styles";
 import colors from "../../styles/colors";
 // Firebase
 import { db, firebase, auth } from "../../firebase";
+// Components
+import LoadingScreen from "../../components/LoadingScreen";
 
-export default function CreateChatScreen({ navigation }) {
+export default function ChatsCreateScreen({ navigation }) {
   const [users, setUsers] = useState([]);
   const [value, setValue] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
   const selectedUsersRef = useRef([]);
   const selectedUsersCount = useRef(0);
+  const [loading, setLoading] = useState(true);
 
   // Navigation
   useLayoutEffect(() => {
@@ -56,11 +59,15 @@ export default function CreateChatScreen({ navigation }) {
       .collection("users")
       .where("userId", "!=", auth.currentUser?.uid)
       .onSnapshot((snapshot) => {
-        setUsers(
-          snapshot.docs.map((doc) => {
-            return { id: doc.id, ...doc.data() };
-          })
-        );
+        if (!snapshot.empty) {
+          setUsers(
+            snapshot.docs.map((doc) => {
+              return { id: doc.id, ...doc.data() };
+            })
+          );
+        }
+
+        setLoading(false);
       });
 
     return () => {
@@ -69,6 +76,8 @@ export default function CreateChatScreen({ navigation }) {
   }, []);
 
   const createChat = async (userId) => {
+    setLoading(true);
+
     const fromMeId = auth.currentUser?.uid;
     const toMeId = userId;
 
@@ -117,10 +126,7 @@ export default function CreateChatScreen({ navigation }) {
           });
       }
 
-      navigation.replace("ChatsMessages", {
-        chatId: newChatRef.id,
-        userId: newChatRef.id,
-      });
+      navigation.replace("ChatsMessages", { groupId: newChatRef.id });
     } else {
       // Dialog
       const chatsRef = await db
@@ -129,60 +135,59 @@ export default function CreateChatScreen({ navigation }) {
         .where("members", "array-contains", fromMeId)
         .get();
 
-      const chatExists = chatsRef.docs.filter(
-        (chat) =>
-          chat.data().members.filter((member) => member === toMeId).length > 0
+      const chatExists = chatsRef.docs.filter((chat) =>
+        chat.data().members.includes(toMeId)
       );
 
       if (!chatExists.length) {
-        const newChatRef = await db.collection("chats").add({
-          group: false,
-          members: [fromMeId, toMeId],
-          blocked: {
-            [fromMeId]: false,
-            [toMeId]: false,
-          },
-          message: {
-            [fromMeId]: "Привіт, розпочнемо спілкування😎",
-            [toMeId]: "",
-          },
-          name: {
-            [fromMeId]: fromMeInfo.name,
-            [toMeId]: toMeInfo.name,
-          },
-          online: {
-            [fromMeId]: fromMeInfo.online,
-            [toMeId]: toMeInfo.online,
-          },
-          photo: {
-            [fromMeId]: fromMeInfo.photo,
-            [toMeId]: toMeInfo.photo,
-          },
-          timestamp: firebase.firestore.Timestamp.now(),
-          typing: {
-            [fromMeId]: false,
-            [toMeId]: false,
-          },
-          unreadCount: 1,
-        });
+        const chatId = [fromMeId, toMeId].sort().join("_");
 
-        await newChatRef.collection("messages").add({
+        await db
+          .collection("chats")
+          .doc(chatId)
+          .set({
+            group: false,
+            members: [fromMeId, toMeId],
+            blocked: {
+              [fromMeId]: false,
+              [toMeId]: false,
+            },
+            message: {
+              [fromMeId]: "Привіт, розпочнемо спілкування😎",
+              [toMeId]: "",
+            },
+            name: {
+              [fromMeId]: fromMeInfo.name,
+              [toMeId]: toMeInfo.name,
+            },
+            online: {
+              [fromMeId]: fromMeInfo.online,
+              [toMeId]: toMeInfo.online,
+            },
+            photo: {
+              [fromMeId]: fromMeInfo.photo,
+              [toMeId]: toMeInfo.photo,
+            },
+            timestamp: firebase.firestore.Timestamp.now(),
+            typing: {
+              [fromMeId]: false,
+              [toMeId]: false,
+            },
+            unreadCount: 1,
+          });
+
+        await db.collection("chats").doc(chatId).collection("messages").add({
           message: "Привіт, розпочнемо спілкування😎",
           timestamp: firebase.firestore.Timestamp.now(),
           seen: false,
           userId: auth.currentUser?.uid,
         });
-
-        navigation.replace("ChatsMessages", {
-          chatId: newChatRef.id,
-          userId: userId,
-        });
-      } else {
-        navigation.replace("ChatsMessages", {
-          chatId: chatExists[0].id,
-          userId: userId,
-        });
       }
+
+      setLoading(false);
+      navigation.replace("ChatsMessages", {
+        userId: userId,
+      });
     }
   };
 
@@ -224,69 +229,81 @@ export default function CreateChatScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      <FlatList
-        data={users.filter(
-          (item) =>
-            item.name.substr(0, value.length) === value ||
-            item.phone.substr(0, value.length) === value
-        )}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.chat}
-            activeOpacity={0.5}
-            onPress={() => selectUser(item.userId)}
-          >
-            <ImageBackground
-              source={
-                item.photo !== ""
-                  ? { uri: item.photo, cache: "force-cache" }
-                  : null
-              }
-              style={[styles.chat_photo, { backgroundColor: colors.gray }]}
-              imageStyle={{ borderRadius: 56 }}
+
+      {!loading ? (
+        <FlatList
+          data={users.filter(
+            (item) =>
+              item.name.substr(0, value.length) === value ||
+              item.phone.substr(0, value.length) === value
+          )}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.chat}
+              activeOpacity={0.5}
+              onPress={() => selectUser(item.userId)}
             >
-              {item.photo === "" ? (
-                <Text style={{ fontSize: 24, color: colors.gray6 }}>
-                  {item.name[0]}
-                </Text>
-              ) : null}
-            </ImageBackground>
-
-            {item.online === true ? (
-              <View style={styles.chat_online}></View>
-            ) : null}
-
-            {selectedUsers.filter((user) => user === item.userId).length > 0 ? (
-              <View
-                style={{
-                  position: "absolute",
-                  top: 44,
-                  left: 44,
-                  backgroundColor: "#fff",
-                  width: 24,
-                  height: 24,
-                  borderRadius: 24,
-                }}
+              <ImageBackground
+                source={
+                  item.photo !== ""
+                    ? { uri: item.photo, cache: "force-cache" }
+                    : null
+                }
+                style={[styles.chat_photo, { backgroundColor: colors.gray }]}
+                imageStyle={{ borderRadius: 56 }}
               >
-                <MaterialCommunityIcons
-                  name="checkbox-marked-circle"
-                  size={24}
-                  color={colors.blue}
-                />
-              </View>
-            ) : null}
+                {item.photo === "" ? (
+                  <Text
+                    style={{
+                      fontSize: 28,
+                      color: "#fff",
+                      includeFontPadding: false,
+                    }}
+                  >
+                    {item.name[0]}
+                  </Text>
+                ) : null}
+              </ImageBackground>
 
-            <View style={styles.chat_info}>
-              <View style={styles.chat_name_date_status}>
-                <Text style={styles.chat_name}>{item.name}</Text>
-              </View>
+              {item.online === true ? (
+                <View style={styles.chat_online}></View>
+              ) : null}
 
-              <Text style={styles.chat_message}>{item.phone}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
+              {selectedUsers.filter((user) => user === item.userId).length >
+              0 ? (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 44,
+                    left: 44,
+                    backgroundColor: "#fff",
+                    width: 24,
+                    height: 24,
+                    borderRadius: 24,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="checkbox-marked-circle"
+                    size={24}
+                    color={colors.blue}
+                  />
+                </View>
+              ) : null}
+
+              <View style={styles.chat_info}>
+                <View style={styles.chat_name_date_status}>
+                  <Text style={styles.chat_name}>{item.name}</Text>
+                </View>
+
+                <Text style={styles.chat_message}>{item.phone}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      ) : (
+        <LoadingScreen />
+      )}
     </View>
   );
 }

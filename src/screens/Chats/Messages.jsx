@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -39,253 +39,246 @@ export default function ChatsMessagesScreen({ navigation, route }) {
   const typingTimeout = useRef({ timer: null, typing: false });
   const [chatInfo, setChatInfo] = useState([]);
 
+  const fromMeId = auth.currentUser?.uid;
+  const toMeId = route.params.userId;
+  const chatId = route.params.groupId ?? [fromMeId, toMeId].sort().join("_");
+
+  // Navigation
+  useLayoutEffect(() => {
+    if (!loading) {
+      navigation.setOptions({
+        headerTitle: () => (
+          <TouchableOpacity
+            onPress={() =>
+              chatInfo.group
+                ? navigation.navigate("ChatsGroupInfo", { ...route.params })
+                : navigation.navigate("ChatsUserInfo", { ...route.params })
+            }
+          >
+            {Platform.OS === "ios" ? (
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                  {chatInfo.name}
+                </Text>
+                {chatInfo.group ? (
+                  <Text style={{ fontSize: 12, color: colors.gray }}>
+                    учасників: {chatInfo.membersCount}
+                  </Text>
+                ) : chatInfo.typing ? (
+                  <Text style={{ fontSize: 12, color: colors.gray }}>
+                    набирає...
+                  </Text>
+                ) : chatInfo.online?.seconds >
+                  firebase.firestore.Timestamp.now().seconds + 10 ? (
+                  <Text style={{ fontSize: 12, color: "green" }}>у мережі</Text>
+                ) : (
+                  <Text style={{ fontSize: 12, color: colors.gray }}>
+                    у мережі{" — "}
+                    <Moment
+                      element={Text}
+                      format={
+                        moment
+                          .unix(moment().unix())
+                          .isSame(moment.unix(chatInfo.online?.seconds), "date")
+                          ? "HH:mm"
+                          : "DD.MM.YYYY"
+                      }
+                      unix
+                    >
+                      {chatInfo.online?.seconds}
+                    </Moment>
+                  </Text>
+                )}
+              </View>
+            ) : null}
+          </TouchableOpacity>
+        ),
+        headerLeft: () =>
+          Platform.OS === "android" ? (
+            <TouchableOpacity
+              onPress={() =>
+                chatInfo.group
+                  ? navigation.navigate("ChatsGroupInfo", {
+                      ...route.params,
+                    })
+                  : navigation.navigate("ChatsUserInfo", {
+                      ...route.params,
+                    })
+              }
+            >
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <ImageBackground
+                  source={
+                    chatInfo.photo !== ""
+                      ? { uri: chatInfo.photo, cache: "force-cache" }
+                      : null
+                  }
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 44,
+                    marginRight: 12,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.gray,
+                  }}
+                  imageStyle={{ borderRadius: 44 }}
+                >
+                  {chatInfo.photo === "" ? (
+                    <Text
+                      style={{
+                        fontSize: 22,
+                        color: "#fff",
+                        includeFontPadding: false,
+                      }}
+                    >
+                      {chatInfo.name[0]}
+                    </Text>
+                  ) : null}
+                </ImageBackground>
+
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                    {chatInfo.name}
+                  </Text>
+
+                  {chatInfo.group ? (
+                    chatInfo.groupTyping.filter(
+                      ([key, value]) =>
+                        value.typing == true && key != auth.currentUser.uid
+                    ).length > 0 ? (
+                      <Text style={{ fontSize: 12, color: colors.gray }}>
+                        {chatInfo.groupTyping
+                          .filter(([key, value]) => value.typing == true)[0][1]
+                          .name.toString()}{" "}
+                        набирає...
+                      </Text>
+                    ) : (
+                      <Text style={{ fontSize: 12, color: colors.gray }}>
+                        учасників: {chatInfo.membersCount}
+                      </Text>
+                    )
+                  ) : chatInfo.typing ? (
+                    <Text style={{ fontSize: 12, color: colors.gray }}>
+                      набирає...
+                    </Text>
+                  ) : chatInfo.online?.seconds >
+                    firebase.firestore.Timestamp.now().seconds + 10 ? (
+                    <Text style={{ fontSize: 12, color: "green" }}>
+                      у мережі
+                    </Text>
+                  ) : (
+                    <Text style={{ fontSize: 12, color: colors.gray }}>
+                      у мережі{" — "}
+                      <Moment
+                        element={Text}
+                        format={
+                          moment
+                            .unix(moment().unix())
+                            .isSame(
+                              moment.unix(chatInfo.online?.seconds),
+                              "date"
+                            )
+                            ? "HH:mm"
+                            : "DD.MM.YYYY"
+                        }
+                        unix
+                      >
+                        {chatInfo.online?.seconds}
+                      </Moment>
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </TouchableOpacity>
+          ) : null,
+        headerRight: () =>
+          Platform.OS === "ios" ? (
+            <TouchableOpacity
+              onPress={() =>
+                chatInfo.group
+                  ? navigation.navigate("ChatsGroupInfo", {
+                      ...route.params,
+                    })
+                  : navigation.navigate("ChatsUserInfo", {
+                      ...route.params,
+                    })
+              }
+            >
+              <ImageBackground
+                source={
+                  chatInfo.photo !== ""
+                    ? { uri: chatInfo.photo, cache: "force-cache" }
+                    : null
+                }
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 32,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: colors.gray,
+                }}
+                imageStyle={{ borderRadius: 32 }}
+              >
+                {chatInfo.photo === "" ? (
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: "#fff",
+                      includeFontPadding: false,
+                    }}
+                  >
+                    {chatInfo.name[0]}
+                  </Text>
+                ) : null}
+              </ImageBackground>
+            </TouchableOpacity>
+          ) : null,
+      });
+    }
+  });
+
   // Init
   useEffect(() => {
     AppState.addEventListener("change", handleAppStateChange);
+    let chatSnapshotUnsubscribe;
 
-    // Get chat info
-    const chatSnapshotUnsubscribe = db
-      .collection("chats")
-      .doc(route.params.chatId)
-      .onSnapshot((snapshot) => {
-        if (snapshot.exists) {
-          const fromMeId = auth.currentUser?.uid;
-          const toMeId = snapshot
-            .data()
-            .members.filter((member) => member !== fromMeId)[0];
+    console.log(chatId);
 
-          let chatInfo;
-
-          if (snapshot.data().group) {
-            // Group
-            chatInfo = {
+    if (route.params.groupId) {
+      // Get group info
+      chatSnapshotUnsubscribe = db
+        .collection("chats")
+        .doc(chatId)
+        .onSnapshot((snapshot) => {
+          if (snapshot.exists) {
+            setChatInfo({
               group: true,
               name: snapshot.data().groupName,
               photo: snapshot.data().groupPhoto,
               membersCount: snapshot.data().members.length,
               groupTyping: Object.entries(snapshot.data().typing ?? []),
-            };
-          } else {
-            // Dialog
-            chatInfo = {
-              name: snapshot.data().name[toMeId],
-              photo: snapshot.data().photo[toMeId],
-              online: snapshot.data().online[toMeId],
-              typing: snapshot.data().typing[toMeId],
-            };
+            });
           }
-
-          setChatInfo(chatInfo);
-
-          // Change header
-          navigation.setOptions({
-            headerTitle: () => (
-              <TouchableOpacity
-                onPress={() =>
-                  chatInfo.group
-                    ? navigation.navigate("ChatsGroupInfo", {
-                        chatId: route.params.chatId,
-                      })
-                    : navigation.navigate("ChatsUserInfo", {
-                        userId: route.params.userId,
-                      })
-                }
-              >
-                {Platform.OS === "ios" ? (
-                  <View style={{ alignItems: "center" }}>
-                    <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                      {chatInfo.name}
-                    </Text>
-                    {chatInfo.group ? (
-                      <Text style={{ fontSize: 12, color: colors.gray }}>
-                        учасників: {chatInfo.membersCount}
-                      </Text>
-                    ) : chatInfo.typing ? (
-                      <Text style={{ fontSize: 12, color: colors.gray }}>
-                        набирає...
-                      </Text>
-                    ) : chatInfo.online?.seconds >
-                      firebase.firestore.Timestamp.now().seconds + 10 ? (
-                      <Text style={{ fontSize: 12, color: "green" }}>
-                        у мережі
-                      </Text>
-                    ) : (
-                      <Text style={{ fontSize: 12, color: colors.gray }}>
-                        у мережі{" — "}
-                        <Moment
-                          element={Text}
-                          format={
-                            moment
-                              .unix(moment().unix())
-                              .isSame(
-                                moment.unix(chatInfo.online?.seconds),
-                                "date"
-                              )
-                              ? "HH:mm"
-                              : "DD.MM.YYYY"
-                          }
-                          unix
-                        >
-                          {chatInfo.online?.seconds}
-                        </Moment>
-                      </Text>
-                    )}
-                  </View>
-                ) : null}
-              </TouchableOpacity>
-            ),
-            headerLeft: () =>
-              Platform.OS === "android" ? (
-                <TouchableOpacity
-                  onPress={() =>
-                    chatInfo.group
-                      ? navigation.navigate("ChatsGroupInfo", {
-                          chatId: route.params.chatId,
-                        })
-                      : navigation.navigate("ChatsUserInfo", {
-                          userId: route.params.userId,
-                        })
-                  }
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <ImageBackground
-                      source={
-                        chatInfo.photo !== ""
-                          ? { uri: chatInfo.photo, cache: "force-cache" }
-                          : null
-                      }
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 44,
-                        marginRight: 12,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: colors.gray,
-                      }}
-                      imageStyle={{ borderRadius: 44 }}
-                    >
-                      {chatInfo.photo === "" ? (
-                        <Text
-                          style={{
-                            fontSize: 22,
-                            color: "#fff",
-                            includeFontPadding: false,
-                          }}
-                        >
-                          {chatInfo.name[0]}
-                        </Text>
-                      ) : null}
-                    </ImageBackground>
-
-                    <View>
-                      <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                        {chatInfo.name}
-                      </Text>
-
-                      {chatInfo.group ? (
-                        chatInfo.groupTyping.filter(
-                          ([key, value]) =>
-                            value.typing == true && key != auth.currentUser.uid
-                        ).length > 0 ? (
-                          <Text style={{ fontSize: 12, color: colors.gray }}>
-                            {chatInfo.groupTyping
-                              .filter(
-                                ([key, value]) => value.typing == true
-                              )[0][1]
-                              .name.toString()}{" "}
-                            набирає...
-                          </Text>
-                        ) : (
-                          <Text style={{ fontSize: 12, color: colors.gray }}>
-                            учасників: {chatInfo.membersCount}
-                          </Text>
-                        )
-                      ) : chatInfo.typing ? (
-                        <Text style={{ fontSize: 12, color: colors.gray }}>
-                          набирає...
-                        </Text>
-                      ) : chatInfo.online?.seconds >
-                        firebase.firestore.Timestamp.now().seconds + 10 ? (
-                        <Text style={{ fontSize: 12, color: "green" }}>
-                          у мережі
-                        </Text>
-                      ) : (
-                        <Text style={{ fontSize: 12, color: colors.gray }}>
-                          у мережі{" — "}
-                          <Moment
-                            element={Text}
-                            format={
-                              moment
-                                .unix(moment().unix())
-                                .isSame(
-                                  moment.unix(chatInfo.online?.seconds),
-                                  "date"
-                                )
-                                ? "HH:mm"
-                                : "DD.MM.YYYY"
-                            }
-                            unix
-                          >
-                            {chatInfo.online?.seconds}
-                          </Moment>
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ) : null,
-            headerRight: () =>
-              Platform.OS === "ios" ? (
-                <TouchableOpacity
-                  onPress={() =>
-                    chatInfo.group
-                      ? navigation.navigate("ChatsGroupInfo", {
-                          chatId: route.params.chatId,
-                        })
-                      : navigation.navigate("ChatsUserInfo", {
-                          userId: route.params.userId,
-                        })
-                  }
-                >
-                  <ImageBackground
-                    source={
-                      chatInfo.photo !== ""
-                        ? { uri: chatInfo.photo, cache: "force-cache" }
-                        : null
-                    }
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 32,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: colors.gray,
-                    }}
-                    imageStyle={{ borderRadius: 32 }}
-                  >
-                    {chatInfo.photo === "" ? (
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          color: "#fff",
-                          includeFontPadding: false,
-                        }}
-                      >
-                        {chatInfo.name[0]}
-                      </Text>
-                    ) : null}
-                  </ImageBackground>
-                </TouchableOpacity>
-              ) : null,
-          });
-        }
-      });
+        });
+    } else {
+      // Get user info
+      chatSnapshotUnsubscribe = db
+        .collection("users")
+        .doc(route.params.userId)
+        .onSnapshot((snapshot) => {
+          if (snapshot.exists) {
+            setChatInfo(snapshot.data());
+            // TODO typing
+          }
+        });
+    }
 
     // Get messages
     const messagesSnapshotUnsubscribe = db
       .collection("chats")
-      .doc(route.params.chatId)
+      .doc(chatId)
       .collection("messages")
       .orderBy("timestamp", "desc")
       .onSnapshot((snapshot) => {
@@ -295,7 +288,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             return {
               id: doc.id,
               me: doc.data().userId === auth.currentUser?.uid,
-              group: route.params.chatId === route.params.userId,
+              group: chatId === route.params.userId,
               ...doc.data(),
             };
           });
@@ -323,8 +316,8 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           setMessages(allMessages);
           setLoading(false);
         } else {
-          setLoading(true);
-          navigation.goBack();
+          setMessages([]);
+          setLoading(false);
         }
       });
 
@@ -345,7 +338,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
     if (isFocused && appState !== "background" && messages.length > 0) {
       // Update message seen
       db.collection("chats")
-        .doc(route.params.chatId)
+        .doc(chatId)
         .collection("messages")
         .where("userId", "!=", auth.currentUser?.uid)
         .where("seen", "==", false)
@@ -357,8 +350,8 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             });
 
             // Dialog
-            if (route.params.chatId !== route.params.userId) {
-              db.collection("chats").doc(route.params.chatId).update({
+            if (!route.params.groupId) {
+              db.collection("chats").doc(chatId).update({
                 unreadCount: 0,
               });
             }
@@ -366,9 +359,9 @@ export default function ChatsMessagesScreen({ navigation, route }) {
         });
 
       // Update group unread messages
-      if (route.params.chatId === route.params.userId) {
+      if (route.params.groupId) {
         db.collection("chats")
-          .doc(route.params.chatId)
+          .doc(chatId)
           .update({
             [`unreadCount.${auth.currentUser?.uid}`]: 0,
           });
@@ -381,34 +374,27 @@ export default function ChatsMessagesScreen({ navigation, route }) {
     if (inputMessage.trim() !== "") {
       input.current.clear();
 
-      const fromMeId = auth.currentUser?.uid;
-      const toMeId = route.params.userId;
-
       const fromMeInfo = (
         await db.collection("users").doc(fromMeId).get()
       ).data();
+      const toMeInfo = (await db.collection("users").doc(toMeId).get()).data();
 
-      if (route.params.chatId === route.params.userId) {
+      if (chatId === route.params.userId) {
         // Group
-        await db
-          .collection("chats")
-          .doc(route.params.chatId)
-          .collection("messages")
-          .add({
-            message: inputMessage,
-            timestamp: firebase.firestore.Timestamp.now(),
-            userId: auth.currentUser?.uid,
-            userName: fromMeInfo.name,
-            seen: false,
-          });
+        await db.collection("chats").doc(chatId).collection("messages").add({
+          message: inputMessage,
+          timestamp: firebase.firestore.Timestamp.now(),
+          userId: auth.currentUser?.uid,
+          userName: fromMeInfo.name,
+          seen: false,
+        });
 
-        const members = (
-          await db.collection("chats").doc(route.params.chatId).get()
-        ).data().members;
+        const members = (await db.collection("chats").doc(chatId).get()).data()
+          .members;
 
         await db
           .collection("chats")
-          .doc(route.params.chatId)
+          .doc(chatId)
           .update({
             groupMessage: inputMessage,
             groupMessageSenderId: fromMeId,
@@ -423,20 +409,55 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           });
       } else {
         // Dialog
-        await db
-          .collection("chats")
-          .doc(route.params.chatId)
-          .collection("messages")
-          .add({
-            message: inputMessage,
-            timestamp: firebase.firestore.Timestamp.now(),
-            userId: auth.currentUser?.uid,
-            seen: false,
-          });
+        await db.collection("chats").doc(chatId).collection("messages").add({
+          message: inputMessage,
+          timestamp: firebase.firestore.Timestamp.now(),
+          userId: auth.currentUser?.uid,
+          seen: false,
+        });
+
+        // Check if chat not exists
+        const chat = await db.collection("chats").doc(chatId).get();
+
+        if (!chat.exists) {
+          await db
+            .collection("chats")
+            .doc(chatId)
+            .set({
+              group: false,
+              members: [fromMeId, toMeId],
+              blocked: {
+                [fromMeId]: false,
+                [toMeId]: false,
+              },
+              message: {
+                [fromMeId]: inputMessage,
+                [toMeId]: "",
+              },
+              name: {
+                [fromMeId]: fromMeInfo.name,
+                [toMeId]: toMeInfo.name,
+              },
+              online: {
+                [fromMeId]: fromMeInfo.online,
+                [toMeId]: toMeInfo.online,
+              },
+              photo: {
+                [fromMeId]: fromMeInfo.photo,
+                [toMeId]: toMeInfo.photo,
+              },
+              timestamp: firebase.firestore.Timestamp.now(),
+              typing: {
+                [fromMeId]: false,
+                [toMeId]: false,
+              },
+              unreadCount: 0,
+            });
+        }
 
         await db
           .collection("chats")
-          .doc(route.params.chatId)
+          .doc(chatId)
           .update({
             message: {
               [fromMeId]: inputMessage,
@@ -471,7 +492,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             const deletedMessage = (
               await db
                 .collection("chats")
-                .doc(route.params.chatId)
+                .doc(chatId)
                 .collection("messages")
                 .doc(messageId)
                 .get()
@@ -480,7 +501,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             // Delete message
             await db
               .collection("chats")
-              .doc(route.params.chatId)
+              .doc(chatId)
               .collection("messages")
               .doc(messageId)
               .delete();
@@ -488,7 +509,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             // Get last message reference
             const lastMessageRef = await db
               .collection("chats")
-              .doc(route.params.chatId)
+              .doc(chatId)
               .collection("messages")
               .orderBy("timestamp", "desc")
               .limit(1)
@@ -496,22 +517,22 @@ export default function ChatsMessagesScreen({ navigation, route }) {
 
             // If chat has 0 messages delete it
             if (lastMessageRef.empty) {
-              await db.collection("chats").doc(route.params.chatId).delete();
+              await db.collection("chats").doc(chatId).delete();
 
               navigation.goBack();
             } else {
               const lastMessage = lastMessageRef.docs[0].data();
 
               // Update chat info
-              if (route.params.chatId === route.params.userId) {
+              if (chatId === route.params.userId) {
                 // Group
                 const members = (
-                  await db.collection("chats").doc(route.params.chatId).get()
+                  await db.collection("chats").doc(chatId).get()
                 ).data().members;
 
                 await db
                   .collection("chats")
-                  .doc(route.params.chatId)
+                  .doc(chatId)
                   .update({
                     groupMessage: lastMessage.message,
                     groupMessageSenderId: lastMessage.userId,
@@ -532,7 +553,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 // Dialog
                 await db
                   .collection("chats")
-                  .doc(route.params.chatId)
+                  .doc(chatId)
                   .update({
                     message: {
                       [auth.currentUser?.uid]: "",
@@ -571,7 +592,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
       }
 
       db.collection("chats")
-        .doc(route.params.chatId)
+        .doc(chatId)
         .update({
           //[`typing.${auth.currentUser?.uid}`]: true,
           [`typing.${auth.currentUser?.uid}`]: query,
@@ -600,7 +621,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
       }
 
       db.collection("chats")
-        .doc(route.params.chatId)
+        .doc(chatId)
         .update({
           [`typing.${auth.currentUser?.uid}`]: query,
         });
@@ -709,18 +730,21 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 flex: 1,
                 alignItems: "center",
                 justifyContent: "center",
+                backgroundColor: colors.gray6,
               }}
             >
               <MaterialCommunityIcons
-                name="message-outline"
+                name="message"
                 size={128}
-                color="grey"
+                color={colors.gray}
               />
-              <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>
+              <Text style={{ color: "#000", fontSize: 24, fontWeight: "bold" }}>
                 Немає повідомлень
               </Text>
               <TouchableOpacity onPress={() => input.current.focus()}>
-                <Text style={{ color: "blue" }}>Написати</Text>
+                <Text style={{ color: colors.blue, fontSize: 16 }}>
+                  Написати
+                </Text>
               </TouchableOpacity>
             </View>
           )}
@@ -748,7 +772,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 placeholder="Повідомлення..."
                 onChangeText={(message) => {
                   setInputMessage(message);
-                  typing();
+                  // typing(); // TODO typing
                 }}
                 ref={input}
                 selectionColor="#000"

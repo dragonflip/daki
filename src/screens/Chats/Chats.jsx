@@ -278,10 +278,10 @@ export default function ChatsScreen({ navigation }) {
               style={[styles.chat, { backgroundColor: "#fff" }]}
               activeOpacity={0.5}
               onPress={() =>
-                navigation.navigate("ChatsMessages", {
-                  chatId: item.id,
-                  userId: item.userId,
-                })
+                navigation.navigate(
+                  "ChatsMessages",
+                  item.group ? { groupId: item.id } : { userId: item.userId }
+                )
               }
               onLongPress={() => deleteChat(item.id)}
             >
@@ -396,16 +396,12 @@ export default function ChatsScreen({ navigation }) {
             justifyContent: "center",
           }}
         >
-          <MaterialCommunityIcons
-            name="chat-outline"
-            size={128}
-            color={colors.gray}
-          />
-          <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>
+          <MaterialCommunityIcons name="chat" size={128} color={colors.gray} />
+          <Text style={{ color: "#000", fontSize: 24, fontWeight: "bold" }}>
             Немає чатів
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate("ChatsCreate")}>
-            <Text style={{ color: "blue" }}>Створити</Text>
+            <Text style={{ color: colors.blue, fontSize: 16 }}>Створити</Text>
           </TouchableOpacity>
         </View>
       )}
