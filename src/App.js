@@ -74,6 +74,7 @@ function App() {
           name="ChatsMessages"
           component={ChatsMessagesScreen}
           options={{
+            headerTitle: "",
             headerBackTitle: "Чати",
           }}
         />

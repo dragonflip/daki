@@ -23,7 +23,7 @@ import LoadingScreen from "../../components/LoadingScreen";
 
 export default function MyProfileScreen({ navigation }) {
   const [profile, setProfile] = useState([]);
-  const [rating, setRating] = useState([]);
+  const [rating, setRating] = useState({ likes: 0, dislikes: 0 });
   const [loading, setLoading] = useState(true);
 
   // Init
@@ -35,7 +35,6 @@ export default function MyProfileScreen({ navigation }) {
       .onSnapshot((snapshot) => {
         if (snapshot.exists) {
           setProfile(snapshot.data());
-          setLoading(false);
         }
       });
 
@@ -56,6 +55,8 @@ export default function MyProfileScreen({ navigation }) {
 
           setRating({ likes: likes, dislikes: dislikes });
         }
+
+        setLoading(false);
       });
 
     return () => {

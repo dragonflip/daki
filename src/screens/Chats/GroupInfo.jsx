@@ -30,7 +30,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
     // Get group info
     const groupSnapshotUnsubscribe = db
       .collection("chats")
-      .doc(route.params.chatId)
+      .doc(route.params.groupId)
       .onSnapshot((snapshot) => {
         if (snapshot.exists) {
           setGroup({
@@ -44,7 +44,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
     // Get members
     const membersSnapshotUnsubscribe = db
       .collection("chats")
-      .doc(route.params.chatId)
+      .doc(route.params.groupId)
       .collection("members")
       .orderBy("online", "desc")
       .onSnapshot((snapshot) => {
@@ -82,7 +82,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
           // Delete messages
           const messages = await db
             .collection("chats")
-            .doc(route.params.chatId)
+            .doc(route.params.groupId)
             .collection("messages")
             .get();
 
@@ -93,7 +93,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
           // Delete members
           const members = await db
             .collection("chats")
-            .doc(route.params.chatId)
+            .doc(route.params.groupId)
             .collection("members")
             .get();
 
@@ -102,7 +102,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
           }
 
           // Delete chat
-          await db.collection("chats").doc(route.params.chatId).delete();
+          await db.collection("chats").doc(route.params.groupId).delete();
 
           navigation.goBack();
         },

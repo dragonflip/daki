@@ -25,6 +25,7 @@ import KeyboardAvoider from "../../components/KeyboardAvoider";
 export default function MyProfileEditScreen({ navigation }) {
   const [image, setImage] = useState(null);
   const [profile, setProfile] = useState([]);
+  const [newProfile, setNewProfile] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Navigation
@@ -108,8 +109,8 @@ export default function MyProfileEditScreen({ navigation }) {
       .collection("users")
       .doc(auth.currentUser?.uid)
       .update({
-        name: profile.name,
-        bio: profile.bio,
+        name: newProfile.name ?? profile.name,
+        bio: newProfile.bio ?? profile.bio,
         photo: url ?? profile.photo,
       });
 
@@ -127,14 +128,14 @@ export default function MyProfileEditScreen({ navigation }) {
           .collection("members")
           .doc(auth.currentUser?.uid)
           .update({
-            name: profile.name,
-            bio: profile.bio,
+            name: newProfile.name ?? profile.name,
+            bio: newProfile.bio ?? profile.bio,
             photo: url ?? profile.photo,
           });
       } else {
         // Dialog
         chat.ref.update({
-          [`name.${auth.currentUser?.uid}`]: profile.name,
+          [`name.${auth.currentUser?.uid}`]: newProfile.name ?? profile.name,
           [`photo.${auth.currentUser?.uid}`]: url ?? profile.photo,
         });
       }
@@ -148,7 +149,7 @@ export default function MyProfileEditScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: colors.gray6 }}>
       <StatusBar style="auto" />
 
-      <ScrollView>
+      <ScrollView keyboardShouldPersistTaps="handled">
         <KeyboardAvoider style={{ paddingHorizontal: 16 }}>
           <TouchableOpacity
             style={{ alignSelf: "center", alignItems: "center" }}
@@ -232,7 +233,9 @@ export default function MyProfileEditScreen({ navigation }) {
               }}
               defaultValue={profile.name}
               placeholder="Ім'я"
-              onChangeText={(value) => (profile.name = value)}
+              onChangeText={(value) =>
+                setNewProfile({ ...newProfile, name: value })
+              }
             />
             <Text style={{ marginLeft: 8, color: colors.gray, fontSize: 12 }}>
               Ваше ім'я та/або прізвище
@@ -253,7 +256,6 @@ export default function MyProfileEditScreen({ navigation }) {
               defaultValue={profile.phone}
               placeholder="Номер телефону"
               editable={false}
-              onChangeText={(value) => (profile.phone = value)}
             />
             <Text style={{ marginLeft: 8, color: colors.gray, fontSize: 12 }}>
               На даний момент Ви не можете змінити номер телефону
@@ -273,7 +275,9 @@ export default function MyProfileEditScreen({ navigation }) {
               }}
               defaultValue={profile.bio}
               placeholder="Про себе"
-              onChangeText={(value) => (profile.bio = value)}
+              onChangeText={(value) =>
+                setNewProfile({ ...newProfile, bio: value })
+              }
             />
             <Text style={{ marginLeft: 8, color: colors.gray, fontSize: 12 }}>
               Ваш опис про себе

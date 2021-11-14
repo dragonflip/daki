@@ -18,13 +18,14 @@ import uuid from "uuid";
 // Styles
 import colors from "../../styles/colors";
 // Firebase
-import { firebase, db, auth } from "../../firebase";
+import { firebase, db } from "../../firebase";
 // Components
 import KeyboardAvoider from "../../components/KeyboardAvoider";
 
 export default function ChatsGroupEditScreen({ navigation, route }) {
   const [image, setImage] = useState(null);
   const [group, setGroup] = useState([]);
+  const [newGroupName, setNewGroupName] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Navigation
@@ -52,7 +53,7 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
   useEffect(() => {
     const groupSnapshotUnsubscribe = db
       .collection("chats")
-      .doc(route.params.chatId)
+      .doc(route.params.groupId)
       .onSnapshot((snapshot) => {
         if (snapshot.exists) {
           setGroup(snapshot.data());
@@ -106,9 +107,9 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
     // Update group
     await db
       .collection("chats")
-      .doc(route.params.chatId)
+      .doc(route.params.groupId)
       .update({
-        groupName: group.groupName,
+        groupName: newGroupName ?? group.groupName,
         groupPhoto: url ?? group.groupPhoto,
       });
 
@@ -204,7 +205,7 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
               }}
               defaultValue={group.groupName}
               placeholder="Ім'я"
-              onChangeText={(value) => (group.groupName = value)}
+              onChangeText={setNewGroupName}
             />
             <Text style={{ marginLeft: 8, color: colors.gray, fontSize: 12 }}>
               Назва групи
