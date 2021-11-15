@@ -251,6 +251,7 @@ export default function MyProfileEditScreen({ navigation }) {
                 borderRadius: 16,
                 backgroundColor: "#fff",
               }}
+              selectionColor="#000"
               defaultValue={profile.name}
               placeholder="Ім'я"
               onChangeText={(value) =>
@@ -273,6 +274,7 @@ export default function MyProfileEditScreen({ navigation }) {
                 borderRadius: 16,
                 backgroundColor: colors.gray5,
               }}
+              selectionColor="#000"
               defaultValue={profile.phone}
               placeholder="Номер телефону"
               editable={false}
@@ -293,6 +295,7 @@ export default function MyProfileEditScreen({ navigation }) {
                 borderRadius: 16,
                 backgroundColor: "#fff",
               }}
+              selectionColor="#000"
               defaultValue={profile.bio}
               placeholder="Про себе"
               onChangeText={(value) =>

@@ -203,6 +203,7 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
                 borderRadius: 16,
                 backgroundColor: "#fff",
               }}
+              selectionColor="#000"
               defaultValue={group.groupName}
               placeholder="Ім'я"
               onChangeText={setNewGroupName}

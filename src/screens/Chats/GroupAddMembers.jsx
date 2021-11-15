@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   ImageBackground,
   FlatList,
+  TextInput,
+  Platform,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -121,6 +123,23 @@ export default function ChatsGroupAddMembers({ navigation, route }) {
               item.phone.toLowerCase().includes(search.toLowerCase())
           )}
           keyExtractor={(item) => item.id}
+          ListHeaderComponent={
+            Platform.OS === "android" ? (
+              <TextInput
+                placeholder="Пошук людей..."
+                style={{
+                  backgroundColor: "#fff",
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.gray6,
+                  fontSize: 16,
+                }}
+                selectionColor="#000"
+                onChangeText={setSearch}
+              />
+            ) : null
+          }
           renderItem={({ item }) => (
             <TouchableOpacity
               style={{
