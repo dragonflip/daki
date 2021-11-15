@@ -297,6 +297,32 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             };
           });
 
+          // Member photo and name
+          let prevSenderId = snapshot.docs[0].data().userId;
+          let firstTimeShow = true;
+
+          snapshot.docs.reverse().forEach((doc, index) => {
+            let showSenderPhoto = false;
+            let showSenderName = false;
+
+            if (prevSenderId !== doc.data().userId) {
+              firstTimeShow = true;
+            }
+
+            if (firstTimeShow) {
+              prevSenderId = doc.data().userId;
+              showSenderPhoto = true;
+              showSenderName = true;
+
+              firstTimeShow = false;
+            }
+
+            allMessages[allMessages.length - index - 1].showSenderPhoto =
+              showSenderPhoto;
+            allMessages[allMessages.length - index - 1].showSenderName =
+              showSenderName;
+          });
+
           // Date chips
           let prevMessageDate = "";
 
@@ -383,13 +409,14 @@ export default function ChatsMessagesScreen({ navigation, route }) {
       ).data();
       const toMeInfo = (await db.collection("users").doc(toMeId).get()).data();
 
-      if (chatId === route.params.userId) {
+      if (chatId === route.params.groupId) {
         // Group
         await db.collection("chats").doc(chatId).collection("messages").add({
           message: inputMessage,
           timestamp: firebase.firestore.Timestamp.now(),
           userId: auth.currentUser?.uid,
           userName: fromMeInfo.name,
+          userPhoto: fromMeInfo.photo,
           seen: false,
         });
 
@@ -528,7 +555,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               const lastMessage = lastMessageRef.docs[0].data();
 
               // Update chat info
-              if (chatId === route.params.userId) {
+              if (chatId === route.params.groupId) {
                 // Group
                 const members = (
                   await db.collection("chats").doc(chatId).get()
@@ -668,73 +695,134 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                     </View>
                   ) : null}
 
-                  <TouchableOpacity
-                    style={item.me ? styles.messageFromMe : styles.messageToMe}
-                    activeOpacity={0.5}
-                    onLongPress={item.me ? () => deleteMessage(item.id) : null}
-                    disabled={!item.link && !item.me}
-                    onPress={
-                      item.link ? () => Linking.openURL(item.message) : null
-                    }
+                  <View
+                    style={[
+                      item.group && !item.me
+                        ? { flexDirection: "row", alignItems: "center" }
+                        : null,
+                      item.showSenderPhoto ? { marginTop: 4 } : null,
+                    ]}
                   >
-                    <View>
-                      {item.group && !item.me ? (
-                        <TouchableOpacity
-                          style={{ alignSelf: "baseline" }}
-                          onPress={() =>
-                            navigation.navigate("ChatsUserInfo", {
-                              userId: item.userId,
-                            })
-                          }
-                        >
-                          <Text style={{ fontWeight: "bold" }}>
-                            {item.userName}
-                          </Text>
-                        </TouchableOpacity>
-                      ) : null}
-                      <Text
-                        style={[
-                          item.me
-                            ? styles.messageTextFromMe
-                            : styles.messageTextToMe,
-                          {
-                            maxWidth: Dimensions.get("window").width - 128,
-                          },
-                          item.link
-                            ? {
-                                textDecorationLine: "underline",
-                                textDecorationStyle: "solid",
-                                textDecorationColor: "#fff",
-                              }
-                            : null,
-                        ]}
+                    {item.group && !item.me && item.showSenderPhoto ? (
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate("ChatsUserInfo", {
+                            userId: item.userId,
+                          })
+                        }
                       >
-                        {item.message}
-                      </Text>
-                    </View>
-
-                    <Text style={styles.messageTime}>
-                      <Moment element={Text} unix format="HH:mm">
-                        {item.timestamp}
-                      </Moment>
-                    </Text>
-
-                    {item.me && item.seen ? (
-                      <MaterialCommunityIcons
-                        name="check-all"
-                        size={16}
-                        color="#999"
-                        style={{ alignSelf: "flex-end", height: 15 }}
-                      />
-                    ) : item.me ? (
-                      <MaterialCommunityIcons
-                        name="check"
-                        size={16}
-                        color="#999"
-                        style={{ alignSelf: "flex-end", height: 15 }}
-                      />
+                        <ImageBackground
+                          source={
+                            item.userPhoto !== ""
+                              ? {
+                                  uri: item.userPhoto,
+                                  cache: "force-cache",
+                                }
+                              : null
+                          }
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 40,
+                            marginLeft: 12,
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: colors.gray,
+                          }}
+                          imageStyle={{ borderRadius: 44 }}
+                        >
+                          {item.userPhoto === "" ? (
+                            <Text
+                              style={{
+                                fontSize: 22,
+                                color: "#fff",
+                                includeFontPadding: false,
+                              }}
+                            >
+                              {item.userName[0]}
+                            </Text>
+                          ) : null}
+                        </ImageBackground>
+                      </TouchableOpacity>
                     ) : null}
-                  </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        item.me ? styles.messageFromMe : styles.messageToMe,
+                        item.group && !item.me && !item.showSenderPhoto
+                          ? { marginLeft: 60 }
+                          : item.group
+                          ? { marginLeft: 8 }
+                          : null,
+                      ]}
+                      activeOpacity={0.5}
+                      onLongPress={
+                        item.me ? () => deleteMessage(item.id) : null
+                      }
+                      disabled={!item.link && !item.me}
+                      onPress={
+                        item.link ? () => Linking.openURL(item.message) : null
+                      }
+                    >
+                      <View>
+                        {item.group && !item.me && item.showSenderName ? (
+                          <TouchableOpacity
+                            style={{ alignSelf: "baseline" }}
+                            onPress={() =>
+                              navigation.navigate("ChatsUserInfo", {
+                                userId: item.userId,
+                              })
+                            }
+                          >
+                            <Text style={{ fontWeight: "bold" }}>
+                              {item.userName}
+                            </Text>
+                          </TouchableOpacity>
+                        ) : null}
+                        <Text
+                          style={[
+                            item.me
+                              ? styles.messageTextFromMe
+                              : styles.messageTextToMe,
+                            {
+                              maxWidth: Dimensions.get("window").width - 140,
+                            },
+                            item.link
+                              ? {
+                                  textDecorationLine: "underline",
+                                  textDecorationStyle: "solid",
+                                  textDecorationColor: "#fff",
+                                }
+                              : null,
+                          ]}
+                        >
+                          {item.message}
+                        </Text>
+                      </View>
+
+                      <Text style={styles.messageTime}>
+                        <Moment element={Text} unix format="HH:mm">
+                          {item.timestamp}
+                        </Moment>
+                      </Text>
+
+                      {item.me && item.seen ? (
+                        <MaterialCommunityIcons
+                          name="check-all"
+                          size={16}
+                          color="#999"
+                          style={{ alignSelf: "flex-end", height: 15 }}
+                        />
+                      ) : item.me ? (
+                        <MaterialCommunityIcons
+                          name="check"
+                          size={16}
+                          color="#999"
+                          style={{ alignSelf: "flex-end", height: 15 }}
+                        />
+                      ) : null}
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
             />
@@ -773,7 +861,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             >
               <TouchableOpacity
                 style={{
-                  paddingHorizontal: 8,
+                  paddingHorizontal: 12,
                   paddingVertical: 4,
                 }}
                 //onPress={attach}
@@ -808,7 +896,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               />
               <TouchableOpacity
                 style={{
-                  paddingHorizontal: 8,
+                  paddingHorizontal: 12,
                   paddingVertical: 4,
                 }}
                 onPress={sendMessage}

@@ -138,9 +138,12 @@ export default function MyProfileEditScreen({ navigation }) {
         // Update name in messages
         const messages = await chat.ref.collection("messages").get();
         for (const message of messages.docs) {
-          message.ref.update({
-            userName: newProfile.name ?? profile.name,
-          });
+          if (message.data().userId === auth.currentUser?.uid) {
+            message.ref.update({
+              userName: newProfile.name ?? profile.name,
+              userPhoto: url ?? profile.photo,
+            });
+          }
         }
 
         // Update sender name in chats if I'm last sender
