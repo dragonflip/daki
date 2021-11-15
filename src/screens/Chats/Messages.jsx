@@ -11,10 +11,11 @@ import {
   AppState,
   Dimensions,
   ImageBackground,
+  Linking,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
 import Moment from "react-moment";
@@ -286,10 +287,13 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           // All messages
           let allMessages = snapshot.docs.map((doc) => {
             return {
+              ...doc.data(),
               id: doc.id,
               me: doc.data().userId === auth.currentUser?.uid,
               group: chatId === route.params.groupId,
-              ...doc.data(),
+              link:
+                doc.data().message.substr(0, 7) === "http://" ||
+                doc.data().message.substr(0, 8) === "https://",
             };
           });
 
@@ -669,6 +673,9 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                     activeOpacity={0.5}
                     onLongPress={() => deleteMessage(item.id)}
                     disabled={!item.me}
+                    onPress={
+                      item.link ? () => Linking.openURL(item.message) : null
+                    }
                   >
                     <View>
                       {item.group && !item.me ? (
@@ -693,6 +700,13 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                           {
                             maxWidth: Dimensions.get("window").width - 128,
                           },
+                          item.link
+                            ? {
+                                textDecorationLine: "underline",
+                                textDecorationStyle: "solid",
+                                textDecorationColor: "#fff",
+                              }
+                            : null,
                         ]}
                       >
                         {item.message}
