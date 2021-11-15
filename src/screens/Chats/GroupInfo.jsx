@@ -316,6 +316,11 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                     borderBottomWidth: 1,
                     borderBottomColor: colors.gray6,
                   }}
+                  onPress={() =>
+                    navigation.navigate("ChatsGroupAddMembers", {
+                      ...route.params,
+                    })
+                  }
                 >
                   <MaterialCommunityIcons
                     name="account-plus"

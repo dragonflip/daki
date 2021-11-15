@@ -22,6 +22,7 @@ import {
   ChatsUserInfoScreen,
   ChatsGroupInfoScreen,
   ChatsGroupEditScreen,
+  ChatsGroupAddMembersScreen,
 } from "./screens/Chats";
 import { MyProfileScreen, MyProfileEditScreen } from "./screens/MyProfile";
 
@@ -115,6 +116,15 @@ function App() {
             headerTitle: "",
             headerTransparent: true,
             headerShadowVisible: false,
+            headerBackTitle: "Назад",
+          }}
+        />
+        <Stack.Screen
+          name="ChatsGroupAddMembers"
+          component={ChatsGroupAddMembersScreen}
+          options={{
+            title: "Додати учасників",
+            headerLargeTitle: true,
             headerBackTitle: "Назад",
           }}
         />

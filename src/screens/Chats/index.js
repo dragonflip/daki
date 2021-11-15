@@ -4,6 +4,7 @@ import ChatsMessagesScreen from "./Messages";
 import ChatsUserInfoScreen from "./UserInfo";
 import ChatsGroupInfoScreen from "./GroupInfo";
 import ChatsGroupEditScreen from "./GroupEdit";
+import ChatsGroupAddMembersScreen from "./GroupAddMembers";
 
 export {
   ChatsScreen,
@@ -12,4 +13,5 @@ export {
   ChatsUserInfoScreen,
   ChatsGroupInfoScreen,
   ChatsGroupEditScreen,
+  ChatsGroupAddMembersScreen,
 };
