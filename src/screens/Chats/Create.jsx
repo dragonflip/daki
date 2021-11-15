@@ -111,6 +111,7 @@ export default function ChatsCreateScreen({ navigation }) {
         seen: false,
         userId: auth.currentUser?.uid,
         userName: fromMeInfo.name,
+        userPhoto: fromMeInfo.photo,
       });
 
       // Add members info

@@ -261,6 +261,14 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               membersCount: snapshot.data().members.length,
               groupTyping: Object.entries(snapshot.data().typing ?? []),
             });
+
+            // Auto exit after kicking by admin
+            if (!snapshot.data().members.includes(auth.currentUser?.uid)) {
+              navigation.navigate("Chats");
+            }
+          } else {
+            // Auto exit after group deleting
+            navigation.navigate("Chats");
           }
         });
     } else {

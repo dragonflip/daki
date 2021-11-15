@@ -123,6 +123,7 @@ export default function ChatsGroupAddMembers({ navigation, route }) {
               item.phone.toLowerCase().includes(search.toLowerCase())
           )}
           keyExtractor={(item) => item.id}
+          keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
             Platform.OS === "android" ? (
               <TextInput

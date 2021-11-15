@@ -54,6 +54,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
               return {
                 ...doc.data(),
                 id: doc.id,
+                me: auth.currentUser?.uid === doc.id,
               };
             })
           );
@@ -104,7 +105,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
           // Delete chat
           await db.collection("chats").doc(route.params.groupId).delete();
 
-          navigation.goBack();
+          navigation.navigate("Chats");
         },
       },
     ]);
@@ -144,6 +145,40 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
               });
 
             navigation.navigate("Chats");
+          },
+        },
+      ]
+    );
+  };
+
+  const kickMember = async (userId) => {
+    Alert.alert(
+      "Видалити учасника?",
+      "Його повідомлення залишаться, і Ви зможете повторно його додати",
+      [
+        {
+          text: "Скасувати",
+          style: "cancel",
+        },
+        {
+          text: "Видалити",
+          style: "destructive",
+          onPress: async () => {
+            // Delete from members collection
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .collection("members")
+              .doc(userId)
+              .delete();
+
+            // Delete from members chat array
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .update({
+                members: firebase.firestore.FieldValue.arrayRemove(userId),
+              });
           },
         },
       ]
@@ -428,6 +463,19 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                   </Text>
                 )}
               </View>
+
+              {!item.me && group.admin ? (
+                <TouchableOpacity
+                  style={{ padding: 8 }}
+                  onPress={() => kickMember(item.userId)}
+                >
+                  <MaterialCommunityIcons
+                    name="close"
+                    size={24}
+                    color={colors.gray}
+                  />
+                </TouchableOpacity>
+              ) : null}
             </TouchableOpacity>
           )}
         />
