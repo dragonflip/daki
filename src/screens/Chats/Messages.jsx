@@ -14,7 +14,7 @@ import {
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
 import Moment from "react-moment";
@@ -757,6 +757,15 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 marginTop: 8,
               }}
             >
+              <TouchableOpacity
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                }}
+                //onPress={attach}
+              >
+                <Entypo name="attachment" size={26} color="#000" />
+              </TouchableOpacity>
               <TextInput
                 style={{
                   borderColor: colors.gray6,
@@ -765,7 +774,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   paddingTop: Platform.OS === "ios" ? 10 : 4,
                   paddingBottom: Platform.OS === "ios" ? 10 : 4,
                   paddingHorizontal: 16,
-                  marginLeft: 16,
+                  marginLeft: 0,
                   flex: 1,
                   minHeight: 40,
                 }}
