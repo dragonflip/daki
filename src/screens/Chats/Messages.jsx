@@ -671,8 +671,8 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   <TouchableOpacity
                     style={item.me ? styles.messageFromMe : styles.messageToMe}
                     activeOpacity={0.5}
-                    onLongPress={() => deleteMessage(item.id)}
-                    disabled={!item.me}
+                    onLongPress={item.me ? () => deleteMessage(item.id) : null}
+                    disabled={!item.link && !item.me}
                     onPress={
                       item.link ? () => Linking.openURL(item.message) : null
                     }
