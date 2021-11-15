@@ -124,6 +124,8 @@ export default function MyProfileEditScreen({ navigation }) {
     for (const chat of chats.docs) {
       if (chat.data().group) {
         // Group
+
+        // Update name in members
         await chat.ref
           .collection("members")
           .doc(auth.currentUser?.uid)
@@ -132,6 +134,21 @@ export default function MyProfileEditScreen({ navigation }) {
             bio: newProfile.bio ?? profile.bio,
             photo: url ?? profile.photo,
           });
+
+        // Update name in messages
+        const messages = await chat.ref.collection("messages").get();
+        for (const message of messages.docs) {
+          message.ref.update({
+            userName: newProfile.name ?? profile.name,
+          });
+        }
+
+        // Update sender name in chats if I'm last sender
+        if (chat.data().groupMessageSenderId === auth.currentUser?.uid) {
+          chat.ref.update({
+            groupMessageSenderName: newProfile.name ?? profile.name,
+          });
+        }
       } else {
         // Dialog
         chat.ref.update({

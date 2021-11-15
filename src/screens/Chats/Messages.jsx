@@ -288,7 +288,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             return {
               id: doc.id,
               me: doc.data().userId === auth.currentUser?.uid,
-              group: chatId === route.params.userId,
+              group: chatId === route.params.groupId,
               ...doc.data(),
             };
           });
@@ -759,12 +759,17 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             >
               <TouchableOpacity
                 style={{
-                  paddingHorizontal: 16,
+                  paddingHorizontal: 8,
                   paddingVertical: 4,
                 }}
                 //onPress={attach}
               >
-                <Entypo name="attachment" size={26} color="#000" />
+                <MaterialCommunityIcons
+                  name="attachment"
+                  size={28}
+                  color={colors.gray}
+                  style={{ transform: [{ rotate: "-45deg" }] }}
+                />
               </TouchableOpacity>
               <TextInput
                 style={{
@@ -789,12 +794,16 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               />
               <TouchableOpacity
                 style={{
-                  paddingHorizontal: 16,
+                  paddingHorizontal: 8,
                   paddingVertical: 4,
                 }}
                 onPress={sendMessage}
               >
-                <MaterialCommunityIcons name="send" size={28} color="#000" />
+                <MaterialCommunityIcons
+                  name="send"
+                  size={28}
+                  color={colors.blue}
+                />
               </TouchableOpacity>
             </View>
           ) : (

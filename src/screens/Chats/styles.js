@@ -106,7 +106,7 @@ export default StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 8,
     paddingVertical: 8,
-    marginHorizontal: 16,
+    marginHorizontal: 8,
     marginVertical: 2,
 
     borderTopLeftRadius: 16,
@@ -127,7 +127,7 @@ export default StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 8,
     paddingVertical: 8,
-    marginHorizontal: 16,
+    marginHorizontal: 8,
     marginVertical: 2,
 
     borderTopLeftRadius: 16,
