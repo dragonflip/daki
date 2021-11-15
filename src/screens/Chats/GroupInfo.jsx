@@ -110,6 +110,46 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
     ]);
   };
 
+  const leaveGroup = async () => {
+    Alert.alert(
+      "Покинути групу?",
+      "Ваші повідомлення залишаться, і Ви зможете повторно приєднатись, якщо Вас хтось додасть",
+      [
+        {
+          text: "Скасувати",
+          style: "cancel",
+        },
+        {
+          text: "Покинути",
+          style: "destructive",
+          onPress: async () => {
+            setLoading(true);
+
+            // Delete from members collection
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .collection("members")
+              .doc(auth.currentUser?.uid)
+              .delete();
+
+            // Delete from members chat array
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .update({
+                members: firebase.firestore.FieldValue.arrayRemove(
+                  auth.currentUser?.uid
+                ),
+              });
+
+            navigation.navigate("Chats");
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.gray6 }}>
       <StatusBar style="auto" />
@@ -238,6 +278,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                       flexDirection: "row",
                       alignItems: "center",
                     }}
+                    onPress={leaveGroup}
                   >
                     <MaterialCommunityIcons
                       name="logout"
@@ -251,7 +292,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                         marginLeft: 12,
                       }}
                     >
-                      Вийти з групи
+                      Покинути групу
                     </Text>
                   </TouchableOpacity>
                 )}
