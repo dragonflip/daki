@@ -311,6 +311,8 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           let firstTimeShow = true;
 
           snapshot.docs.reverse().forEach((doc, index) => {
+            if (doc.data().systemMessage) return;
+
             let showSenderPhoto = false;
             let showSenderName = false;
 
