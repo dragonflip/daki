@@ -614,6 +614,10 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             } else {
               const lastMessage = lastMessageRef.docs[0].data();
 
+              let messageInChatsList;
+              if (lastMessage.isPhoto) messageInChatsList = "Фотографія";
+              else messageInChatsList = lastMessage.message;
+
               // Update chat info
               if (chatId === route.params.groupId) {
                 // Group
@@ -625,7 +629,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   .collection("chats")
                   .doc(chatId)
                   .update({
-                    groupMessage: lastMessage.message,
+                    groupMessage: messageInChatsList,
                     groupMessageSenderId: lastMessage.userId,
                     groupMessageSenderName: lastMessage.userName,
                     timestamp: lastMessage.timestamp,
@@ -649,7 +653,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                     message: {
                       [auth.currentUser?.uid]: "",
                       [route.params.userId]: "",
-                      [lastMessage.userId]: lastMessage.message,
+                      [lastMessage.userId]: messageInChatsList,
                     },
                     timestamp: lastMessage.timestamp,
                     unreadCount: firebase.firestore.FieldValue.increment(
