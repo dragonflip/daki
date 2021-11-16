@@ -268,7 +268,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                     >
                       <MaterialCommunityIcons
                         name="pencil"
-                        size={18}
+                        size={20}
                         color={colors.blue}
                       />
                       <Text
@@ -292,7 +292,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                     >
                       <MaterialCommunityIcons
                         name="delete"
-                        size={18}
+                        size={20}
                         color={colors.red}
                       />
                       <Text
@@ -317,7 +317,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                   >
                     <MaterialCommunityIcons
                       name="logout"
-                      size={18}
+                      size={20}
                       color={colors.red}
                     />
                     <Text
@@ -359,7 +359,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                 >
                   <MaterialCommunityIcons
                     name="account-plus"
-                    size={18}
+                    size={20}
                     color={colors.blue}
                   />
                   <Text
@@ -454,7 +454,7 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                           .unix(moment().unix())
                           .isSame(moment.unix(item.online?.seconds), "date")
                           ? "HH:mm"
-                          : "DD.MM.YYYY"
+                          : "DD.MM.YYYY в HH:mm"
                       }
                       unix
                     >

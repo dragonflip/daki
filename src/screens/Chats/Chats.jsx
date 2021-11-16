@@ -298,7 +298,7 @@ export default function ChatsScreen({ navigation }) {
             elevation: 8,
           }}
           activeOpacity={0.5}
-          onPress={() => navigation.navigate("ChatsCreate")}
+          onPress={() => navigation.navigate("ChatsCreateDialog")}
         >
           <MaterialCommunityIcons
             name="plus"

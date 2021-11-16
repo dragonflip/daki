@@ -17,7 +17,8 @@ import {
 } from "./screens/Auth";
 import {
   ChatsScreen,
-  ChatsCreateScreen,
+  ChatsCreateDialogScreen,
+  ChatsCreateGroupScreen,
   ChatsMessagesScreen,
   ChatsUserInfoScreen,
   ChatsGroupInfoScreen,
@@ -80,12 +81,21 @@ function App() {
           }}
         />
         <Stack.Screen
-          name="ChatsCreate"
-          component={ChatsCreateScreen}
+          name="ChatsCreateDialog"
+          component={ChatsCreateDialogScreen}
           options={{
             title: "Новий чат",
             headerLargeTitle: true,
             headerBackTitle: "Чати",
+          }}
+        />
+        <Stack.Screen
+          name="ChatsCreateGroup"
+          component={ChatsCreateGroupScreen}
+          options={{
+            title: "Нова група",
+            headerLargeTitle: true,
+            headerBackTitle: "Назад",
           }}
         />
         <Stack.Screen

@@ -135,7 +135,7 @@ export default function MyProfileScreen({ navigation }) {
                         .unix(moment().unix())
                         .isSame(moment.unix(profile.online?.seconds), "date")
                         ? "HH:mm"
-                        : "DD.MM.YYYY"
+                        : "DD.MM.YYYY в HH:mm"
                     }
                     unix
                   >
@@ -163,7 +163,7 @@ export default function MyProfileScreen({ navigation }) {
             >
               <MaterialCommunityIcons
                 name="pencil"
-                size={18}
+                size={20}
                 color={colors.blue}
               />
               <Text
@@ -272,7 +272,7 @@ export default function MyProfileScreen({ navigation }) {
             >
               <MaterialCommunityIcons
                 name="logout"
-                size={18}
+                size={20}
                 color={colors.red}
               />
               <Text style={{ color: colors.red, fontSize: 16, marginLeft: 12 }}>

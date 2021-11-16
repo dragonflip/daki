@@ -1,5 +1,6 @@
 import ChatsScreen from "./Chats";
-import ChatsCreateScreen from "./Create";
+import ChatsCreateDialogScreen from "./CreateDialog";
+import ChatsCreateGroupScreen from "./CreateGroup";
 import ChatsMessagesScreen from "./Messages";
 import ChatsUserInfoScreen from "./UserInfo";
 import ChatsGroupInfoScreen from "./GroupInfo";
@@ -8,7 +9,8 @@ import ChatsGroupAddMembersScreen from "./GroupAddMembers";
 
 export {
   ChatsScreen,
-  ChatsCreateScreen,
+  ChatsCreateDialogScreen,
+  ChatsCreateGroupScreen,
   ChatsMessagesScreen,
   ChatsUserInfoScreen,
   ChatsGroupInfoScreen,

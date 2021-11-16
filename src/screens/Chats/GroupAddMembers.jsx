@@ -19,7 +19,7 @@ import { firebase, db, auth } from "../../firebase";
 // Components
 import LoadingScreen from "../../components/LoadingScreen";
 
-export default function ChatsGroupAddMembers({ navigation, route }) {
+export default function ChatsGroupAddMembersScreen({ navigation, route }) {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,9 +28,19 @@ export default function ChatsGroupAddMembers({ navigation, route }) {
   // Navigation
   useLayoutEffect(() => {
     navigation.setOptions({
+      headerTitle: route.params.createGroup
+        ? "Оберіть учасників"
+        : "Додати учасників",
       headerRight: () => (
         <TouchableOpacity
-          onPress={addMembers}
+          onPress={
+            route.params.createGroup
+              ? () =>
+                  navigation.navigate("ChatsCreateGroup", {
+                    members: selectedUsers,
+                  })
+              : addMembers
+          }
           disabled={selectedUsers.length === 0}
         >
           <Text
@@ -40,12 +50,12 @@ export default function ChatsGroupAddMembers({ navigation, route }) {
               fontWeight: "bold",
             }}
           >
-            Додати
+            {route.params.createGroup ? "Далі" : "Додати"}
           </Text>
         </TouchableOpacity>
       ),
       headerSearchBarOptions: {
-        placeholder: "Пошук",
+        placeholder: "Пошук людей...",
         hideWhenScrolling: false,
         onChangeText: (event) => setSearch(event.nativeEvent.text),
       },
@@ -141,19 +151,35 @@ export default function ChatsGroupAddMembers({ navigation, route }) {
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
             Platform.OS === "android" ? (
-              <TextInput
-                placeholder="Пошук людей..."
+              <View
                 style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingLeft: 16,
                   backgroundColor: "#fff",
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
                   borderBottomWidth: 1,
                   borderBottomColor: colors.gray6,
-                  fontSize: 16,
                 }}
-                selectionColor="#000"
-                onChangeText={setSearch}
-              />
+              >
+                <MaterialCommunityIcons
+                  name="magnify"
+                  size={20}
+                  color={colors.gray}
+                />
+                <TextInput
+                  placeholder="Пошук людей..."
+                  style={{
+                    backgroundColor: "#fff",
+                    paddingRight: 16,
+                    paddingLeft: 8,
+                    paddingVertical: 8,
+                    fontSize: 16,
+                    flex: 1,
+                  }}
+                  selectionColor="#000"
+                  onChangeText={setSearch}
+                />
+              </View>
             ) : null
           }
           renderItem={({ item }) => (
@@ -161,7 +187,7 @@ export default function ChatsGroupAddMembers({ navigation, route }) {
               style={{
                 flexDirection: "row",
                 paddingVertical: 8,
-                paddingHorizontal: 8,
+                paddingHorizontal: 16,
                 alignItems: "center",
                 borderBottomWidth: 1,
                 borderBottomColor: colors.gray6,
@@ -177,7 +203,7 @@ export default function ChatsGroupAddMembers({ navigation, route }) {
               }
               disabled={item.member}
             >
-              <View style={{ marginRight: 8 }}>
+              <View style={{ marginRight: 16 }}>
                 {item.member ? (
                   <MaterialCommunityIcons
                     name="check-circle"

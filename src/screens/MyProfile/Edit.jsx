@@ -90,7 +90,6 @@ export default function MyProfileEditScreen({ navigation }) {
 
     if (newProfile.name === "") return;
 
-    let url = null;
     setLoading(true);
 
     if (image !== null) {
@@ -118,9 +117,9 @@ export default function MyProfileEditScreen({ navigation }) {
           .child(`${auth.currentUser?.uid}/profile/${uuid.v4()}`)
           .put(blob);
 
-        url = await snapshot.ref.getDownloadURL();
+        var url = await snapshot.ref.getDownloadURL();
       } else {
-        url = "";
+        var url = "";
       }
 
       console.log(url);

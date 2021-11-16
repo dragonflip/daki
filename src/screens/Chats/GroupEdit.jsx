@@ -87,7 +87,6 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
   const updateGroup = async () => {
     if (!newGroupName || newGroupName?.trim() === "") return;
 
-    let url = null;
     setLoading(true);
 
     if (image !== null) {
@@ -119,9 +118,9 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
           )
           .put(blob);
 
-        url = await snapshot.ref.getDownloadURL();
+        var url = await snapshot.ref.getDownloadURL();
       } else {
-        url = "";
+        var url = "";
       }
 
       console.log(url);

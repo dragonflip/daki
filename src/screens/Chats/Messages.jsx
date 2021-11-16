@@ -85,7 +85,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                           .unix(moment().unix())
                           .isSame(moment.unix(chatInfo.online?.seconds), "date")
                           ? "HH:mm"
-                          : "DD.MM.YYYY"
+                          : "DD.MM.YYYY в HH:mm"
                       }
                       unix
                     >
@@ -184,7 +184,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                               "date"
                             )
                             ? "HH:mm"
-                            : "DD.MM.YYYY"
+                            : "DD.MM.YYYY в HH:mm"
                         }
                         unix
                       >

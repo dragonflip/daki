@@ -200,7 +200,7 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
                         .unix(moment().unix())
                         .isSame(moment.unix(profile.online?.seconds), "date")
                         ? "HH:mm"
-                        : "DD.MM.YYYY"
+                        : "DD.MM.YYYY в HH:mm"
                     }
                     unix
                   >
@@ -233,7 +233,7 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
             >
               <MaterialCommunityIcons
                 name="pencil"
-                size={18}
+                size={20}
                 color={colors.blue}
               />
               <Text
@@ -356,7 +356,7 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
               >
                 <MaterialCommunityIcons
                   name="delete"
-                  size={18}
+                  size={20}
                   color={colors.red}
                 />
                 <Text
