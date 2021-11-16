@@ -1044,7 +1044,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   paddingHorizontal: 12,
                   paddingVertical: 4,
                 }}
-                onPress={sendMessage}
+                onPress={() => sendMessage()}
               >
                 <MaterialCommunityIcons
                   name="send"
