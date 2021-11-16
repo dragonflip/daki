@@ -149,10 +149,6 @@ export default function ChatsCreateScreen({ navigation }) {
           .set({
             group: false,
             members: [fromMeId, toMeId],
-            blocked: {
-              [fromMeId]: false,
-              [toMeId]: false,
-            },
             message: {
               [fromMeId]: "Привіт, розпочнемо спілкування😎",
               [toMeId]: "",

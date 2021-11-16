@@ -21,7 +21,6 @@ import moment from "moment";
 import Moment from "react-moment";
 import { useIsFocused } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
 import uuid from "uuid";
 
 // Styles
@@ -248,8 +247,6 @@ export default function ChatsMessagesScreen({ navigation, route }) {
     AppState.addEventListener("change", handleAppStateChange);
     let chatSnapshotUnsubscribe;
 
-    console.log(chatId);
-
     if (route.params.groupId) {
       // Get group info
       chatSnapshotUnsubscribe = db
@@ -410,55 +407,9 @@ export default function ChatsMessagesScreen({ navigation, route }) {
     }
   }, [appState, isFocused, messages]);
 
-  //Check type of message
-  const checkMessage = async (isPhoto) => {
-    let url = null;
-    if (isPhoto) {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.5,
-        allowsEditing: true,
-        aspect: [1, 1],
-      });
-
-      if (!result.cancelled) {
-        const manipResult = await ImageManipulator.manipulateAsync(result.uri, [
-          {
-            resize: {
-              width: 256,
-              height: 256,
-            },
-          },
-        ]);
-
-        if (manipResult.uri !== null) {
-          if (manipResult.uri !== "") {
-            const response = await fetch(manipResult.uri);
-            const blob = await response.blob();
-
-            const ref = firebase.storage().ref().child(uuid.v4());
-            const snapshot = await ref.put(blob);
-
-            url = await snapshot.ref.getDownloadURL();
-          } else {
-            url = "";
-          }
-
-          console.log(url);
-        }
-      }
-
-      sendMessage(url, true);
-    } else sendMessage(inputMessage, false);
-  };
-
   // Send message
-  const sendMessage = async (text, isPhoto) => {
-    let messageInChatsList;
-    if (isPhoto) messageInChatsList = "Фотографія";
-    else messageInChatsList = text;
-
-    if (text.trim() !== "") {
+  const sendMessage = async (attachmentUrl = null) => {
+    if (inputMessage.trim() !== "" || attachmentUrl !== null) {
       input.current.clear();
 
       const fromMeInfo = (
@@ -468,16 +419,21 @@ export default function ChatsMessagesScreen({ navigation, route }) {
 
       if (chatId === route.params.groupId) {
         // Group
-        await db.collection("chats").doc(chatId).collection("messages").add({
-          message: text,
-          timestamp: firebase.firestore.Timestamp.now(),
-          userId: auth.currentUser?.uid,
-          userName: fromMeInfo.name,
-          userPhoto: fromMeInfo.photo,
-          seen: false,
-          isPhoto: isPhoto,
-        });
+        await db
+          .collection("chats")
+          .doc(chatId)
+          .collection("messages")
+          .add({
+            message: attachmentUrl !== null ? "Фотографія" : inputMessage,
+            timestamp: firebase.firestore.Timestamp.now(),
+            userId: auth.currentUser?.uid,
+            userName: fromMeInfo.name,
+            userPhoto: fromMeInfo.photo,
+            seen: false,
+            attachment: attachmentUrl,
+          });
 
+        // TODO reimplement unread count
         const members = (await db.collection("chats").doc(chatId).get()).data()
           .members;
 
@@ -485,7 +441,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           .collection("chats")
           .doc(chatId)
           .update({
-            groupMessage: messageInChatsList,
+            groupMessage: attachmentUrl !== null ? "Фотографія" : inputMessage,
             groupMessageSenderId: fromMeId,
             groupMessageSenderName: fromMeInfo.name,
             timestamp: firebase.firestore.Timestamp.now(),
@@ -498,13 +454,6 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           });
       } else {
         // Dialog
-        await db.collection("chats").doc(chatId).collection("messages").add({
-          message: text,
-          timestamp: firebase.firestore.Timestamp.now(),
-          userId: auth.currentUser?.uid,
-          seen: false,
-          isPhoto: isPhoto,
-        });
 
         // Check if chat not exists
         const chat = await db.collection("chats").doc(chatId).get();
@@ -516,12 +465,9 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             .set({
               group: false,
               members: [fromMeId, toMeId],
-              blocked: {
-                [fromMeId]: false,
-                [toMeId]: false,
-              },
               message: {
-                [fromMeId]: messageInChatsList,
+                [fromMeId]:
+                  attachmentUrl !== null ? "Фотографія" : inputMessage,
                 [toMeId]: "",
               },
               name: {
@@ -542,24 +488,61 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 [toMeId]: false,
               },
               unreadCount: 0,
+              attachment: attachmentUrl,
             });
         }
 
+        // Add to messages
+        await db
+          .collection("chats")
+          .doc(chatId)
+          .collection("messages")
+          .add({
+            message: attachmentUrl !== null ? "Фотографія" : inputMessage,
+            timestamp: firebase.firestore.Timestamp.now(),
+            userId: auth.currentUser?.uid,
+            seen: false,
+            attachment: attachmentUrl,
+          });
+
+        // Update chat last message
         await db
           .collection("chats")
           .doc(chatId)
           .update({
             message: {
-              [fromMeId]: messageInChatsList,
+              [fromMeId]: attachmentUrl !== null ? "Фотографія" : inputMessage,
               [toMeId]: "",
             },
             timestamp: firebase.firestore.Timestamp.now(),
             unreadCount: firebase.firestore.FieldValue.increment(1),
-            isPhoto: isPhoto,
           });
       }
 
       setInputMessage("");
+    }
+  };
+
+  // Send photo
+  const sendAttachment = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.5,
+      allowsEditing: true,
+      aspect: [1, 1],
+    });
+
+    if (!result.cancelled) {
+      const response = await fetch(result.uri);
+      const blob = await response.blob();
+
+      const ref = firebase.storage().ref().child(uuid.v4());
+      const snapshot = await ref.put(blob);
+
+      const url = await snapshot.ref.getDownloadURL();
+
+      console.log(url);
+      sendMessage(url);
     }
   };
 
@@ -743,12 +726,12 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               renderItem={({ item }) => (
                 <View>
                   {item.dateChip ? (
-                    <View style={styles.messageDateChip}>
+                    <View style={{ alignSelf: "center", marginVertical: 16 }}>
                       <Moment
                         element={Text}
                         unix
                         format="DD.MM.YYYY"
-                        style={styles.messageDateChipText}
+                        style={{ color: colors.gray }}
                       >
                         {item.timestamp.seconds}
                       </Moment>
@@ -758,7 +741,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   <View
                     style={[
                       item.group && !item.me
-                        ? { flexDirection: "row", alignItems: "center" }
+                        ? { flexDirection: "row", alignItems: "flex-start" }
                         : null,
                       item.showSenderPhoto ? { marginTop: 4 } : null,
                     ]}
@@ -770,14 +753,12 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                             userId: item.userId,
                           })
                         }
+                        style={{ marginTop: 8 }}
                       >
                         <ImageBackground
                           source={
                             item.userPhoto !== ""
-                              ? {
-                                  uri: item.userPhoto,
-                                  cache: "force-cache",
-                                }
+                              ? { uri: item.userPhoto, cache: "force-cache" }
                               : null
                           }
                           style={{
@@ -808,7 +789,38 @@ export default function ChatsMessagesScreen({ navigation, route }) {
 
                     <TouchableOpacity
                       style={[
-                        item.me ? styles.messageFromMe : styles.messageToMe,
+                        {
+                          marginHorizontal: 12,
+                          marginVertical: 2,
+
+                          borderTopLeftRadius: 16,
+                          borderTopRightRadius: 16,
+
+                          alignItems: "flex-end",
+                          flexDirection: "row",
+                        },
+                        !item.attachment
+                          ? {
+                              paddingLeft: 16,
+                              paddingRight: 8,
+                              paddingVertical: 8,
+                            }
+                          : null,
+                        item.me
+                          ? {
+                              backgroundColor: !item.attachment ? "#000" : null,
+                              alignSelf: "flex-end",
+
+                              borderBottomLeftRadius: 16,
+                            }
+                          : {
+                              backgroundColor: !item.attachment
+                                ? colors.gray6
+                                : null,
+                              alignSelf: "flex-start",
+
+                              borderBottomRightRadius: 16,
+                            },
                         item.group && !item.me && !item.showSenderPhoto
                           ? { marginLeft: 60 }
                           : item.group
@@ -825,7 +837,10 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                       }
                     >
                       <View>
-                        {item.group && !item.me && item.showSenderName ? (
+                        {item.group &&
+                        !item.me &&
+                        item.showSenderName &&
+                        !item.attachment ? (
                           <TouchableOpacity
                             style={{ alignSelf: "baseline" }}
                             onPress={() =>
@@ -839,48 +854,118 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                             </Text>
                           </TouchableOpacity>
                         ) : null}
-                        <Text
-                          style={[
-                            item.me
-                              ? styles.messageTextFromMe
-                              : styles.messageTextToMe,
-                            {
-                              maxWidth: Dimensions.get("window").width - 140,
-                            },
-                            item.link
-                              ? {
-                                  textDecorationLine: "underline",
-                                  textDecorationStyle: "solid",
-                                  textDecorationColor: "#fff",
-                                }
-                              : null,
-                          ]}
-                        >
-                          {item.message}
-                        </Text>
+
+                        {item.attachment ? (
+                          <ImageBackground
+                            source={{
+                              uri: item.attachment,
+                              cache: "force-cache",
+                            }}
+                            style={{
+                              width: Dimensions.get("window").width - 92,
+                              height:
+                                (Dimensions.get("window").width - 92) / 1.3,
+                              justifyContent: "flex-end",
+                              alignItems: "flex-end",
+                              padding: 8,
+                            }}
+                            imageStyle={{
+                              borderRadius: 16,
+                              borderWidth: 2,
+                              borderColor: item.me ? "#000" : colors.gray6,
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                alignContent: "center",
+                                justifyContent: "center",
+                                paddingVertical: 2,
+                                paddingHorizontal: 8,
+                                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                                borderRadius: 16,
+                              }}
+                            >
+                              <Text style={{ color: "#fff", fontSize: 12 }}>
+                                <Moment element={Text} unix format="HH:mm">
+                                  {item.timestamp}
+                                </Moment>
+                              </Text>
+
+                              {item.me && item.seen ? (
+                                <MaterialCommunityIcons
+                                  name="check-all"
+                                  size={16}
+                                  color={"#fff"}
+                                  style={{ marginLeft: 2 }}
+                                />
+                              ) : item.me ? (
+                                <MaterialCommunityIcons
+                                  name="check"
+                                  size={16}
+                                  color={"#fff"}
+                                  style={{ marginLeft: 2 }}
+                                />
+                              ) : null}
+                            </View>
+                          </ImageBackground>
+                        ) : (
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "flex-end",
+                            }}
+                          >
+                            <Text
+                              style={[
+                                {
+                                  color: item.me ? "#fff" : "#000",
+                                  maxWidth:
+                                    Dimensions.get("window").width - 140,
+                                },
+                                item.link
+                                  ? {
+                                      textDecorationLine: "underline",
+                                      textDecorationStyle: "solid",
+                                      textDecorationColor: "#fff",
+                                    }
+                                  : null,
+                              ]}
+                            >
+                              {item.message}
+                            </Text>
+
+                            <Text
+                              style={{
+                                color: colors.gray,
+                                fontSize: 12,
+                                marginLeft: 8,
+                              }}
+                            >
+                              <Moment element={Text} unix format="HH:mm">
+                                {item.timestamp}
+                              </Moment>
+                            </Text>
+
+                            {item.me && item.seen ? (
+                              <MaterialCommunityIcons
+                                name="check-all"
+                                size={16}
+                                color={colors.gray}
+                                style={{ alignSelf: "flex-end", marginLeft: 2 }}
+                              />
+                            ) : item.me ? (
+                              <MaterialCommunityIcons
+                                name="check"
+                                size={16}
+                                color={colors.gray}
+                                style={{ alignSelf: "flex-end", marginLeft: 2 }}
+                              />
+                            ) : null}
+                          </View>
+                        )}
                       </View>
-
-                      <Text style={styles.messageTime}>
-                        <Moment element={Text} unix format="HH:mm">
-                          {item.timestamp}
-                        </Moment>
-                      </Text>
-
-                      {item.me && item.seen ? (
-                        <MaterialCommunityIcons
-                          name="check-all"
-                          size={16}
-                          color="#999"
-                          style={{ alignSelf: "flex-end", height: 15 }}
-                        />
-                      ) : item.me ? (
-                        <MaterialCommunityIcons
-                          name="check"
-                          size={16}
-                          color="#999"
-                          style={{ alignSelf: "flex-end", height: 15 }}
-                        />
-                      ) : null}
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -924,9 +1009,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   paddingHorizontal: 12,
                   paddingVertical: 4,
                 }}
-                onPress={() => {
-                  checkMessage(true);
-                }}
+                onPress={sendAttachment}
               >
                 <MaterialCommunityIcons
                   name="attachment"
@@ -961,9 +1044,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   paddingHorizontal: 12,
                   paddingVertical: 4,
                 }}
-                onPress={() => {
-                  checkMessage(false);
-                }}
+                onPress={sendMessage}
               >
                 <MaterialCommunityIcons
                   name="send"
