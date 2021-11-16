@@ -85,6 +85,8 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
   };
 
   const updateGroup = async () => {
+    if (!newGroupName || newGroupName?.trim() === "") return;
+
     let url = null;
     setLoading(true);
 
@@ -130,7 +132,7 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
       .collection("chats")
       .doc(route.params.groupId)
       .update({
-        groupName: newGroupName ?? group.groupName,
+        groupName: newGroupName.trim() ?? group.groupName,
         groupPhoto: url ?? group.groupPhoto,
       });
 

@@ -85,6 +85,11 @@ export default function MyProfileEditScreen({ navigation }) {
   };
 
   const updateProfile = async () => {
+    newProfile.name = newProfile.name?.trim();
+    newProfile.bio = newProfile.bio?.trim();
+
+    if (newProfile.name === "") return;
+
     let url = null;
     setLoading(true);
 
