@@ -12,6 +12,7 @@ import {
   Dimensions,
   ImageBackground,
   Linking,
+  Modal,
 } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
@@ -23,6 +24,7 @@ import { useIsFocused } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import uuid from "uuid";
+import ImageViewer from "react-native-image-zoom-viewer";
 
 // Styles
 import styles from "./styles";
@@ -42,6 +44,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
   const [appState, setAppState] = useState("active");
   const typingTimeout = useRef({ timer: null, typing: false });
   const [chatInfo, setChatInfo] = useState([]);
+  const [modalVIsible, setModalVIsible] = useState("");
 
   const fromMeId = auth.currentUser?.uid;
   const toMeId = route.params.userId;
@@ -769,6 +772,21 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                     </View>
                   ) : null}
 
+                  {modalVIsible != "" ? (
+                    <Modal visible={true} transparent={true}>
+                      <ImageViewer
+                        onClick={() => setModalVIsible("")}
+                        onSwipeDown={() => setModalVIsible("")}
+                        enableSwipeDown={true}
+                        imageUrls={[
+                          {
+                            url: modalVIsible,
+                          },
+                        ]}
+                      ></ImageViewer>
+                    </Modal>
+                  ) : null}
+
                   {item.systemMessage ? (
                     <TouchableOpacity
                       style={{ alignSelf: "center", marginBottom: 16 }}
@@ -878,7 +896,14 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                         }
                         disabled={!item.link && !item.me}
                         onPress={
-                          item.link ? () => Linking.openURL(item.message) : null
+                          (item.link
+                            ? () => Linking.openURL(item.message)
+                            : null,
+                          item.attachment
+                            ? () => {
+                                setModalVIsible(item.attachment);
+                              }
+                            : null)
                         }
                       >
                         <View>
