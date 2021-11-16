@@ -20,6 +20,9 @@ import * as Haptics from "expo-haptics";
 import moment from "moment";
 import Moment from "react-moment";
 import { useIsFocused } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import uuid from "uuid";
 
 // Styles
 import styles from "./styles";
@@ -407,9 +410,55 @@ export default function ChatsMessagesScreen({ navigation, route }) {
     }
   }, [appState, isFocused, messages]);
 
+  //Check type of message
+  const checkMessage = async (isPhoto) => {
+    let url = null;
+    if (isPhoto) {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.5,
+        allowsEditing: true,
+        aspect: [1, 1],
+      });
+
+      if (!result.cancelled) {
+        const manipResult = await ImageManipulator.manipulateAsync(result.uri, [
+          {
+            resize: {
+              width: 256,
+              height: 256,
+            },
+          },
+        ]);
+
+        if (manipResult.uri !== null) {
+          if (manipResult.uri !== "") {
+            const response = await fetch(manipResult.uri);
+            const blob = await response.blob();
+
+            const ref = firebase.storage().ref().child(uuid.v4());
+            const snapshot = await ref.put(blob);
+
+            url = await snapshot.ref.getDownloadURL();
+          } else {
+            url = "";
+          }
+
+          console.log(url);
+        }
+      }
+
+      sendMessage(url, true);
+    } else sendMessage(inputMessage, false);
+  };
+
   // Send message
-  const sendMessage = async () => {
-    if (inputMessage.trim() !== "") {
+  const sendMessage = async (text, isPhoto) => {
+    let messageInChatsList;
+    if (isPhoto) messageInChatsList = "Фотографія";
+    else messageInChatsList = text;
+
+    if (text.trim() !== "") {
       input.current.clear();
 
       const fromMeInfo = (
@@ -420,12 +469,13 @@ export default function ChatsMessagesScreen({ navigation, route }) {
       if (chatId === route.params.groupId) {
         // Group
         await db.collection("chats").doc(chatId).collection("messages").add({
-          message: inputMessage,
+          message: text,
           timestamp: firebase.firestore.Timestamp.now(),
           userId: auth.currentUser?.uid,
           userName: fromMeInfo.name,
           userPhoto: fromMeInfo.photo,
           seen: false,
+          isPhoto: isPhoto,
         });
 
         const members = (await db.collection("chats").doc(chatId).get()).data()
@@ -435,7 +485,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           .collection("chats")
           .doc(chatId)
           .update({
-            groupMessage: inputMessage,
+            groupMessage: messageInChatsList,
             groupMessageSenderId: fromMeId,
             groupMessageSenderName: fromMeInfo.name,
             timestamp: firebase.firestore.Timestamp.now(),
@@ -449,10 +499,11 @@ export default function ChatsMessagesScreen({ navigation, route }) {
       } else {
         // Dialog
         await db.collection("chats").doc(chatId).collection("messages").add({
-          message: inputMessage,
+          message: text,
           timestamp: firebase.firestore.Timestamp.now(),
           userId: auth.currentUser?.uid,
           seen: false,
+          isPhoto: isPhoto,
         });
 
         // Check if chat not exists
@@ -470,7 +521,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 [toMeId]: false,
               },
               message: {
-                [fromMeId]: inputMessage,
+                [fromMeId]: messageInChatsList,
                 [toMeId]: "",
               },
               name: {
@@ -499,11 +550,12 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           .doc(chatId)
           .update({
             message: {
-              [fromMeId]: inputMessage,
+              [fromMeId]: messageInChatsList,
               [toMeId]: "",
             },
             timestamp: firebase.firestore.Timestamp.now(),
             unreadCount: firebase.firestore.FieldValue.increment(1),
+            isPhoto: isPhoto,
           });
       }
 
@@ -872,7 +924,9 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   paddingHorizontal: 12,
                   paddingVertical: 4,
                 }}
-                //onPress={attach}
+                onPress={() => {
+                  checkMessage(true);
+                }}
               >
                 <MaterialCommunityIcons
                   name="attachment"
@@ -907,7 +961,9 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   paddingHorizontal: 12,
                   paddingVertical: 4,
                 }}
-                onPress={sendMessage}
+                onPress={() => {
+                  checkMessage(false);
+                }}
               >
                 <MaterialCommunityIcons
                   name="send"
