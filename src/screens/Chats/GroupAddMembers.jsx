@@ -106,6 +106,21 @@ export default function ChatsGroupAddMembers({ navigation, route }) {
         .update({
           members: firebase.firestore.FieldValue.arrayUnion(userInfo.id),
         });
+
+      // Update old name and photo in messages
+      const prevMessages = await db
+        .collection("chats")
+        .doc(route.params.groupId)
+        .collection("messages")
+        .where("userId", "==", userInfo.id)
+        .get();
+
+      for (const message of prevMessages.docs) {
+        message.ref.update({
+          userName: userInfo.data().name,
+          userPhoto: userInfo.data().photo,
+        });
+      }
     }
 
     navigation.goBack();
