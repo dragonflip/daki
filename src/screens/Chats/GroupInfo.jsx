@@ -126,6 +126,34 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
           onPress: async () => {
             setLoading(true);
 
+            // Add system message about member left
+            const leaverInfo = await db
+              .collection("users")
+              .doc(auth.currentUser?.uid)
+              .get();
+
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .collection("messages")
+              .add({
+                message: `${leaverInfo.data().name} покидає групу`,
+                systemMessage: true,
+                timestamp: firebase.firestore.Timestamp.now(),
+                userId: auth.currentUser?.uid,
+              });
+
+            // Update chat system message
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .update({
+                groupMessage: `${leaverInfo.data().name} покидає групу`,
+                groupMessageSenderId: auth.currentUser?.uid,
+                groupSystemMessage: true,
+                timestamp: firebase.firestore.Timestamp.now(),
+              });
+
             // Delete from members collection
             await db
               .collection("chats")
@@ -164,6 +192,39 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
           text: "Видалити",
           style: "destructive",
           onPress: async () => {
+            // Add system message about kicked member
+            const leaverInfo = await db.collection("users").doc(userId).get();
+            const adminInfo = await db
+              .collection("users")
+              .doc(auth.currentUser?.uid)
+              .get();
+
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .collection("messages")
+              .add({
+                message: `${adminInfo.data().name} виключає ${
+                  leaverInfo.data().name
+                } з групи`,
+                systemMessage: true,
+                timestamp: firebase.firestore.Timestamp.now(),
+                userId: auth.currentUser?.uid,
+              });
+
+            // Update chat system message
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .update({
+                groupMessage: `${adminInfo.data().name} виключає ${
+                  leaverInfo.data().name
+                } з групи`,
+                groupMessageSenderId: auth.currentUser?.uid,
+                groupSystemMessage: true,
+                timestamp: firebase.firestore.Timestamp.now(),
+              });
+
             // Delete from members collection
             await db
               .collection("chats")

@@ -117,6 +117,42 @@ export default function ChatsGroupAddMembersScreen({ navigation, route }) {
           members: firebase.firestore.FieldValue.arrayUnion(userInfo.id),
         });
 
+      // Add system message about joined member
+      const joinedMemberInfo = await db
+        .collection("users")
+        .doc(userInfo.id)
+        .get();
+      const inviterInfo = await db
+        .collection("users")
+        .doc(auth.currentUser?.uid)
+        .get();
+
+      await db
+        .collection("chats")
+        .doc(route.params.groupId)
+        .collection("messages")
+        .add({
+          message: `${inviterInfo.data().name} додає ${
+            joinedMemberInfo.data().name
+          } до групи`,
+          systemMessage: true,
+          timestamp: firebase.firestore.Timestamp.now(),
+          userId: auth.currentUser?.uid,
+        });
+
+      // Update chat system message
+      await db
+        .collection("chats")
+        .doc(route.params.groupId)
+        .update({
+          groupMessage: `${inviterInfo.data().name} додає ${
+            joinedMemberInfo.data().name
+          } до групи`,
+          groupMessageSenderId: auth.currentUser?.uid,
+          groupSystemMessage: true,
+          timestamp: firebase.firestore.Timestamp.now(),
+        });
+
       // Update old name and photo in messages
       const prevMessages = await db
         .collection("chats")

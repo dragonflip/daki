@@ -789,7 +789,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
 
                   {item.systemMessage ? (
                     <TouchableOpacity
-                      style={{ alignSelf: "center", marginBottom: 16 }}
+                      style={{ alignSelf: "center", margin: 8 }}
                       onPress={() =>
                         navigation.navigate("ChatsUserInfo", {
                           userId: item.userId,

@@ -251,6 +251,34 @@ export default function ChatsScreen({ navigation }) {
           onPress: async () => {
             setLoading(true);
 
+            // Add system message about member left
+            const leaverInfo = await db
+              .collection("users")
+              .doc(auth.currentUser?.uid)
+              .get();
+
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .collection("messages")
+              .add({
+                message: `${leaverInfo.data().name} покидає групу`,
+                systemMessage: true,
+                timestamp: firebase.firestore.Timestamp.now(),
+                userId: auth.currentUser?.uid,
+              });
+
+            // Update chat system message
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .update({
+                groupMessage: `${leaverInfo.data().name} покидає групу`,
+                groupMessageSenderId: auth.currentUser?.uid,
+                groupSystemMessage: true,
+                timestamp: firebase.firestore.Timestamp.now(),
+              });
+
             // Delete from members collection
             await db
               .collection("chats")
