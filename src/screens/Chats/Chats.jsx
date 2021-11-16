@@ -67,6 +67,7 @@ export default function ChatsScreen({ navigation }) {
                 messageSenderId: chat.data().groupMessageSenderId,
                 messageSenderName: chat.data().groupMessageSenderName,
                 me: chat.data().groupMessageSenderId === fromMeId,
+                admin: chat.data().adminId === fromMeId,
 
                 timestamp: chat.data().timestamp,
                 unreadCount: chat.data().unreadCount[fromMeId],
@@ -232,6 +233,47 @@ export default function ChatsScreen({ navigation }) {
     ]);
   };
 
+  // Leave group
+  const leaveGroup = async (groupId) => {
+    Alert.alert(
+      "Покинути групу?",
+      "Ваші повідомлення залишаться, і Ви зможете повторно приєднатись, якщо Вас хтось додасть",
+      [
+        {
+          text: "Скасувати",
+          style: "cancel",
+        },
+        {
+          text: "Покинути",
+          style: "destructive",
+          onPress: async () => {
+            setLoading(true);
+
+            // Delete from members collection
+            await db
+              .collection("chats")
+              .doc(groupId)
+              .collection("members")
+              .doc(auth.currentUser?.uid)
+              .delete();
+
+            // Delete from members chat array
+            await db
+              .collection("chats")
+              .doc(groupId)
+              .update({
+                members: firebase.firestore.FieldValue.arrayRemove(
+                  auth.currentUser?.uid
+                ),
+              });
+
+            setLoading(false);
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.gray6 }}>
       <StatusBar style="auto" />
@@ -283,7 +325,11 @@ export default function ChatsScreen({ navigation }) {
                   item.group ? { groupId: item.id } : { userId: item.userId }
                 )
               }
-              onLongPress={() => deleteChat(item.id)}
+              onLongPress={() =>
+                (item.group && item.admin) || !item.group
+                  ? deleteChat(item.id)
+                  : leaveGroup(item.id)
+              }
             >
               <ImageBackground
                 source={

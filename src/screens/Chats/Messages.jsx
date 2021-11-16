@@ -21,6 +21,7 @@ import moment from "moment";
 import Moment from "react-moment";
 import { useIsFocused } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import uuid from "uuid";
 
 // Styles
@@ -528,10 +529,20 @@ export default function ChatsMessagesScreen({ navigation, route }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.5,
+      allowsEditing: true,
     });
 
     if (!result.cancelled) {
-      const response = await fetch(result.uri);
+      const manipResult = await ImageManipulator.manipulateAsync(result.uri, [
+        {
+          resize: {
+            width: 640,
+            height: 480,
+          },
+        },
+      ]);
+
+      const response = await fetch(manipResult.uri);
       const blob = await response.blob();
 
       // Add photo
@@ -879,7 +890,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                             style={{
                               width: Dimensions.get("window").width - 92,
                               height:
-                                (Dimensions.get("window").width - 92) / 1.3,
+                                (Dimensions.get("window").width - 92) / (4 / 3),
                               justifyContent: "flex-end",
                               alignItems: "flex-end",
                               padding: 8,
