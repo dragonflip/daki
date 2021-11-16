@@ -528,16 +528,18 @@ export default function ChatsMessagesScreen({ navigation, route }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.5,
-      allowsEditing: true,
-      aspect: [1, 1],
     });
 
     if (!result.cancelled) {
       const response = await fetch(result.uri);
       const blob = await response.blob();
 
-      const ref = firebase.storage().ref().child(uuid.v4());
-      const snapshot = await ref.put(blob);
+      // Add photo
+      const snapshot = await firebase
+        .storage()
+        .ref()
+        .child(`${auth.currentUser?.uid}/messages/${chatId}/${uuid.v4()}`)
+        .put(blob);
 
       const url = await snapshot.ref.getDownloadURL();
 
@@ -579,6 +581,19 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               .collection("messages")
               .doc(messageId)
               .delete();
+
+            // Delete message attachment
+            try {
+              await firebase
+                .storage()
+                .ref()
+                .child(
+                  deletedMessage.attachment
+                    .substr(73, deletedMessage.attachment.length - 73 - 53)
+                    .replaceAll("%2F", "/")
+                )
+                .delete();
+            } catch {}
 
             // Get last message reference
             const lastMessageRef = await db

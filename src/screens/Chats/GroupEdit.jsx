@@ -18,7 +18,7 @@ import uuid from "uuid";
 // Styles
 import colors from "../../styles/colors";
 // Firebase
-import { firebase, db } from "../../firebase";
+import { firebase, db, auth } from "../../firebase";
 // Components
 import KeyboardAvoider from "../../components/KeyboardAvoider";
 
@@ -89,12 +89,33 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
     setLoading(true);
 
     if (image !== null) {
+      // Delete previous photo
+      try {
+        await firebase
+          .storage()
+          .ref()
+          .child(
+            group.groupPhoto
+              .substr(73, group.groupPhoto.length - 73 - 53)
+              .replaceAll("%2F", "/")
+          )
+          .delete();
+      } catch {}
+
       if (image !== "") {
         const response = await fetch(image);
         const blob = await response.blob();
 
-        const ref = firebase.storage().ref().child(uuid.v4());
-        const snapshot = await ref.put(blob);
+        // Add new photo
+        const snapshot = await firebase
+          .storage()
+          .ref()
+          .child(
+            `${auth.currentUser?.uid}/groups/${
+              route.params.groupId
+            }/${uuid.v4()}`
+          )
+          .put(blob);
 
         url = await snapshot.ref.getDownloadURL();
       } else {

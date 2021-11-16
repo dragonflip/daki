@@ -89,12 +89,29 @@ export default function MyProfileEditScreen({ navigation }) {
     setLoading(true);
 
     if (image !== null) {
+      // Delete previous photo
+      try {
+        await firebase
+          .storage()
+          .ref()
+          .child(
+            profile.photo
+              .substr(73, profile.photo.length - 73 - 53)
+              .replaceAll("%2F", "/")
+          )
+          .delete();
+      } catch {}
+
       if (image !== "") {
         const response = await fetch(image);
         const blob = await response.blob();
 
-        const ref = firebase.storage().ref().child(uuid.v4());
-        const snapshot = await ref.put(blob);
+        // Add new photo
+        const snapshot = await firebase
+          .storage()
+          .ref()
+          .child(`${auth.currentUser?.uid}/profile/${uuid.v4()}`)
+          .put(blob);
 
         url = await snapshot.ref.getDownloadURL();
       } else {
