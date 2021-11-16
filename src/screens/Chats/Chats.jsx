@@ -66,6 +66,8 @@ export default function ChatsScreen({ navigation }) {
                 message: chat.data().groupMessage,
                 messageSenderId: chat.data().groupMessageSenderId,
                 messageSenderName: chat.data().groupMessageSenderName,
+                systemMessage: chat.data().groupSystemMessage,
+
                 me: chat.data().groupMessageSenderId === fromMeId,
                 admin: chat.data().adminId === fromMeId,
 
@@ -413,9 +415,9 @@ export default function ChatsScreen({ navigation }) {
                     ]}
                     numberOfLines={2}
                   >
-                    {item.me ? (
+                    {item.me && !item.systemMessage ? (
                       <Text style={{ fontWeight: "bold" }}>Я: </Text>
-                    ) : item.group ? (
+                    ) : item.group && !item.systemMessage ? (
                       <Text style={{ fontWeight: "bold" }}>
                         {item.messageSenderName}:{" "}
                       </Text>

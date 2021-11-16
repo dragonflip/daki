@@ -426,6 +426,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           .collection("messages")
           .add({
             message: attachmentUrl !== null ? "Фотографія" : inputMessage,
+            systemMessage: false,
             timestamp: firebase.firestore.Timestamp.now(),
             userId: auth.currentUser?.uid,
             userName: fromMeInfo.name,
@@ -445,6 +446,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             groupMessage: attachmentUrl !== null ? "Фотографія" : inputMessage,
             groupMessageSenderId: fromMeId,
             groupMessageSenderName: fromMeInfo.name,
+            groupSystemMessage: false,
             timestamp: firebase.firestore.Timestamp.now(),
             ...Object.fromEntries(
               members.map((id) => [
@@ -637,6 +639,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                     groupMessage: lastMessage.message,
                     groupMessageSenderId: lastMessage.userId,
                     groupMessageSenderName: lastMessage.userName,
+                    groupSystemMessage: lastMessage.systemMessage,
                     timestamp: lastMessage.timestamp,
                     ...Object.fromEntries(
                       members.map((id) => [
@@ -764,156 +767,226 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                     </View>
                   ) : null}
 
-                  <View
-                    style={[
-                      item.group && !item.me
-                        ? { flexDirection: "row", alignItems: "flex-start" }
-                        : null,
-                      item.showSenderPhoto ? { marginTop: 4 } : null,
-                    ]}
-                  >
-                    {item.group && !item.me && item.showSenderPhoto ? (
-                      <TouchableOpacity
-                        onPress={() =>
-                          navigation.navigate("ChatsUserInfo", {
-                            userId: item.userId,
-                          })
-                        }
-                        style={{ marginTop: 8 }}
-                      >
-                        <ImageBackground
-                          source={
-                            item.userPhoto !== ""
-                              ? { uri: item.userPhoto, cache: "force-cache" }
-                              : null
-                          }
-                          style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 40,
-                            marginLeft: 12,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: colors.gray,
-                          }}
-                          imageStyle={{ borderRadius: 44 }}
-                        >
-                          {item.userPhoto === "" ? (
-                            <Text
-                              style={{
-                                fontSize: 22,
-                                color: "#fff",
-                                includeFontPadding: false,
-                              }}
-                            >
-                              {item.userName[0]}
-                            </Text>
-                          ) : null}
-                        </ImageBackground>
-                      </TouchableOpacity>
-                    ) : null}
-
+                  {item.systemMessage ? (
                     <TouchableOpacity
-                      style={[
-                        {
-                          marginHorizontal: 12,
-                          marginVertical: 2,
-
-                          borderTopLeftRadius: 16,
-                          borderTopRightRadius: 16,
-
-                          alignItems: "flex-end",
-                          flexDirection: "row",
-                        },
-                        !item.attachment
-                          ? {
-                              paddingLeft: 16,
-                              paddingRight: 8,
-                              paddingVertical: 8,
-                            }
-                          : null,
-                        item.me
-                          ? {
-                              backgroundColor: !item.attachment ? "#000" : null,
-                              alignSelf: "flex-end",
-
-                              borderBottomLeftRadius: 16,
-                            }
-                          : {
-                              backgroundColor: !item.attachment
-                                ? colors.gray6
-                                : null,
-                              alignSelf: "flex-start",
-
-                              borderBottomRightRadius: 16,
-                            },
-                        item.group && !item.me && !item.showSenderPhoto
-                          ? { marginLeft: 60 }
-                          : item.group
-                          ? { marginLeft: 8 }
-                          : null,
-                      ]}
-                      activeOpacity={0.5}
-                      onLongPress={
-                        item.me ? () => deleteMessage(item.id) : null
-                      }
-                      disabled={!item.link && !item.me}
-                      onPress={
-                        item.link ? () => Linking.openURL(item.message) : null
+                      style={{ alignSelf: "center", marginBottom: 16 }}
+                      onPress={() =>
+                        navigation.navigate("ChatsUserInfo", {
+                          userId: item.userId,
+                        })
                       }
                     >
-                      <View>
-                        {item.group &&
-                        !item.me &&
-                        item.showSenderName &&
-                        !item.attachment ? (
-                          <TouchableOpacity
-                            style={{ alignSelf: "baseline" }}
-                            onPress={() =>
-                              navigation.navigate("ChatsUserInfo", {
-                                userId: item.userId,
-                              })
-                            }
-                          >
-                            <Text style={{ fontWeight: "bold" }}>
-                              {item.userName}
-                            </Text>
-                          </TouchableOpacity>
-                        ) : null}
-
-                        {item.attachment ? (
+                      <Text>{item.message}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View
+                      style={[
+                        item.group && !item.me
+                          ? { flexDirection: "row", alignItems: "flex-start" }
+                          : null,
+                        item.showSenderPhoto ? { marginTop: 4 } : null,
+                      ]}
+                    >
+                      {item.group && !item.me && item.showSenderPhoto ? (
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate("ChatsUserInfo", {
+                              userId: item.userId,
+                            })
+                          }
+                          style={{ marginTop: 8 }}
+                        >
                           <ImageBackground
-                            source={{
-                              uri: item.attachment,
-                              cache: "force-cache",
-                            }}
+                            source={
+                              item.userPhoto !== ""
+                                ? { uri: item.userPhoto, cache: "force-cache" }
+                                : null
+                            }
                             style={{
-                              width: Dimensions.get("window").width - 92,
-                              height:
-                                (Dimensions.get("window").width - 92) / (4 / 3),
-                              justifyContent: "flex-end",
-                              alignItems: "flex-end",
-                              padding: 8,
+                              width: 40,
+                              height: 40,
+                              borderRadius: 40,
+                              marginLeft: 12,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: colors.gray,
                             }}
-                            imageStyle={{
-                              borderRadius: 16,
-                              borderWidth: 2,
-                              borderColor: item.me ? "#000" : colors.gray6,
-                            }}
+                            imageStyle={{ borderRadius: 44 }}
                           >
+                            {item.userPhoto === "" ? (
+                              <Text
+                                style={{
+                                  fontSize: 22,
+                                  color: "#fff",
+                                  includeFontPadding: false,
+                                }}
+                              >
+                                {item.userName[0]}
+                              </Text>
+                            ) : null}
+                          </ImageBackground>
+                        </TouchableOpacity>
+                      ) : null}
+
+                      <TouchableOpacity
+                        style={[
+                          {
+                            marginHorizontal: 12,
+                            marginVertical: 2,
+
+                            borderTopLeftRadius: 16,
+                            borderTopRightRadius: 16,
+
+                            alignItems: "flex-end",
+                            flexDirection: "row",
+                          },
+                          !item.attachment
+                            ? {
+                                paddingLeft: 16,
+                                paddingRight: 8,
+                                paddingVertical: 8,
+                              }
+                            : null,
+                          item.me
+                            ? {
+                                backgroundColor: !item.attachment
+                                  ? "#000"
+                                  : null,
+                                alignSelf: "flex-end",
+
+                                borderBottomLeftRadius: 16,
+                              }
+                            : {
+                                backgroundColor: !item.attachment
+                                  ? colors.gray6
+                                  : null,
+                                alignSelf: "flex-start",
+
+                                borderBottomRightRadius: 16,
+                              },
+                          item.group && !item.me && !item.showSenderPhoto
+                            ? { marginLeft: 60 }
+                            : item.group
+                            ? { marginLeft: 8 }
+                            : null,
+                        ]}
+                        activeOpacity={0.5}
+                        onLongPress={
+                          item.me ? () => deleteMessage(item.id) : null
+                        }
+                        disabled={!item.link && !item.me}
+                        onPress={
+                          item.link ? () => Linking.openURL(item.message) : null
+                        }
+                      >
+                        <View>
+                          {item.group &&
+                          !item.me &&
+                          item.showSenderName &&
+                          !item.attachment ? (
+                            <TouchableOpacity
+                              style={{ alignSelf: "baseline" }}
+                              onPress={() =>
+                                navigation.navigate("ChatsUserInfo", {
+                                  userId: item.userId,
+                                })
+                              }
+                            >
+                              <Text style={{ fontWeight: "bold" }}>
+                                {item.userName}
+                              </Text>
+                            </TouchableOpacity>
+                          ) : null}
+
+                          {item.attachment ? (
+                            <ImageBackground
+                              source={{
+                                uri: item.attachment,
+                                cache: "force-cache",
+                              }}
+                              style={{
+                                width: Dimensions.get("window").width - 92,
+                                height:
+                                  (Dimensions.get("window").width - 92) /
+                                  (4 / 3),
+                                justifyContent: "flex-end",
+                                alignItems: "flex-end",
+                                padding: 8,
+                              }}
+                              imageStyle={{
+                                borderRadius: 16,
+                                borderWidth: 2,
+                                borderColor: item.me ? "#000" : colors.gray6,
+                              }}
+                            >
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  alignContent: "center",
+                                  justifyContent: "center",
+                                  paddingVertical: 2,
+                                  paddingHorizontal: 8,
+                                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                                  borderRadius: 16,
+                                }}
+                              >
+                                <Text style={{ color: "#fff", fontSize: 12 }}>
+                                  <Moment element={Text} unix format="HH:mm">
+                                    {item.timestamp}
+                                  </Moment>
+                                </Text>
+
+                                {item.me && item.seen ? (
+                                  <MaterialCommunityIcons
+                                    name="check-all"
+                                    size={16}
+                                    color={"#fff"}
+                                    style={{ marginLeft: 2 }}
+                                  />
+                                ) : item.me ? (
+                                  <MaterialCommunityIcons
+                                    name="check"
+                                    size={16}
+                                    color={"#fff"}
+                                    style={{ marginLeft: 2 }}
+                                  />
+                                ) : null}
+                              </View>
+                            </ImageBackground>
+                          ) : (
                             <View
                               style={{
                                 flexDirection: "row",
-                                alignItems: "center",
-                                alignContent: "center",
-                                justifyContent: "center",
-                                paddingVertical: 2,
-                                paddingHorizontal: 8,
-                                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                borderRadius: 16,
+                                alignItems: "flex-end",
                               }}
                             >
-                              <Text style={{ color: "#fff", fontSize: 12 }}>
+                              <Text
+                                style={[
+                                  {
+                                    color: item.me ? "#fff" : "#000",
+                                    maxWidth:
+                                      Dimensions.get("window").width - 140,
+                                  },
+                                  item.link
+                                    ? {
+                                        textDecorationLine: "underline",
+                                        textDecorationStyle: "solid",
+                                        textDecorationColor: "#fff",
+                                      }
+                                    : null,
+                                ]}
+                              >
+                                {item.message}
+                              </Text>
+
+                              <Text
+                                style={{
+                                  color: colors.gray,
+                                  fontSize: 12,
+                                  marginLeft: 8,
+                                }}
+                              >
                                 <Moment element={Text} unix format="HH:mm">
                                   {item.timestamp}
                                 </Moment>
@@ -923,77 +996,29 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                                 <MaterialCommunityIcons
                                   name="check-all"
                                   size={16}
-                                  color={"#fff"}
-                                  style={{ marginLeft: 2 }}
+                                  color={colors.gray}
+                                  style={{
+                                    alignSelf: "flex-end",
+                                    marginLeft: 2,
+                                  }}
                                 />
                               ) : item.me ? (
                                 <MaterialCommunityIcons
                                   name="check"
                                   size={16}
-                                  color={"#fff"}
-                                  style={{ marginLeft: 2 }}
+                                  color={colors.gray}
+                                  style={{
+                                    alignSelf: "flex-end",
+                                    marginLeft: 2,
+                                  }}
                                 />
                               ) : null}
                             </View>
-                          </ImageBackground>
-                        ) : (
-                          <View
-                            style={{
-                              flexDirection: "row",
-                              alignItems: "flex-end",
-                            }}
-                          >
-                            <Text
-                              style={[
-                                {
-                                  color: item.me ? "#fff" : "#000",
-                                  maxWidth:
-                                    Dimensions.get("window").width - 140,
-                                },
-                                item.link
-                                  ? {
-                                      textDecorationLine: "underline",
-                                      textDecorationStyle: "solid",
-                                      textDecorationColor: "#fff",
-                                    }
-                                  : null,
-                              ]}
-                            >
-                              {item.message}
-                            </Text>
-
-                            <Text
-                              style={{
-                                color: colors.gray,
-                                fontSize: 12,
-                                marginLeft: 8,
-                              }}
-                            >
-                              <Moment element={Text} unix format="HH:mm">
-                                {item.timestamp}
-                              </Moment>
-                            </Text>
-
-                            {item.me && item.seen ? (
-                              <MaterialCommunityIcons
-                                name="check-all"
-                                size={16}
-                                color={colors.gray}
-                                style={{ alignSelf: "flex-end", marginLeft: 2 }}
-                              />
-                            ) : item.me ? (
-                              <MaterialCommunityIcons
-                                name="check"
-                                size={16}
-                                color={colors.gray}
-                                style={{ alignSelf: "flex-end", marginLeft: 2 }}
-                              />
-                            ) : null}
-                          </View>
-                        )}
-                      </View>
-                    </TouchableOpacity>
-                  </View>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               )}
             />

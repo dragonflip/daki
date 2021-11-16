@@ -114,6 +114,7 @@ export default function ChatsCreateGroupScreen({ navigation, route }) {
       groupMessage: `${fromMeInfo.data().name} створює групу`,
       groupMessageSenderId: fromMeId,
       groupMessageSenderName: fromMeInfo.data().name,
+      groupSystemMessage: true,
       groupName: groupName,
       groupPhoto: "",
       members: [fromMeId, ...route.params.members],
@@ -126,6 +127,7 @@ export default function ChatsCreateGroupScreen({ navigation, route }) {
     // Send message
     await newGroupRef.collection("messages").add({
       message: `${fromMeInfo.data().name} створює групу`,
+      systemMessage: true,
       timestamp: firebase.firestore.Timestamp.now(),
       seen: false,
       userId: fromMeId,
