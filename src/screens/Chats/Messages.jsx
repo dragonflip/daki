@@ -330,7 +330,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               name: snapshot.data().groupName,
               photo: snapshot.data().groupPhoto,
               membersCount: snapshot.data().members.length,
-              groupTyping: Object.entries(snapshot.data().typing ?? []),
+              typing: Object.entries(snapshot.data()?.typing ?? []),
               verified: snapshot.data().groupVerified,
             });
 
@@ -456,12 +456,14 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               if (snapshot.exists) {
                 if (snapshot.data().group) {
                   // Group
-                  setChatTyping(
-                    Object.keys(snapshot.data().typing)
-                      .filter((userId) => userId !== fromMeId)
-                      .map((userId) => snapshot.data().typing[userId])
-                      .filter((userTyping) => userTyping.typing)
-                  );
+                  try {
+                    setChatTyping(
+                      Object.keys(snapshot.data().typing)
+                        .filter((userId) => userId !== fromMeId)
+                        .map((userId) => snapshot.data().typing[userId])
+                        .filter((userTyping) => userTyping.typing)
+                    );
+                  } catch {}
                 } else {
                   // Dialog
                   setChatTyping(snapshot.data().typing[toMeId]);
