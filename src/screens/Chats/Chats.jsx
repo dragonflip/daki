@@ -499,15 +499,38 @@ export default function ChatsScreen({ navigation }) {
             flex: 1,
             alignItems: "center",
             justifyContent: "center",
+            padding: 64,
           }}
         >
-          <MaterialCommunityIcons name="chat" size={128} color={colors.gray} />
-          <Text style={{ color: "#000", fontSize: 24, fontWeight: "bold" }}>
-            Немає чатів
-          </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("ChatsCreate")}>
-            <Text style={{ color: colors.blue, fontSize: 16 }}>Створити</Text>
-          </TouchableOpacity>
+          <View
+            style={{
+              backgroundColor: "#fff",
+              alignItems: "center",
+              paddingVertical: 32,
+              borderRadius: 16,
+              width: "100%",
+            }}
+          >
+            <Text style={{ fontSize: 64 }}>🧐</Text>
+            <Text style={{ color: "#000", fontSize: 18, fontWeight: "bold" }}>
+              Чатів ще немає...
+            </Text>
+            <Text style={{ color: colors.gray }}>Розпочніть спілкування</Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("ChatsCreateDialog")}
+              style={{ marginTop: 8 }}
+            >
+              <Text
+                style={{
+                  color: colors.blue,
+                  fontSize: 16,
+                  fontWeight: "bold",
+                }}
+              >
+                Розпочати
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </View>

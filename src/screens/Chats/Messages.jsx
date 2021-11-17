@@ -64,9 +64,28 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           >
             {Platform.OS === "ios" ? (
               <View style={{ alignItems: "center" }}>
-                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                  {chatInfo.name}
-                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingLeft: chatInfo.verified ? 20 : 0,
+                  }}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                    {chatInfo.name}
+                  </Text>
+
+                  {chatInfo.verified ? (
+                    <MaterialCommunityIcons
+                      name="check-decagram"
+                      size={18}
+                      color={colors.blue}
+                      style={{ marginLeft: 2 }}
+                    />
+                  ) : null}
+                </View>
+
                 {chatInfo.group ? (
                   <Text style={{ fontSize: 12, color: colors.gray }}>
                     учасників: {chatInfo.membersCount}
@@ -145,9 +164,25 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 </ImageBackground>
 
                 <View>
-                  <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                    {chatInfo.name}
-                  </Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                      {chatInfo.name}
+                    </Text>
+
+                    {chatInfo.verified ? (
+                      <MaterialCommunityIcons
+                        name="check-decagram"
+                        size={18}
+                        color={colors.blue}
+                        style={{ marginLeft: 2 }}
+                      />
+                    ) : null}
+                  </View>
 
                   {chatInfo.group ? (
                     chatInfo.groupTyping.filter(
@@ -264,6 +299,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               photo: snapshot.data().groupPhoto,
               membersCount: snapshot.data().members.length,
               groupTyping: Object.entries(snapshot.data().typing ?? []),
+              verified: snapshot.data().groupVerified,
             });
 
             // Auto exit after kicking by admin
@@ -489,6 +525,10 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               photo: {
                 [fromMeId]: fromMeInfo.photo,
                 [toMeId]: toMeInfo.photo,
+              },
+              verified: {
+                [fromMeId]: fromMeInfo.verified,
+                [toMeId]: toMeInfo.verified,
               },
               timestamp: firebase.firestore.Timestamp.now(),
               typing: {
@@ -1056,21 +1096,42 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: colors.gray6,
+                padding: 64,
               }}
             >
-              <MaterialCommunityIcons
-                name="message"
-                size={128}
-                color={colors.gray}
-              />
-              <Text style={{ color: "#000", fontSize: 24, fontWeight: "bold" }}>
-                Немає повідомлень
-              </Text>
-              <TouchableOpacity onPress={() => input.current.focus()}>
-                <Text style={{ color: colors.blue, fontSize: 16 }}>
-                  Написати
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  alignItems: "center",
+                  paddingVertical: 32,
+                  borderRadius: 16,
+                  width: "100%",
+                }}
+              >
+                <Text style={{ fontSize: 64 }}>🧐</Text>
+                <Text
+                  style={{ color: "#000", fontSize: 16, fontWeight: "bold" }}
+                >
+                  Повідомлень ще немає...
                 </Text>
-              </TouchableOpacity>
+                <Text style={{ color: colors.gray }}>
+                  Напишіть повідомлення
+                </Text>
+                <TouchableOpacity
+                  onPress={() => input.current.focus()}
+                  style={{ marginTop: 8 }}
+                >
+                  <Text
+                    style={{
+                      color: colors.blue,
+                      fontSize: 16,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Написати
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
 
