@@ -890,7 +890,6 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   {modalVIsible != "" ? (
                     <Modal visible={true} transparent={true}>
                       <ImageViewer
-                        onClick={() => setModalVIsible("")}
                         onSwipeDown={() => setModalVIsible("")}
                         enableSwipeDown={true}
                         imageUrls={[{ url: modalVIsible }]}
