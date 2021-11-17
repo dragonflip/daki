@@ -1005,16 +1005,15 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                         onLongPress={
                           item.me ? () => deleteMessage(item.id) : null
                         }
-                        disabled={!item.link && !item.me}
+                        disabled={!item.link && !item.attachment && !item.me}
                         onPress={
-                          (item.link
-                            ? () => Linking.openURL(item.message)
-                            : null,
                           item.attachment
                             ? () => {
                                 setModalVIsible(item.attachment);
                               }
-                            : null)
+                            : item.link
+                            ? () => Linking.openURL(item.message)
+                            : null
                         }
                       >
                         <View>
