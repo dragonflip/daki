@@ -83,7 +83,6 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
   }, []);
 
   const rate = async (rateType) => {
-    // TODO test rateType for errors
     if (rating.rateType === null || rating.rateType !== rateType) {
       // If no like and no dislike
       // OR

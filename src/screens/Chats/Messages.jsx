@@ -45,6 +45,8 @@ export default function ChatsMessagesScreen({ navigation, route }) {
   const typingTimeout = useRef({ timer: null, typing: false });
   const [chatInfo, setChatInfo] = useState([]);
   const [modalVIsible, setModalVIsible] = useState("");
+  const [chatTyping, setChatTyping] = useState(null);
+  const chatExists = useRef(false);
 
   const fromMeId = auth.currentUser?.uid;
   const toMeId = route.params.userId;
@@ -87,10 +89,31 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 </View>
 
                 {chatInfo.group ? (
-                  <Text style={{ fontSize: 12, color: colors.gray }}>
-                    учасників: {chatInfo.membersCount}
-                  </Text>
-                ) : chatInfo.typing ? (
+                  chatTyping?.length > 2 ? (
+                    <Text style={{ fontSize: 12, color: colors.gray }}>
+                      {chatTyping?.length} людей набирає...
+                    </Text>
+                  ) : chatTyping?.length === 2 ? (
+                    <Text style={{ fontSize: 12, color: colors.gray }}>
+                      {chatTyping?.map(
+                        (userTyping, index) =>
+                          `${userTyping.name}${index === 0 ? " та " : " "}`
+                      )}
+                      набирає...
+                    </Text>
+                  ) : chatTyping?.filter((userTyping) => userTyping.typing)
+                      .length === 1 ? (
+                    <Text style={{ fontSize: 12, color: colors.gray }}>
+                      {chatTyping?.map(
+                        (userTyping) => `${userTyping.name} набирає...`
+                      )}
+                    </Text>
+                  ) : (
+                    <Text style={{ fontSize: 12, color: colors.gray }}>
+                      учасників: {chatInfo.membersCount}
+                    </Text>
+                  )
+                ) : chatTyping ? (
                   <Text style={{ fontSize: 12, color: colors.gray }}>
                     набирає...
                   </Text>
@@ -185,22 +208,31 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                   </View>
 
                   {chatInfo.group ? (
-                    chatInfo.groupTyping.filter(
-                      ([key, value]) =>
-                        value.typing == true && key != auth.currentUser.uid
-                    ).length > 0 ? (
+                    chatTyping?.length > 2 ? (
                       <Text style={{ fontSize: 12, color: colors.gray }}>
-                        {chatInfo.groupTyping
-                          .filter(([key, value]) => value.typing == true)[0][1]
-                          .name.toString()}{" "}
+                        {chatTyping?.length} людей набирає...
+                      </Text>
+                    ) : chatTyping?.length === 2 ? (
+                      <Text style={{ fontSize: 12, color: colors.gray }}>
+                        {chatTyping?.map(
+                          (userTyping, index) =>
+                            `${userTyping.name}${index === 0 ? " та " : " "}`
+                        )}
                         набирає...
+                      </Text>
+                    ) : chatTyping?.filter((userTyping) => userTyping.typing)
+                        .length === 1 ? (
+                      <Text style={{ fontSize: 12, color: colors.gray }}>
+                        {chatTyping?.map(
+                          (userTyping) => `${userTyping.name} набирає...`
+                        )}
                       </Text>
                     ) : (
                       <Text style={{ fontSize: 12, color: colors.gray }}>
                         учасників: {chatInfo.membersCount}
                       </Text>
                     )
-                  ) : chatInfo.typing ? (
+                  ) : chatTyping ? (
                     <Text style={{ fontSize: 12, color: colors.gray }}>
                       набирає...
                     </Text>
@@ -319,7 +351,6 @@ export default function ChatsMessagesScreen({ navigation, route }) {
         .onSnapshot((snapshot) => {
           if (snapshot.exists) {
             setChatInfo(snapshot.data());
-            // TODO typing
           }
         });
     }
@@ -407,6 +438,47 @@ export default function ChatsMessagesScreen({ navigation, route }) {
       AppState.removeEventListener("change", handleAppStateChange);
     };
   }, []);
+
+  // Handle typing
+  useEffect(() => {
+    let chatTypingSnapshotUnsubscribe;
+
+    db.collection("chats")
+      .doc(chatId)
+      .get()
+      .then((chat) => {
+        if (chat.exists) {
+          // Get chat info
+          chatTypingSnapshotUnsubscribe = db
+            .collection("chats")
+            .doc(chatId)
+            .onSnapshot((snapshot) => {
+              if (snapshot.exists) {
+                if (snapshot.data().group) {
+                  // Group
+                  setChatTyping(
+                    Object.keys(snapshot.data().typing)
+                      .filter((userId) => userId !== fromMeId)
+                      .map((userId) => snapshot.data().typing[userId])
+                      .filter((userTyping) => userTyping.typing)
+                  );
+                } else {
+                  // Dialog
+                  setChatTyping(snapshot.data().typing[toMeId]);
+                }
+
+                chatExists.current = true;
+              }
+            });
+        }
+      });
+
+    return () => {
+      try {
+        chatTypingSnapshotUnsubscribe();
+      } catch {}
+    };
+  }, [chatExists.current]);
 
   // Handle app state
   const handleAppStateChange = (state) => {
@@ -538,6 +610,8 @@ export default function ChatsMessagesScreen({ navigation, route }) {
               unreadCount: 0,
               attachment: attachmentUrl,
             });
+
+          chatExists.current = true;
         }
 
         // Add to messages
@@ -721,57 +795,58 @@ export default function ChatsMessagesScreen({ navigation, route }) {
 
   // Typing
   const typing = async () => {
-    // Start typing
+    if (chatExists.current) {
+      // Start typing
 
-    if (!typingTimeout.current.typing) {
-      typingTimeout.current.typing = true;
+      if (!typingTimeout.current.typing) {
+        typingTimeout.current.typing = true;
 
-      if (chatInfo.group) {
-        var query = {
-          name: (
-            await db.collection("users").doc(auth.currentUser?.uid).get()
-          ).data().name,
-          typing: true,
-        };
-      } else {
-        var query = true;
+        if (chatInfo.group) {
+          var query = {
+            name: (
+              await db.collection("users").doc(auth.currentUser?.uid).get()
+            ).data().name,
+            typing: true,
+          };
+        } else {
+          var query = true;
+        }
+
+        db.collection("chats")
+          .doc(chatId)
+          .update({
+            [`typing.${auth.currentUser?.uid}`]: query,
+          });
       }
 
-      db.collection("chats")
-        .doc(chatId)
-        .update({
-          //[`typing.${auth.currentUser?.uid}`]: true,
-          [`typing.${auth.currentUser?.uid}`]: query,
-        });
-    }
-
-    // Clear timer
-    if (typingTimeout.current.timer) {
-      clearTimeout(typingTimeout.current.timer);
-      typingTimeout.current.timer = null;
-    }
-
-    // Stop typing
-    typingTimeout.current.timer = setTimeout(async () => {
-      typingTimeout.current.typing = false;
-
-      if (chatInfo.group) {
-        var query = {
-          name: (
-            await db.collection("users").doc(auth.currentUser?.uid).get()
-          ).data().name,
-          typing: false,
-        };
-      } else {
-        var query = false;
+      // Clear timer
+      if (typingTimeout.current.timer) {
+        clearTimeout(typingTimeout.current.timer);
+        typingTimeout.current.timer = null;
       }
 
-      db.collection("chats")
-        .doc(chatId)
-        .update({
-          [`typing.${auth.currentUser?.uid}`]: query,
-        });
-    }, 2000);
+      // Stop typing
+      typingTimeout.current.timer = setTimeout(async () => {
+        typingTimeout.current.typing = false;
+
+        if (chatInfo.group) {
+          var query = {
+            name: (
+              await db.collection("users").doc(auth.currentUser?.uid).get()
+            ).data().name,
+            typing: false,
+          };
+        } else {
+          var query = false;
+        }
+
+        db.collection("chats")
+          .doc(chatId)
+          .update({
+            [`typing.${auth.currentUser?.uid}`]: query,
+          });
+      }, 2000);
+    }
   };
 
   return (
@@ -816,11 +891,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                         onClick={() => setModalVIsible("")}
                         onSwipeDown={() => setModalVIsible("")}
                         enableSwipeDown={true}
-                        imageUrls={[
-                          {
-                            url: modalVIsible,
-                          },
-                        ]}
+                        imageUrls={[{ url: modalVIsible }]}
                       ></ImageViewer>
                     </Modal>
                   ) : null}
@@ -1170,7 +1241,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                 placeholder="Повідомлення..."
                 onChangeText={(message) => {
                   setInputMessage(message);
-                  // typing(); // TODO typing
+                  typing();
                 }}
                 ref={input}
                 selectionColor="#000"
