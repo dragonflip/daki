@@ -110,15 +110,34 @@ export default function MyProfileScreen({ navigation }) {
             </ImageBackground>
 
             <View style={{ marginTop: 8 }}>
-              <Text
+              <View
                 style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  textAlign: "center",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingLeft: profile.verified ? 26 : 0,
                 }}
               >
-                {profile.name}
-              </Text>
+                <Text
+                  style={{
+                    fontSize: 24,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    includeFontPadding: false,
+                  }}
+                >
+                  {profile.name}
+                </Text>
+
+                {profile.verified ? (
+                  <MaterialCommunityIcons
+                    name="check-decagram"
+                    size={24}
+                    color={colors.blue}
+                    style={{ marginLeft: 2 }}
+                  />
+                ) : null}
+              </View>
 
               {profile.online?.seconds >
               firebase.firestore.Timestamp.now().seconds + 10 ? (

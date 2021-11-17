@@ -8,7 +8,6 @@ export default StyleSheet.create({
 
   chat: {
     alignSelf: "stretch",
-    // backgroundColor: "#eee",
     height: 72,
     flexDirection: "row",
     padding: 8,
@@ -37,17 +36,6 @@ export default StyleSheet.create({
   chat_date_status: {
     flexDirection: "row",
     alignItems: "center",
-  },
-
-  chat_name: {
-    fontSize: 16,
-    fontWeight: "bold",
-    flex: 1,
-  },
-  chat_date: {
-    fontSize: 13,
-    marginLeft: 4,
-    color: "grey",
   },
 
   chat_message_unreadCount: {

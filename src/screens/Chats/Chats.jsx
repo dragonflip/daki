@@ -70,6 +70,7 @@ export default function ChatsScreen({ navigation }) {
 
                 me: chat.data().groupMessageSenderId === fromMeId,
                 admin: chat.data().adminId === fromMeId,
+                verified: chat.data().groupVerified,
 
                 timestamp: chat.data().timestamp,
                 unreadCount: chat.data().unreadCount[fromMeId],
@@ -90,6 +91,7 @@ export default function ChatsScreen({ navigation }) {
                   chat.data().message[toMeId] || chat.data().message[fromMeId],
                 me: chat.data().message[fromMeId] !== "",
                 online: chat.data().online[toMeId],
+                verified: chat.data().verified?.[toMeId] || false,
 
                 timestamp: chat.data().timestamp,
                 unreadCount: chat.data().unreadCount,
@@ -251,34 +253,6 @@ export default function ChatsScreen({ navigation }) {
           onPress: async () => {
             setLoading(true);
 
-            // Add system message about member left
-            const leaverInfo = await db
-              .collection("users")
-              .doc(auth.currentUser?.uid)
-              .get();
-
-            await db
-              .collection("chats")
-              .doc(route.params.groupId)
-              .collection("messages")
-              .add({
-                message: `${leaverInfo.data().name} покидає групу`,
-                systemMessage: true,
-                timestamp: firebase.firestore.Timestamp.now(),
-                userId: auth.currentUser?.uid,
-              });
-
-            // Update chat system message
-            await db
-              .collection("chats")
-              .doc(route.params.groupId)
-              .update({
-                groupMessage: `${leaverInfo.data().name} покидає групу`,
-                groupMessageSenderId: auth.currentUser?.uid,
-                groupSystemMessage: true,
-                timestamp: firebase.firestore.Timestamp.now(),
-              });
-
             // Delete from members collection
             await db
               .collection("chats")
@@ -295,6 +269,34 @@ export default function ChatsScreen({ navigation }) {
                 members: firebase.firestore.FieldValue.arrayRemove(
                   auth.currentUser?.uid
                 ),
+              });
+
+            // Add system message about member left
+            const leaverInfo = await db
+              .collection("users")
+              .doc(auth.currentUser?.uid)
+              .get();
+
+            await db
+              .collection("chats")
+              .doc(groupId)
+              .collection("messages")
+              .add({
+                message: `${leaverInfo.data().name} покидає групу`,
+                systemMessage: true,
+                timestamp: firebase.firestore.Timestamp.now(),
+                userId: auth.currentUser?.uid,
+              });
+
+            // Update chat system message
+            await db
+              .collection("chats")
+              .doc(groupId)
+              .update({
+                groupMessage: `${leaverInfo.data().name} покидає групу`,
+                groupMessageSenderId: auth.currentUser?.uid,
+                groupSystemMessage: true,
+                timestamp: firebase.firestore.Timestamp.now(),
               });
 
             setLoading(false);
@@ -390,8 +392,32 @@ export default function ChatsScreen({ navigation }) {
               ) : null}
 
               <View style={styles.chat_info}>
-                <View style={styles.chat_name_date_status}>
-                  <Text style={styles.chat_name}>{item.name}</Text>
+                <View
+                  style={[
+                    styles.chat_name_date_status,
+                    { justifyContent: "space-between" },
+                  ]}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: "bold",
+                        includeFontPadding: false,
+                      }}
+                    >
+                      {item.name}
+                    </Text>
+
+                    {item.verified ? (
+                      <MaterialCommunityIcons
+                        name="check-decagram"
+                        size={18}
+                        color={colors.blue}
+                        style={{ marginLeft: 2, alignSelf: "stretch" }}
+                      />
+                    ) : null}
+                  </View>
 
                   <View style={styles.chat_date_status}>
                     {item.me && item.seen ? (
@@ -408,10 +434,13 @@ export default function ChatsScreen({ navigation }) {
                       />
                     ) : null}
 
-                    {/* <Text style={styles.chat_date}>
-                      {dateFormat(item.timestamp?.seconds)}
-                    </Text> */}
-                    <Text style={styles.chat_date}>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        marginLeft: 4,
+                        color: colors.gray,
+                      }}
+                    >
                       <Moment
                         element={Text}
                         locale="uk"

@@ -291,9 +291,26 @@ export default function ChatsGroupAddMembersScreen({ navigation, route }) {
               </ImageBackground>
 
               <View style={{ marginLeft: 8 }}>
-                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                  {item.name}
-                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                    {item.name}
+                  </Text>
+
+                  {item.verified ? (
+                    <MaterialCommunityIcons
+                      name="check-decagram"
+                      size={18}
+                      color={colors.blue}
+                      style={{ marginLeft: 2 }}
+                    />
+                  ) : null}
+                </View>
+
                 <Text style={{ color: colors.gray }}>{item.phone}</Text>
               </View>
             </TouchableOpacity>

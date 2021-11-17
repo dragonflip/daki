@@ -183,9 +183,34 @@ export default function ChatsUserInfoScreen({ navigation, route }) {
             </ImageBackground>
 
             <View style={{ alignItems: "center", marginTop: 8 }}>
-              <Text style={{ fontSize: 24, fontWeight: "bold" }}>
-                {profile.name}
-              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingLeft: profile.verified ? 26 : 0,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 24,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    includeFontPadding: false,
+                  }}
+                >
+                  {profile.name}
+                </Text>
+
+                {profile.verified ? (
+                  <MaterialCommunityIcons
+                    name="check-decagram"
+                    size={24}
+                    color={colors.blue}
+                    style={{ marginLeft: 2 }}
+                  />
+                ) : null}
+              </View>
 
               {profile.online?.seconds >
               firebase.firestore.Timestamp.now().seconds + 10 ? (

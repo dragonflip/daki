@@ -126,6 +126,24 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
           onPress: async () => {
             setLoading(true);
 
+            // Delete from members collection
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .collection("members")
+              .doc(auth.currentUser?.uid)
+              .delete();
+
+            // Delete from members chat array
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .update({
+                members: firebase.firestore.FieldValue.arrayRemove(
+                  auth.currentUser?.uid
+                ),
+              });
+
             // Add system message about member left
             const leaverInfo = await db
               .collection("users")
@@ -154,24 +172,6 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                 timestamp: firebase.firestore.Timestamp.now(),
               });
 
-            // Delete from members collection
-            await db
-              .collection("chats")
-              .doc(route.params.groupId)
-              .collection("members")
-              .doc(auth.currentUser?.uid)
-              .delete();
-
-            // Delete from members chat array
-            await db
-              .collection("chats")
-              .doc(route.params.groupId)
-              .update({
-                members: firebase.firestore.FieldValue.arrayRemove(
-                  auth.currentUser?.uid
-                ),
-              });
-
             navigation.navigate("Chats");
           },
         },
@@ -192,6 +192,22 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
           text: "Видалити",
           style: "destructive",
           onPress: async () => {
+            // Delete from members collection
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .collection("members")
+              .doc(userId)
+              .delete();
+
+            // Delete from members chat array
+            await db
+              .collection("chats")
+              .doc(route.params.groupId)
+              .update({
+                members: firebase.firestore.FieldValue.arrayRemove(userId),
+              });
+
             // Add system message about kicked member
             const leaverInfo = await db.collection("users").doc(userId).get();
             const adminInfo = await db
@@ -223,22 +239,6 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                 groupMessageSenderId: auth.currentUser?.uid,
                 groupSystemMessage: true,
                 timestamp: firebase.firestore.Timestamp.now(),
-              });
-
-            // Delete from members collection
-            await db
-              .collection("chats")
-              .doc(route.params.groupId)
-              .collection("members")
-              .doc(userId)
-              .delete();
-
-            // Delete from members chat array
-            await db
-              .collection("chats")
-              .doc(route.params.groupId)
-              .update({
-                members: firebase.firestore.FieldValue.arrayRemove(userId),
               });
           },
         },
@@ -294,9 +294,34 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                 </ImageBackground>
 
                 <View style={{ alignItems: "center", marginTop: 8 }}>
-                  <Text style={{ fontSize: 24, fontWeight: "bold" }}>
-                    {group.groupName}
-                  </Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      paddingLeft: group.groupVerified ? 26 : 0,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 24,
+                        fontWeight: "bold",
+                        textAlign: "center",
+                        includeFontPadding: false,
+                      }}
+                    >
+                      {group.groupName}
+                    </Text>
+
+                    {group.groupVerified ? (
+                      <MaterialCommunityIcons
+                        name="check-decagram"
+                        size={24}
+                        color={colors.blue}
+                        style={{ marginLeft: 2 }}
+                      />
+                    ) : null}
+                  </View>
 
                   <Text style={{ color: colors.gray }}>
                     учасників: {group.membersCount}
@@ -486,9 +511,26 @@ export default function ChatsGroupInfoScreen({ navigation, route }) {
                     justifyContent: "space-between",
                   }}
                 >
-                  <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-                    {item.name}
-                  </Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                      {item.name}
+                    </Text>
+
+                    {item.verified ? (
+                      <MaterialCommunityIcons
+                        name="check-decagram"
+                        size={18}
+                        color={colors.blue}
+                        style={{ marginLeft: 2 }}
+                      />
+                    ) : null}
+                  </View>
+
                   {item.admin ? (
                     <Text
                       style={{
