@@ -934,7 +934,14 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                         }
                         disabled={!item.link && !item.me}
                         onPress={
-                          item.link ? () => Linking.openURL(item.message) : null
+                          (item.link
+                            ? () => Linking.openURL(item.message)
+                            : null,
+                          item.attachment
+                            ? () => {
+                                setModalVIsible(item.attachment);
+                              }
+                            : null)
                         }
                       >
                         <View>
@@ -957,66 +964,61 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                           ) : null}
 
                           {item.attachment ? (
-                            <TouchableOpacity
-                              onPress={() => setModalVIsible(item.attachment)}
+                            <ImageBackground
+                              source={{
+                                uri: item.attachment,
+                                cache: "force-cache",
+                              }}
+                              style={{
+                                width: Dimensions.get("window").width - 92,
+                                height:
+                                  (Dimensions.get("window").width - 92) /
+                                  (4 / 3),
+                                justifyContent: "flex-end",
+                                alignItems: "flex-end",
+                                padding: 8,
+                              }}
+                              imageStyle={{
+                                borderRadius: 16,
+                                borderWidth: 2,
+                                borderColor: item.me ? "#000" : colors.gray6,
+                              }}
                             >
-                              <ImageBackground
-                                onPress={() => setModalVIsible(item.attachment)}
-                                source={{
-                                  uri: item.attachment,
-                                  cache: "force-cache",
-                                }}
+                              <View
                                 style={{
-                                  width: Dimensions.get("window").width - 92,
-                                  height:
-                                    (Dimensions.get("window").width - 92) /
-                                    (4 / 3),
-                                  justifyContent: "flex-end",
-                                  alignItems: "flex-end",
-                                  padding: 8,
-                                }}
-                                imageStyle={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  alignContent: "center",
+                                  justifyContent: "center",
+                                  paddingVertical: 2,
+                                  paddingHorizontal: 8,
+                                  backgroundColor: "rgba(0, 0, 0, 0.5)",
                                   borderRadius: 16,
-                                  borderWidth: 2,
-                                  borderColor: item.me ? "#000" : colors.gray6,
                                 }}
                               >
-                                <View
-                                  style={{
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                    alignContent: "center",
-                                    justifyContent: "center",
-                                    paddingVertical: 2,
-                                    paddingHorizontal: 8,
-                                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                    borderRadius: 16,
-                                  }}
-                                >
-                                  <Text style={{ color: "#fff", fontSize: 12 }}>
-                                    <Moment element={Text} unix format="HH:mm">
-                                      {item.timestamp}
-                                    </Moment>
-                                  </Text>
+                                <Text style={{ color: "#fff", fontSize: 12 }}>
+                                  <Moment element={Text} unix format="HH:mm">
+                                    {item.timestamp}
+                                  </Moment>
+                                </Text>
 
-                                  {item.me && item.seen ? (
-                                    <MaterialCommunityIcons
-                                      name="check-all"
-                                      size={16}
-                                      color={"#fff"}
-                                      style={{ marginLeft: 2 }}
-                                    />
-                                  ) : item.me ? (
-                                    <MaterialCommunityIcons
-                                      name="check"
-                                      size={16}
-                                      color={"#fff"}
-                                      style={{ marginLeft: 2 }}
-                                    />
-                                  ) : null}
-                                </View>
-                              </ImageBackground>
-                            </TouchableOpacity>
+                                {item.me && item.seen ? (
+                                  <MaterialCommunityIcons
+                                    name="check-all"
+                                    size={16}
+                                    color={"#fff"}
+                                    style={{ marginLeft: 2 }}
+                                  />
+                                ) : item.me ? (
+                                  <MaterialCommunityIcons
+                                    name="check"
+                                    size={16}
+                                    color={"#fff"}
+                                    style={{ marginLeft: 2 }}
+                                  />
+                                ) : null}
+                              </View>
+                            </ImageBackground>
                           ) : (
                             <View
                               style={{
