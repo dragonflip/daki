@@ -57,6 +57,7 @@ export default function ChatsGroupAddMembersScreen({ navigation, route }) {
       headerSearchBarOptions: {
         placeholder: "Пошук людей...",
         hideWhenScrolling: false,
+        obscureBackground: false,
         onChangeText: (event) => setSearch(event.nativeEvent.text),
       },
     });

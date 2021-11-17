@@ -30,6 +30,7 @@ export default function ChatsCreateDialogScreen({ navigation }) {
       headerSearchBarOptions: {
         placeholder: "Пошук людей...",
         hideWhenScrolling: false,
+        obscureBackground: false,
         onChangeText: (event) => setSearch(event.nativeEvent.text),
       },
     });
