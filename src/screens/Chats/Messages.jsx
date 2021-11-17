@@ -583,7 +583,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
       const manipResult = await ImageManipulator.manipulateAsync(result.uri, [
         {
           resize: {
-            width: 640,
+            width: 480,
             height: 480,
           },
         },
@@ -665,8 +665,6 @@ export default function ChatsMessagesScreen({ navigation, route }) {
             // If chat has 0 messages delete it
             if (lastMessageRef.empty) {
               await db.collection("chats").doc(chatId).delete();
-
-              navigation.goBack();
             } else {
               const lastMessage = lastMessageRef.docs[0].data();
 
