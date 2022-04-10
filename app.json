@@ -3,7 +3,7 @@
     "entryPoint": "./src/App.js",
     "name": "Daki",
     "slug": "daki",
-    "version": "0.30.2",
+    "version": "0.30.3",
     "orientation": "portrait",
     "primaryColor": "#000000",
     "icon": "./assets/logo.png",
@@ -18,14 +18,14 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dragonflip.daki"
+      "bundleIdentifier": "com.daki.messenger"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.dragonflip.daki"
+      "package": "com.daki.messenger"
     },
     "web": {
       "favicon": "./assets/logo.png"
