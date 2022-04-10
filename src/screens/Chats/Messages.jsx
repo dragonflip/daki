@@ -59,9 +59,10 @@ export default function ChatsMessagesScreen({ navigation, route }) {
         headerTitle: () => (
           <TouchableOpacity
             onPress={() =>
-              chatInfo.group
-                ? navigation.navigate("ChatsGroupInfo", { ...route.params })
-                : navigation.navigate("ChatsUserInfo", { ...route.params })
+              navigation.navigate(
+                chatInfo.group ? "ChatsGroupInfo" : "ChatsUserInfo",
+                { ...route.params }
+              )
             }
           >
             {Platform.OS === "ios" ? (
@@ -146,13 +147,10 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           Platform.OS === "android" ? (
             <TouchableOpacity
               onPress={() =>
-                chatInfo.group
-                  ? navigation.navigate("ChatsGroupInfo", {
-                      ...route.params,
-                    })
-                  : navigation.navigate("ChatsUserInfo", {
-                      ...route.params,
-                    })
+                navigation.navigate(
+                  chatInfo.group ? "ChatsGroupInfo" : "ChatsUserInfo",
+                  { ...route.params }
+                )
               }
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -270,13 +268,10 @@ export default function ChatsMessagesScreen({ navigation, route }) {
           Platform.OS === "ios" ? (
             <TouchableOpacity
               onPress={() =>
-                chatInfo.group
-                  ? navigation.navigate("ChatsGroupInfo", {
-                      ...route.params,
-                    })
-                  : navigation.navigate("ChatsUserInfo", {
-                      ...route.params,
-                    })
+                navigation.navigate(
+                  chatInfo.group ? "ChatsGroupInfo" : "ChatsUserInfo",
+                  { ...route.params }
+                )
               }
             >
               <ImageBackground
@@ -677,7 +672,6 @@ export default function ChatsMessagesScreen({ navigation, route }) {
 
       const url = await snapshot.ref.getDownloadURL();
 
-      console.log(url);
       sendMessage(url);
     }
   };

@@ -122,8 +122,6 @@ export default function ChatsGroupEditScreen({ navigation, route }) {
       } else {
         var url = "";
       }
-
-      console.log(url);
     }
 
     // Update group

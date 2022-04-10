@@ -121,8 +121,6 @@ export default function MyProfileEditScreen({ navigation }) {
       } else {
         var url = "";
       }
-
-      console.log(url);
     }
 
     // Update profile in users
