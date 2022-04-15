@@ -14,6 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import moment from "moment";
+import "moment/locale/uk";
 import Moment from "react-moment";
 
 // Styles
