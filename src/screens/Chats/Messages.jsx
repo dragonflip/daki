@@ -44,7 +44,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
   const [appState, setAppState] = useState("active");
   const typingTimeout = useRef({ timer: null, typing: false });
   const [chatInfo, setChatInfo] = useState([]);
-  const [modalVIsible, setModalVIsible] = useState("");
+  const [modalVisible, setModalVisible] = useState("");
   const [chatTyping, setChatTyping] = useState(null);
   const chatExists = useRef(false);
 
@@ -881,12 +881,12 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                     </View>
                   ) : null}
 
-                  {modalVIsible != "" ? (
+                  {modalVisible != "" ? (
                     <Modal visible={true} transparent={true}>
                       <ImageViewer
-                        onSwipeDown={() => setModalVIsible("")}
+                        onSwipeDown={() => setModalVisible("")}
                         enableSwipeDown={true}
-                        imageUrls={[{ url: modalVIsible }]}
+                        imageUrls={[{ url: modalVisible }]}
                       ></ImageViewer>
                     </Modal>
                   ) : null}
@@ -1002,7 +1002,7 @@ export default function ChatsMessagesScreen({ navigation, route }) {
                         onPress={
                           item.attachment
                             ? () => {
-                                setModalVIsible(item.attachment);
+                                setModalVisible(item.attachment);
                               }
                             : item.link
                             ? () => Linking.openURL(item.message)

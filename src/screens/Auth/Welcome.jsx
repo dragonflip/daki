@@ -4,14 +4,14 @@ import { Text, View, Image, TextInput, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
 // Firebase
-import { firebase, auth, db } from "../../firebase";
+import { auth, db } from "../../firebase";
 // Styles
 import styles from "./styles";
 // Components
 import ButtonWithLoading from "../../components/ButtonWithLoading";
 import KeyboardAvoider from "../../components/KeyboardAvoider";
 
-export default function AuthWelcomeScreen({ navigation, route }) {
+export default function AuthWelcomeScreen({ navigation }) {
   const [name, setName] = useState("");
 
   const input = useRef(null);
